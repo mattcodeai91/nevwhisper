@@ -894,6 +894,21 @@ const BATCH_SIZE = 10;
 
 const LIVE_POLL_MS = 15000;
 
+/*
+  Rolling backfill.
+
+  The normal scanner advances verifiedThrough and
+  therefore never revisits an already verified block.
+
+  A small rolling recheck makes the archive resilient
+  to whispers becoming available through the upstream
+  /whispers endpoint after the original scan.
+
+  This is deliberately small so we do not hammer
+  the proxy or rebuild the chain.
+*/
+const BACKFILL_BLOCKS = 20;
+
 const MAX_RETRIES = 4;
 const RETRY_DELAY = 1500;
 
@@ -913,9 +928,7 @@ const state = {
     NOT block number.
 
     Multiple whisper transactions can exist
-    in the same block. Using block number as
-    the key caused one of the two Genesis #0
-    messages to overwrite the other.
+    in the same block.
   */
   whispers: new Map(),
 
@@ -1158,18 +1171,6 @@ function openDb() {
 
       const db =
         event.target.result;
-
-      /*
-        Existing database:
-
-        meta:
-          out-of-line keys
-
-        whispers:
-          keyPath = tx_hash
-
-        Never replace existing stores.
-      */
 
       if (
         !db.objectStoreNames.contains(
@@ -1421,8 +1422,11 @@ async function loadDatabase() {
   /*
     Load EVERY whisper.
 
-    Key the in-memory Map by tx_hash.
+    Key the in-memory Map by tx_hash so
+    multiple messages in the same block
+    cannot overwrite one another.
   */
+
   for (
     const raw of whisperRecords
   ) {
@@ -1446,62 +1450,29 @@ async function loadDatabase() {
   }
 
   /*
-    Reconstruct the Architect directly
+    First establish the Architect address
     from the Genesis Architect transaction.
-
-    This does NOT depend on the order of
-    IndexedDB records or a prior address pass.
   */
 
   architectAddress = null;
-  state.latestArchitect = null;
 
   for (
     const whisper of
     state.whispers.values()
   ) {
 
-    const sender =
-      String(
-        whisper.sender || ""
-      )
-        .trim()
-        .toUpperCase();
-
-    const memo =
-      String(
-        whisper.memo || ""
-      )
-        .trim();
-
-    if (
-      Number(whisper.block) === 0 &&
-      sender === "GENESIS" &&
-      /^Genesis premine\s*—\s*Architect$/i.test(
-        memo
-      ) &&
-      whisper.to
-    ) {
-
-      architectAddress =
-        String(
-          whisper.to
-        )
-          .trim()
-          .toLowerCase();
-
-      state.latestArchitect =
-        whisper;
-
-      break;
-    }
+    establishArchitectAddress(
+      whisper
+    );
   }
 
   /*
-    Look for a newer genuine Architect message.
-    A user saying "Architect" in their memo
-    does NOT qualify.
+    Then reconstruct the latest Architect
+    message from ALL stored whispers.
   */
+
+  state.latestArchitect =
+    null;
 
   for (
     const whisper of
@@ -1549,14 +1520,6 @@ async function saveCheckpoint() {
 async function saveWhisper(
   whisper
 ) {
-
-  /*
-    IndexedDB keyPath is tx_hash.
-
-    Existing whispers already contain this
-    field. Newly scanned whispers are
-    normalised to contain it as well.
-  */
 
   if (
     !whisper ||
@@ -1824,14 +1787,6 @@ function normalizeWhisper(
         "recipient_address"
       ]
     );
-
-  /*
-    tx_hash is the canonical identity.
-
-    Prefer an explicit tx_hash, but support
-    all endpoint field names already used
-    by the scanner.
-  */
 
   const txHash =
     firstValue(
@@ -2124,9 +2079,8 @@ function isArchitectWhisper(
 /*
   Deterministic ordering for whispers.
 
-  Block is primary. Transaction hash provides
-  a stable tie-breaker when two messages share
-  the same block.
+  Block is primary. Timestamp is secondary.
+  Transaction hash provides a stable tie-breaker.
 */
 
 function compareWhispers(
@@ -2199,36 +2153,23 @@ function updateArchitect(
 
 
 /* ==================================================
-   SCANNING
+   SAVE / MERGE WHISPERS
 ================================================== */
 
-async function scanBatch(
+async function processWhisperPayload(
+  payload,
   startHeight,
-  endHeight
+  endHeight,
+  markNew = true
 ) {
-
-  setScanningStatus(
-    `Scanning #${startHeight} → #${endHeight}`,
-    `Verifying ${endHeight - startHeight + 1} blocks`
-  );
-
-  const payload =
-    await getJson(
-      `/whispers?from=${endHeight}&to=${startHeight}`
-    );
 
   const raw =
     extractWhispers(
       payload
     );
 
-  const batchWhispers =
+  const found =
     [];
-
-  /*
-    Do not advance verifiedThrough until
-    the entire batch request has succeeded.
-  */
 
   for (
     const item of raw
@@ -2269,33 +2210,27 @@ async function scanBatch(
       whisper
     );
 
+    const existed =
+      state.whispers.has(
+        whisper.tx_hash
+      );
+
     /*
-      Persist the complete normalized record.
+      IndexedDB uses tx_hash as the key,
+      so updating an existing transaction
+      is safe and deterministic.
     */
 
     await saveWhisper(
       whisper
     );
 
-    /*
-      IMPORTANT:
-
-      Key by tx_hash, never block number.
-
-      This allows:
-
-        block 0 → Architect
-        block 0 → Nevaeh Vault
-
-      to coexist.
-    */
-
     state.whispers.set(
       whisper.tx_hash,
       whisper
     );
 
-    batchWhispers.push(
+    found.push(
       whisper
     );
 
@@ -2304,13 +2239,51 @@ async function scanBatch(
     );
 
     /*
-      Highlight this exact transaction.
+      Only highlight genuinely new
+      transactions, not every rolling
+      backfill result.
     */
 
-    state.newWhisperTxs.add(
-      whisper.tx_hash
-    );
+    if (
+      markNew &&
+      !existed
+    ) {
+
+      state.newWhisperTxs.add(
+        whisper.tx_hash
+      );
+    }
   }
+
+  return found;
+}
+
+
+/* ==================================================
+   SCANNING
+================================================== */
+
+async function scanBatch(
+  startHeight,
+  endHeight
+) {
+
+  setScanningStatus(
+    `Scanning #${startHeight} → #${endHeight}`,
+    `Verifying ${endHeight - startHeight + 1} blocks`
+  );
+
+  const payload =
+    await getJson(
+      `/whispers?from=${endHeight}&to=${startHeight}`
+    );
+
+  await processWhisperPayload(
+    payload,
+    startHeight,
+    endHeight,
+    true
+  );
 
   /*
     Only now is this range verified.
@@ -2322,8 +2295,75 @@ async function scanBatch(
   await saveCheckpoint();
 
   renderAll();
+}
 
-  return batchWhispers;
+
+/* ==================================================
+   ROLLING BACKFILL
+================================================== */
+
+async function backfillRecentBlocks() {
+
+  /*
+    Nothing to backfill until the archive
+    has at least one verified block.
+  */
+
+  if (
+    state.verifiedThrough < 0
+  ) {
+    return;
+  }
+
+  const endHeight =
+    Math.min(
+      state.verifiedThrough,
+      state.chainHeight
+    );
+
+  if (
+    endHeight < 0
+  ) {
+    return;
+  }
+
+  const startHeight =
+    Math.max(
+      0,
+      endHeight -
+        BACKFILL_BLOCKS +
+        1
+    );
+
+  /*
+    This deliberately does NOT modify
+    verifiedThrough.
+
+    It simply checks recent verified blocks
+    again for whispers that were missed or
+    appeared in the upstream index later.
+  */
+
+  const payload =
+    await getJson(
+      `/whispers?from=${endHeight}&to=${startHeight}`
+    );
+
+  const found =
+    await processWhisperPayload(
+      payload,
+      startHeight,
+      endHeight,
+      true
+    );
+
+  if (
+    found.length > 0
+  ) {
+    renderAll();
+  }
+
+  return found.length;
 }
 
 
@@ -2481,8 +2521,52 @@ async function pollLiveTip() {
       !state.scanning
     ) {
 
-      setCurrentStatus();
-      renderAll();
+      /*
+        IMPORTANT:
+
+        Even when the chain has not moved,
+        recheck the recent verified window.
+
+        This is what catches a whisper such as
+        block #5960 if the first /whispers scan
+        failed to expose it.
+      */
+
+      try {
+
+        const found =
+          await backfillRecentBlocks();
+
+        if (
+          found > 0
+        ) {
+
+          setCurrentStatus();
+          renderAll();
+
+        } else {
+
+          setCurrentStatus();
+          renderAll();
+        }
+
+      } catch (backfillError) {
+
+        /*
+          A backfill failure must NOT make the
+          entire live archive appear broken.
+
+          The main verified checkpoint remains valid.
+        */
+
+        console.warn(
+          "Recent whisper backfill failed:",
+          backfillError
+        );
+
+        setCurrentStatus();
+        renderAll();
+      }
     }
 
   } catch (error) {
@@ -2736,11 +2820,6 @@ function renderStats() {
         )
       : "—";
 
-  /*
-    Every Map entry is one unique
-    transaction-backed whisper.
-  */
-
   els.whisperCount.textContent =
     formatNumber(
       state.whispers.size
@@ -2927,11 +3006,6 @@ function renderWhispers() {
 
     card.className =
       "whisper";
-
-    /*
-      Highlight individual transaction,
-      not entire block.
-    */
 
     if (
       whisper.tx_hash &&
@@ -3268,11 +3342,6 @@ async function init() {
 
     await loadDatabase();
 
-    /*
-      Architect identity has already been
-      reconstructed by loadDatabase().
-    */
-
     renderAll();
 
     /*
@@ -3309,6 +3378,23 @@ async function init() {
     } else if (
       state.chainHeight >= 0
     ) {
+
+      /*
+        The archive is already at the tip.
+
+        Before going live, perform one recent
+        backfill so a previously missed whisper
+        can be recovered immediately.
+      */
+
+      try {
+        await backfillRecentBlocks();
+      } catch (error) {
+        console.warn(
+          "Initial recent whisper backfill failed:",
+          error
+        );
+      }
 
       setCurrentStatus();
 

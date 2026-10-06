@@ -892,14 +892,8 @@ const DB_VERSION = 1;
 
 const BATCH_SIZE = 10;
 
-/*
-  The scanner checks the live chain every 15 seconds.
-*/
 const LIVE_POLL_MS = 15000;
 
-/*
-  Network retry configuration.
-*/
 const MAX_RETRIES = 4;
 const RETRY_DELAY = 1500;
 
@@ -912,6 +906,17 @@ const state = {
   verifiedThrough: -1,
   chainHeight: -1,
 
+  /*
+    IMPORTANT:
+
+    This Map is keyed by transaction hash,
+    NOT block number.
+
+    Multiple whisper transactions can exist
+    in the same block. Using block number as
+    the key caused one of the two Genesis #0
+    messages to overwrite the other.
+  */
   whispers: new Map(),
 
   scanning: false,
@@ -919,7 +924,11 @@ const state = {
 
   latestArchitect: null,
 
-  newWhisperBlocks: new Set(),
+  /*
+    Highlight individual transactions rather
+    than entire blocks.
+  */
+  newWhisperTxs: new Set(),
 
   livePollTimer: null,
   livePollRunning: false
@@ -1043,9 +1052,6 @@ function formatAmount(value) {
     return String(value);
   }
 
-  /*
-    NEV369 uses 8 decimal places.
-  */
   const nev = n / 100000000;
 
   return (
@@ -1077,11 +1083,6 @@ function formatTimestamp(value) {
   }
 
   let milliseconds;
-
-  /*
-    Support seconds, milliseconds,
-    microseconds and nanoseconds.
-  */
 
   if (n < 1e12) {
     milliseconds = n * 1000;
@@ -1159,9 +1160,7 @@ function openDb() {
         event.target.result;
 
       /*
-        IMPORTANT:
-
-        The live database uses:
+        Existing database:
 
         meta:
           out-of-line keys
@@ -1169,10 +1168,7 @@ function openDb() {
         whispers:
           keyPath = tx_hash
 
-        We deliberately DO NOT recreate or
-        replace the stores.
-
-        Doing so could destroy existing data.
+        Never replace existing stores.
       */
 
       if (
@@ -1201,12 +1197,6 @@ function openDb() {
 
       const db =
         request.result;
-
-      /*
-        If another tab upgrades the database,
-        close this connection so a fresh
-        connection can be established.
-      */
 
       db.onversionchange = () => {
         db.close();
@@ -1329,9 +1319,6 @@ async function dbPut(
         meta uses out-of-line keys.
 
         whispers uses keyPath tx_hash.
-
-        Therefore only pass an explicit key
-        when we actually have one.
       */
 
       if (key === undefined) {
@@ -1411,15 +1398,10 @@ async function loadDatabase() {
     );
 
   /*
-    CRITICAL FIX:
+    Read every actual whisper record.
 
-    The current whispers store has:
-
-      keyPath: tx_hash
-
-    Therefore get("all") is WRONG.
-
-    Read every actual whisper record instead.
+    This is essential because whispers are
+    keyed by tx_hash, not by "all" or block.
   */
 
   const whisperRecords =
@@ -1444,61 +1426,55 @@ async function loadDatabase() {
   state.whispers.clear();
 
   /*
-    Load all persisted whispers.
+    Load EVERY whisper.
 
-    The state Map is keyed by block for
-    rendering / searching, while IndexedDB
-    remains keyed by tx_hash.
+    Key the in-memory Map by tx_hash so
+    multiple messages in the same block
+    cannot overwrite one another.
   */
 
   for (
-    const whisper of whisperRecords
+    const raw of whisperRecords
   ) {
+
+    const whisper =
+      normalizeWhisper(
+        raw
+      );
 
     if (
       !whisper ||
-      !Number.isFinite(
-        Number(whisper.block)
-      )
+      !whisper.tx_hash
     ) {
       continue;
     }
 
-    /*
-      A transaction can theoretically contain
-      multiple memo records at the same block,
-      so use tx_hash as the uniqueness anchor
-      internally where possible.
-
-      The UI archive is still block-oriented.
-    */
-
-    const block =
-      Number(whisper.block);
-
-    const existing =
-      state.whispers.get(block);
-
-    /*
-      Prefer a whisper with a transaction hash.
-    */
-
-    if (
-      !existing ||
-      (
-        !existing.tx &&
-        whisper.tx
-      )
-    ) {
-      state.whispers.set(
-        block,
-        whisper
-      );
-    }
+    state.whispers.set(
+      whisper.tx_hash,
+      whisper
+    );
   }
 
   /*
-    Reconstruct Architect pin.
+    First establish the Architect address
+    from the Genesis Architect transaction.
+  */
+
+  architectAddress = null;
+
+  for (
+    const whisper of
+    state.whispers.values()
+  ) {
+
+    establishArchitectAddress(
+      whisper
+    );
+  }
+
+  /*
+    Then reconstruct the latest Architect
+    message from ALL stored whispers.
   */
 
   state.latestArchitect =
@@ -1517,11 +1493,12 @@ async function loadDatabase() {
 
       if (
         !state.latestArchitect ||
-        Number(whisper.block) >
-        Number(
-          state.latestArchitect.block
-        )
+        compareWhispers(
+          whisper,
+          state.latestArchitect
+        ) > 0
       ) {
+
         state.latestArchitect =
           whisper;
       }
@@ -1531,16 +1508,6 @@ async function loadDatabase() {
 
 
 async function saveCheckpoint() {
-
-  /*
-    These are deliberately stored as:
-
-      value, "verifiedThrough"
-
-    rather than objects.
-
-    This matches the existing DB.
-  */
 
   await dbPut(
     "meta",
@@ -1561,17 +1528,16 @@ async function saveWhisper(
 ) {
 
   /*
-    IMPORTANT:
+    IndexedDB keyPath is tx_hash.
 
-    Current store keyPath is tx_hash.
-
-    Do NOT pass whisper.block as the
-    IndexedDB key.
+    Existing whispers already contain this
+    field. Newly scanned whispers are
+    normalised to contain it as well.
   */
 
   if (
     !whisper ||
-    !whisper.tx
+    !whisper.tx_hash
   ) {
     return;
   }
@@ -1645,10 +1611,6 @@ async function getJson(
       error.status =
         response.status;
 
-      /*
-        Preserve Retry-After when supplied.
-      */
-
       error.retryAfter =
         response.headers.get(
           "Retry-After"
@@ -1691,10 +1653,6 @@ async function getJson(
           retryAfter * 1000
         );
     }
-
-    /*
-      Small jitter prevents synchronized retries.
-    */
 
     delay +=
       Math.floor(
@@ -1844,18 +1802,37 @@ function normalizeWhisper(
       ]
     );
 
-  const tx =
+  /*
+    tx_hash is the canonical identity.
+
+    Prefer an explicit tx_hash, but support
+    all endpoint field names already used
+    by the scanner.
+  */
+
+  const txHash =
     firstValue(
       item,
       [
+        "tx_hash",
         "tx",
         "txid",
-        "tx_hash",
-        "transaction",
         "transaction_hash",
+        "transaction",
         "hash"
       ]
     );
+
+  if (
+    txHash === null ||
+    txHash === undefined ||
+    String(txHash).trim() === ""
+  ) {
+    return null;
+  }
+
+  const tx =
+    String(txHash);
 
   const timestamp =
     firstValue(
@@ -1894,10 +1871,10 @@ function normalizeWhisper(
         ? String(to)
         : "",
 
-    tx:
-      tx
-        ? String(tx)
-        : "",
+    tx,
+
+    tx_hash:
+      tx,
 
     timestamp,
 
@@ -1942,11 +1919,6 @@ function extractWhispers(
       return candidate;
     }
   }
-
-  /*
-    Some endpoint versions may return
-    one object directly.
-  */
 
   if (
     payload.block !== undefined ||
@@ -2003,18 +1975,6 @@ function isNetworkReward(
    ARCHITECT DETECTION
 ================================================== */
 
-/*
-  We deliberately do NOT identify a normal user
-  message as Architect merely because the word
-  "Architect" appears in its memo.
-
-  Genesis Architect establishes the actual
-  Architect recipient address.
-
-  Future messages from that address are Architect
-  messages.
-*/
-
 let architectAddress = null;
 
 
@@ -2039,6 +1999,11 @@ function establishArchitectAddress(
       )
     ) &&
     /architect/i.test(
+      String(
+        whisper.memo || ""
+      )
+    ) &&
+    !/nevaeh vault/i.test(
       String(
         whisper.memo || ""
       )
@@ -2072,7 +2037,7 @@ function isArchitectWhisper(
       .toUpperCase();
 
   /*
-    Explicit Genesis identity.
+    Explicit Genesis Architect identity.
   */
 
   if (
@@ -2089,6 +2054,7 @@ function isArchitectWhisper(
       )
     )
   ) {
+
     establishArchitectAddress(
       whisper
     );
@@ -2097,8 +2063,8 @@ function isArchitectWhisper(
   }
 
   /*
-    Explicit Architect labels remain
-    supported if the chain provides them.
+    Explicit Architect labels supplied
+    by a future node implementation.
   */
 
   if (
@@ -2109,9 +2075,11 @@ function isArchitectWhisper(
   }
 
   /*
-    If Genesis established the Architect
-    address, only messages FROM that address
-    are considered Architect messages.
+    Future Architect messages must originate
+    from the actual Architect address.
+
+    Merely saying "Architect" in a user's memo
+    is NOT enough.
   */
 
   if (
@@ -2130,6 +2098,55 @@ function isArchitectWhisper(
 }
 
 
+/*
+  Deterministic ordering for whispers.
+
+  Block is primary. Transaction hash provides
+  a stable tie-breaker when two messages share
+  the same block.
+*/
+
+function compareWhispers(
+  a,
+  b
+) {
+
+  const blockA =
+    Number(a?.block);
+
+  const blockB =
+    Number(b?.block);
+
+  if (
+    blockA !== blockB
+  ) {
+    return blockA - blockB;
+  }
+
+  const timeA =
+    Number(a?.timestamp);
+
+  const timeB =
+    Number(b?.timestamp);
+
+  if (
+    Number.isFinite(timeA) &&
+    Number.isFinite(timeB) &&
+    timeA !== timeB
+  ) {
+    return timeA - timeB;
+  }
+
+  return String(
+    a?.tx_hash || ""
+  ).localeCompare(
+    String(
+      b?.tx_hash || ""
+    )
+  );
+}
+
+
 function updateArchitect(
   whisper
 ) {
@@ -2144,10 +2161,10 @@ function updateArchitect(
 
   if (
     !state.latestArchitect ||
-    Number(whisper.block) >
-    Number(
-      state.latestArchitect.block
-    )
+    compareWhispers(
+      whisper,
+      state.latestArchitect
+    ) > 0
   ) {
 
     state.latestArchitect =
@@ -2186,9 +2203,8 @@ async function scanBatch(
     [];
 
   /*
-    Do not advance verifiedThrough
-    until the complete batch request
-    has succeeded.
+    Do not advance verifiedThrough until
+    the entire batch request has succeeded.
   */
 
   for (
@@ -2212,11 +2228,6 @@ async function scanBatch(
       continue;
     }
 
-    /*
-      Only retain messages inside the
-      requested range.
-    */
-
     if (
       whisper.block <
       startHeight ||
@@ -2227,8 +2238,8 @@ async function scanBatch(
     }
 
     /*
-      Discover Genesis Architect before
-      processing future messages.
+      Establish Architect identity as soon
+      as the Genesis record is encountered.
     */
 
     establishArchitectAddress(
@@ -2236,65 +2247,30 @@ async function scanBatch(
     );
 
     /*
-      Persist using tx_hash key.
+      Persist the complete normalized record.
     */
 
-    if (whisper.tx) {
-      await saveWhisper(
-        whisper
-      );
-    }
+    await saveWhisper(
+      whisper
+    );
 
     /*
-      Keep the in-memory archive keyed
-      by block for the existing UI.
+      IMPORTANT:
+
+      Key by tx_hash, never block number.
+
+      This allows:
+
+        block 0 → Architect
+        block 0 → Nevaeh Vault
+
+      to coexist.
     */
 
-    const existing =
-      state.whispers.get(
-        whisper.block
-      );
-
-    if (
-      !existing ||
-      !existing.tx
-    ) {
-
-      state.whispers.set(
-        whisper.block,
-        whisper
-      );
-
-    } else if (
-      existing.tx !== whisper.tx
-    ) {
-
-      /*
-        If a block contains multiple
-        whisper transactions, preserve
-        the newer unique transaction too.
-
-        The Map remains the UI's compact
-        block-oriented index; all actual
-        transactions are persisted in
-        IndexedDB.
-      */
-
-      const syntheticKey =
-        `${whisper.block}:${whisper.tx}`;
-
-      /*
-        Store additional records in a
-        separate in-memory map is not
-        required for current chain data,
-        but persistence remains safe.
-      */
-
-      state.whispers.set(
-        syntheticKey,
-        whisper
-      );
-    }
+    state.whispers.set(
+      whisper.tx_hash,
+      whisper
+    );
 
     batchWhispers.push(
       whisper
@@ -2305,11 +2281,11 @@ async function scanBatch(
     );
 
     /*
-      Highlight genuinely new whispers.
+      Highlight this exact transaction.
     */
 
-    state.newWhisperBlocks.add(
-      Number(whisper.block)
+    state.newWhisperTxs.add(
+      whisper.tx_hash
     );
   }
 
@@ -2350,8 +2326,8 @@ async function startScan() {
   try {
 
     /*
-      Refresh tip before deciding what
-      range needs verification.
+      Refresh the live tip before deciding
+      what range needs verification.
     */
 
     await getInfo();
@@ -2360,12 +2336,6 @@ async function startScan() {
       !state.stopRequested
     ) {
 
-      /*
-        If the live chain has moved,
-        state.chainHeight is updated by
-        the 15-second poller.
-      */
-
       const nextStart =
         state.verifiedThrough + 1;
 
@@ -2373,10 +2343,6 @@ async function startScan() {
         nextStart >
         state.chainHeight
       ) {
-
-        /*
-          We have caught the current tip.
-        */
 
         setCurrentStatus();
 
@@ -2397,17 +2363,6 @@ async function startScan() {
         nextStart,
         nextEnd
       );
-
-      /*
-        Loop immediately.
-
-        If the live poller increased
-        chainHeight during the batch,
-        the next iteration will continue
-        into those new blocks.
-
-        No old verified blocks are rescanned.
-      */
     }
 
   } catch (error) {
@@ -2471,14 +2426,10 @@ async function pollLiveTip() {
     ) {
 
       /*
-        New blocks exist.
+        The running scanner will consume
+        the new range after its current batch.
 
-        If the scanner is already running,
-        it will naturally consume these
-        blocks after its current batch.
-
-        If the scanner is idle/current,
-        start it immediately.
+        If idle, start immediately.
       */
 
       renderAll();
@@ -2501,12 +2452,6 @@ async function pollLiveTip() {
       state.chainHeight
     ) {
 
-      /*
-        Database is behind even if the
-        tip itself did not change during
-        this particular poll.
-      */
-
       await startScan();
 
     } else if (
@@ -2523,14 +2468,6 @@ async function pollLiveTip() {
       "Live tip check failed:",
       error
     );
-
-    /*
-      Do not erase existing archive data
-      or mark it invalid merely because a
-      temporary network poll failed.
-
-      The next 15-second cycle retries.
-    */
 
     if (
       !state.scanning
@@ -2777,25 +2714,13 @@ function renderStats() {
       : "—";
 
   /*
-    Count actual persisted whispers
-    represented in the UI archive.
-
-    Filter synthetic internal keys.
+    Every Map entry is one unique
+    transaction-backed whisper.
   */
-
-  const visibleCount =
-    Array.from(
-      state.whispers.entries()
-    )
-      .filter(
-        ([key]) =>
-          typeof key === "number"
-      )
-      .length;
 
   els.whisperCount.textContent =
     formatNumber(
-      visibleCount
+      state.whispers.size
     );
 
   const remaining =
@@ -2890,6 +2815,7 @@ function whisperMatches(
     whisper.sender,
     whisper.to,
     whisper.tx,
+    whisper.tx_hash,
     String(whisper.block),
     formatTimestamp(
       whisper.timestamp
@@ -2915,25 +2841,16 @@ function renderWhispers() {
       .toLowerCase();
 
   /*
-    Only numeric block keys are normal
-    visible archive entries.
+    Render EVERY whisper.
 
-    Synthetic keys are persistence-safe
-    duplicates and aren't rendered twice.
+    Sort by block descending, while retaining
+    multiple messages from the same block.
   */
 
   const whispers =
     Array.from(
-      state.whispers.entries()
+      state.whispers.values()
     )
-      .filter(
-        ([key]) =>
-          typeof key === "number"
-      )
-      .map(
-        ([, whisper]) =>
-          whisper
-      )
       .filter(
         whisper =>
           whisperMatches(
@@ -2943,8 +2860,10 @@ function renderWhispers() {
       )
       .sort(
         (a, b) =>
-          Number(b.block) -
-          Number(a.block)
+          compareWhispers(
+            b,
+            a
+          )
       );
 
   els.sectionCount.textContent =
@@ -2986,9 +2905,15 @@ function renderWhispers() {
     card.className =
       "whisper";
 
+    /*
+      Highlight individual transaction,
+      not entire block.
+    */
+
     if (
-      state.newWhisperBlocks.has(
-        Number(whisper.block)
+      whisper.tx_hash &&
+      state.newWhisperTxs.has(
+        whisper.tx_hash
       )
     ) {
 
@@ -2996,10 +2921,13 @@ function renderWhispers() {
         "new"
       );
 
+      const txHash =
+        whisper.tx_hash;
+
       setTimeout(
         () => {
-          state.newWhisperBlocks.delete(
-            Number(whisper.block)
+          state.newWhisperTxs.delete(
+            txHash
           );
         },
         2200
@@ -3036,6 +2964,7 @@ function renderWhispers() {
 
     const tx =
       whisper.tx ||
+      whisper.tx_hash ||
       "";
 
     card.innerHTML = `
@@ -3203,18 +3132,8 @@ function renderAll() {
 
   renderWhispers();
 
-  if (
-    state.scanning
-  ) {
-
-    els.countdown.textContent =
-      "Live sync every 15 seconds";
-
-  } else {
-
-    els.countdown.textContent =
-      "Live sync every 15 seconds";
-  }
+  els.countdown.textContent =
+    "Live sync every 15 seconds";
 }
 
 
@@ -3270,7 +3189,7 @@ async function rebuildFromGenesis() {
     state.stopRequested =
       false;
 
-    state.newWhisperBlocks.clear();
+    state.newWhisperTxs.clear();
 
     renderAll();
 
@@ -3321,30 +3240,15 @@ async function init() {
   try {
 
     /*
-      1. Load the existing persistent
-         archive FIRST.
-
-      This means the UI immediately has
-      access to the whispers already stored
-      in the browser.
+      1. Load existing persistent archive.
     */
 
     await loadDatabase();
 
     /*
-      Re-establish Architect identity from
-      the Genesis record.
+      Architect identity has already been
+      reconstructed by loadDatabase().
     */
-
-    for (
-      const whisper of
-      state.whispers.values()
-    ) {
-
-      establishArchitectAddress(
-        whisper
-      );
-    }
 
     renderAll();
 
@@ -3367,13 +3271,8 @@ async function init() {
     renderAll();
 
     /*
-      3. If the database is behind the live
-         chain, begin immediately.
-
-      This is the important difference from
-      the old version.
-
-      We do NOT wait 369 seconds.
+      3. Scan only if the local archive
+         is behind the live chain.
     */
 
     if (
@@ -3394,11 +3293,7 @@ async function init() {
     }
 
     /*
-      4. Begin the permanent 15-second
-         live tip watcher.
-
-      This remains running after the
-      historical scan reaches the tip.
+      4. Permanent 15-second live watcher.
     */
 
     startLivePolling();
@@ -3417,12 +3312,6 @@ async function init() {
     );
 
     renderAll();
-
-    /*
-      Even if startup had a temporary
-      network problem, keep attempting
-      live synchronization.
-    */
 
     startLivePolling();
   }

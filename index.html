@@ -1397,12 +1397,137 @@ async function loadDatabase() {
       "chainHeight"
     );
 
-  /*
-    Read every actual whisper record.
+  const whisperRecords =
+    await dbGetAll(
+      "whispers"
+    );
 
-    This is essential because whispers are
-    keyed by tx_hash, not by "all" or block.
+  state.verifiedThrough =
+    Number.isFinite(
+      Number(verified)
+    )
+      ? Number(verified)
+      : -1;
+
+  state.chainHeight =
+    Number.isFinite(
+      Number(height)
+    )
+      ? Number(height)
+      : -1;
+
+  state.whispers.clear();
+
+  /*
+    Load EVERY whisper.
+
+    Key the in-memory Map by tx_hash.
   */
+  for (
+    const raw of whisperRecords
+  ) {
+
+    const whisper =
+      normalizeWhisper(
+        raw
+      );
+
+    if (
+      !whisper ||
+      !whisper.tx_hash
+    ) {
+      continue;
+    }
+
+    state.whispers.set(
+      whisper.tx_hash,
+      whisper
+    );
+  }
+
+  /*
+    Reconstruct the Architect directly
+    from the Genesis Architect transaction.
+
+    This does NOT depend on the order of
+    IndexedDB records or a prior address pass.
+  */
+
+  architectAddress = null;
+  state.latestArchitect = null;
+
+  for (
+    const whisper of
+    state.whispers.values()
+  ) {
+
+    const sender =
+      String(
+        whisper.sender || ""
+      )
+        .trim()
+        .toUpperCase();
+
+    const memo =
+      String(
+        whisper.memo || ""
+      )
+        .trim();
+
+    if (
+      Number(whisper.block) === 0 &&
+      sender === "GENESIS" &&
+      /^Genesis premine\s*—\s*Architect$/i.test(
+        memo
+      ) &&
+      whisper.to
+    ) {
+
+      architectAddress =
+        String(
+          whisper.to
+        )
+          .trim()
+          .toLowerCase();
+
+      state.latestArchitect =
+        whisper;
+
+      break;
+    }
+  }
+
+  /*
+    Look for a newer genuine Architect message.
+    A user saying "Architect" in their memo
+    does NOT qualify.
+  */
+
+  for (
+    const whisper of
+    state.whispers.values()
+  ) {
+
+    if (
+      isArchitectWhisper(
+        whisper
+      )
+    ) {
+
+      if (
+        !state.latestArchitect ||
+        compareWhispers(
+          whisper,
+          state.latestArchitect
+        ) > 0
+      ) {
+
+        state.latestArchitect =
+          whisper;
+      }
+    }
+  }
+}
 
   const whisperRecords =
     await dbGetAll(

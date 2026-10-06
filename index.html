@@ -8,31 +8,32 @@
 
   <style>
     :root {
-      --bg: #070a0f;
-      --panel: #0d121a;
-      --panel2: #111925;
-      --border: #1e2a39;
-      --text: #e8eef7;
-      --muted: #8d9aad;
-      --accent: #69e3a4;
-      --accent2: #4db8ff;
-      --danger: #ff6b7a;
-      --warning: #f4c95d;
+      --bg: #0b0f14;
+      --panel: #111720;
+      --panel-2: #151d28;
+      --border: #263241;
+      --text: #eef3f8;
+      --muted: #8d9aaa;
+      --accent: #7dd3fc;
+      --accent-2: #38bdf8;
+      --success: #86efac;
+      --warning: #fcd34d;
+      --danger: #fca5a5;
+      --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
     }
 
     * {
       box-sizing: border-box;
     }
 
+    html,
     body {
       margin: 0;
-      min-height: 100vh;
-      background:
-        radial-gradient(circle at top, #111a27 0%, var(--bg) 48%);
+      padding: 0;
+      background: var(--bg);
       color: var(--text);
       font-family:
         Inter,
-        ui-sans-serif,
         system-ui,
         -apple-system,
         BlinkMacSystemFont,
@@ -40,199 +41,223 @@
         sans-serif;
     }
 
+    body {
+      min-height: 100vh;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
     .wrap {
       width: min(1100px, calc(100% - 28px));
       margin: 0 auto;
-      padding: 34px 0 60px;
+      padding: 28px 0 60px;
     }
 
     header {
+      margin-bottom: 22px;
+    }
+
+    .brand {
       display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 20px;
-      margin-bottom: 24px;
+      align-items: center;
+      gap: 12px;
     }
 
-    .brand h1 {
+    .logo {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+      color: white;
+      font-weight: 900;
+      font-size: 18px;
+      box-shadow: 0 8px 22px rgba(14, 165, 233, 0.22);
+    }
+
+    h1 {
       margin: 0;
-      font-size: 32px;
-      letter-spacing: -0.8px;
+      font-size: 25px;
+      line-height: 1.1;
     }
 
-    .brand p {
-      margin: 7px 0 0;
+    .subtitle {
+      margin: 5px 0 0;
       color: var(--muted);
       font-size: 14px;
     }
 
-    .status {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--muted);
-      font-size: 13px;
-      white-space: nowrap;
-    }
-
-    .dot {
-      width: 9px;
-      height: 9px;
-      border-radius: 50%;
-      background: var(--accent);
-      box-shadow: 0 0 12px rgba(105, 227, 164, .7);
-    }
-
-    .dot.offline {
-      background: var(--danger);
-      box-shadow: none;
-    }
-
     .controls {
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 10px;
       margin-bottom: 18px;
     }
 
     button {
       border: 1px solid var(--border);
-      background: var(--panel2);
+      background: var(--panel-2);
       color: var(--text);
-      border-radius: 10px;
-      padding: 11px 15px;
-      font-weight: 600;
+      padding: 10px 15px;
+      border-radius: 9px;
+      font-size: 14px;
+      font-weight: 700;
       cursor: pointer;
-      transition: .15s ease;
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease,
+        transform 0.1s ease;
     }
 
     button:hover:not(:disabled) {
-      border-color: #33465e;
-      transform: translateY(-1px);
+      background: #1b2633;
+      border-color: #3a4b60;
+    }
+
+    button:active:not(:disabled) {
+      transform: translateY(1px);
     }
 
     button.primary {
-      background: var(--accent);
-      color: #06110b;
-      border-color: var(--accent);
+      background: #075985;
+      border-color: #0ea5e9;
     }
 
-    button.stop {
-      background: rgba(255, 107, 122, .08);
-      color: #ff9aa5;
-      border-color: rgba(255, 107, 122, .35);
+    button.primary:hover:not(:disabled) {
+      background: #0369a1;
     }
 
     button.danger {
-      color: #ff9aa5;
-      border-color: rgba(255, 107, 122, .35);
+      border-color: #7f1d1d;
+      color: #fecaca;
+    }
+
+    button.danger:hover:not(:disabled) {
+      background: #2a1417;
     }
 
     button:disabled {
-      opacity: .45;
+      opacity: 0.45;
       cursor: not-allowed;
-      transform: none;
     }
 
-    .search {
-      width: 100%;
-      margin-bottom: 20px;
-    }
-
-    .search input {
-      width: 100%;
-      padding: 14px 16px;
-      border-radius: 11px;
+    .status-panel {
+      background: var(--panel);
       border: 1px solid var(--border);
-      background: #090e15;
-      color: var(--text);
-      outline: none;
+      border-radius: 14px;
+      padding: 17px;
+      margin-bottom: 18px;
+      box-shadow: var(--shadow);
+    }
+
+    .status-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+
+    .status-text {
+      font-weight: 700;
       font-size: 14px;
     }
 
-    .search input:focus {
-      border-color: #35516f;
-    }
-
-    .progress-panel {
-      background: rgba(13, 18, 26, .9);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 16px;
-      margin-bottom: 20px;
-    }
-
-    .progress-top {
-      display: flex;
-      justify-content: space-between;
-      gap: 15px;
-      margin-bottom: 10px;
+    .status-detail {
+      color: var(--muted);
       font-size: 13px;
+      margin-top: 4px;
     }
 
-    .progress-label {
-      color: var(--text);
-      font-weight: 600;
+    .status-pill {
+      flex: 0 0 auto;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      background: #17212c;
+      color: var(--muted);
+      border: 1px solid var(--border);
     }
 
-    .progress-percent {
+    .status-pill.running {
       color: var(--accent);
-      font-weight: 700;
+      border-color: #075985;
+      background: #082f49;
+    }
+
+    .status-pill.current {
+      color: var(--success);
+      border-color: #166534;
+      background: #052e16;
+    }
+
+    .status-pill.error {
+      color: var(--danger);
+      border-color: #7f1d1d;
+      background: #2a0d0d;
     }
 
     .progress-track {
       height: 8px;
+      background: #080c11;
       border-radius: 999px;
-      background: #18212d;
       overflow: hidden;
+      border: 1px solid #1b2531;
     }
 
     .progress-bar {
       height: 100%;
       width: 0%;
-      border-radius: inherit;
-      background: linear-gradient(90deg, var(--accent2), var(--accent));
-      transition: width .25s ease;
-    }
-
-    .progress-detail {
-      margin-top: 9px;
-      color: var(--muted);
-      font-size: 12px;
-      line-height: 1.5;
+      background: linear-gradient(
+        90deg,
+        var(--accent-2),
+        #818cf8
+      );
+      transition: width 0.25s ease;
     }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-      gap: 12px;
-      margin-bottom: 22px;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-bottom: 18px;
     }
 
     .stat {
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 13px;
-      padding: 15px;
+      border-radius: 12px;
+      padding: 13px 14px;
     }
 
     .stat-label {
       color: var(--muted);
-      font-size: 12px;
-      margin-bottom: 7px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      margin-bottom: 5px;
     }
 
     .stat-value {
-      font-size: 21px;
-      font-weight: 750;
-      letter-spacing: -.3px;
+      font-size: 19px;
+      font-weight: 800;
     }
 
     .feed-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 22px 0 12px;
     }
 
     .feed-header h2 {
@@ -240,539 +265,439 @@
       font-size: 18px;
     }
 
-    .feed-count {
-      color: var(--muted);
-      font-size: 12px;
+    .search {
+      width: 260px;
+      max-width: 100%;
+      border: 1px solid var(--border);
+      background: var(--panel);
+      color: var(--text);
+      border-radius: 9px;
+      padding: 9px 11px;
+      outline: none;
+      font-size: 13px;
+    }
+
+    .search:focus {
+      border-color: var(--accent-2);
     }
 
     .feed {
-      display: grid;
-      gap: 12px;
-    }
-
-    .empty {
-      padding: 35px 20px;
-      border: 1px dashed var(--border);
-      border-radius: 13px;
-      color: var(--muted);
-      text-align: center;
-    }
-
-    .card {
-      background: rgba(13, 18, 26, .94);
-      border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 17px;
-    }
-
-    .card-top {
       display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    /*
+      Compact whisper card
+    */
+
+    .whisper {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.16);
+    }
+
+    .whisper:hover {
+      border-color: #344457;
+    }
+
+    .whisper-head {
+      display: flex;
+      align-items: center;
       justify-content: space-between;
-      align-items: flex-start;
-      gap: 15px;
-      margin-bottom: 12px;
+      gap: 12px;
+      margin-bottom: 10px;
     }
 
     .block {
       color: var(--accent);
-      font-size: 13px;
-      font-weight: 750;
+      font-weight: 900;
+      font-size: 14px;
+      white-space: nowrap;
     }
 
     .time {
       color: var(--muted);
       font-size: 12px;
       text-align: right;
+      white-space: nowrap;
     }
 
     .memo {
-      font-size: 16px;
-      line-height: 1.55;
-      white-space: pre-wrap;
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.5;
+      font-weight: 600;
       overflow-wrap: anywhere;
-      margin-bottom: 14px;
+      margin-bottom: 12px;
     }
 
-    .meta {
+    .details {
       display: grid;
-      gap: 5px;
-      color: var(--muted);
+      grid-template-columns: 100px minmax(0, 1fr);
+      row-gap: 7px;
+      column-gap: 10px;
       font-size: 12px;
     }
 
-    .meta strong {
-      color: #c6d1df;
-      font-weight: 600;
+    .detail-label {
+      color: var(--muted);
+      font-weight: 700;
     }
 
-    .hash {
+    .detail-value {
+      min-width: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .amount {
+      color: var(--success);
+      font-weight: 800;
+    }
+
+    .hash-link,
+    .address-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      max-width: 100%;
       font-family:
         ui-monospace,
         SFMono-Regular,
         Menlo,
+        Monaco,
         Consolas,
         monospace;
+      font-size: 11px;
+    }
+
+    .short {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      vertical-align: bottom;
+    }
+
+    .external {
+      font-family: inherit;
+      font-size: 11px;
+      opacity: 0.7;
+      flex: 0 0 auto;
+    }
+
+    .empty {
+      background: var(--panel);
+      border: 1px dashed var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    .footer {
+      margin-top: 28px;
+      color: #687586;
+      font-size: 11px;
+      text-align: center;
+    }
+
+    .error-box {
+      margin-top: 10px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: #250d0d;
+      border: 1px solid #6f1d1d;
+      color: #fecaca;
+      font-size: 12px;
       overflow-wrap: anywhere;
     }
 
-    .notice {
-      display: none;
-      margin-bottom: 18px;
-      padding: 12px 14px;
-      border-radius: 11px;
-      border: 1px solid rgba(244, 201, 93, .3);
-      background: rgba(244, 201, 93, .06);
-      color: #e9d38b;
-      font-size: 13px;
-      line-height: 1.5;
-    }
-
-    .notice.show {
-      display: block;
-    }
-
     @media (max-width: 760px) {
-      header {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .feed-header {
+        align-items: stretch;
         flex-direction: column;
       }
 
-      .status {
-        white-space: normal;
-      }
-
-      .stats {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+      .search {
+        width: 100%;
       }
     }
 
-    @media (max-width: 460px) {
+    @media (max-width: 560px) {
       .wrap {
         width: min(100% - 18px, 1100px);
-        padding-top: 22px;
+        padding-top: 18px;
       }
 
-      .brand h1 {
-        font-size: 27px;
+      h1 {
+        font-size: 21px;
       }
 
-      .stats {
-        grid-template-columns: 1fr 1fr;
+      .whisper {
+        padding: 12px;
+      }
+
+      .whisper-head {
+        align-items: flex-start;
+      }
+
+      .time {
+        white-space: normal;
+      }
+
+      .details {
+        grid-template-columns: 72px minmax(0, 1fr);
+      }
+
+      .controls button {
+        flex: 1 1 auto;
       }
     }
   </style>
 </head>
 
 <body>
+  <main class="wrap">
 
-<div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">NW</div>
 
-  <header>
-    <div class="brand">
-      <h1>NevWhisper</h1>
-      <p>NEV369 Memo Chat · public on-chain whispers</p>
-    </div>
+        <div>
+          <h1>NevWhisper</h1>
+          <div class="subtitle">
+            NEV369 Memo Chat — public on-chain whispers
+          </div>
+        </div>
+      </div>
+    </header>
 
-    <div class="status">
-      <span id="statusDot" class="dot"></span>
-      <span id="statusText">Ready</span>
-    </div>
-  </header>
-
-  <div id="notice" class="notice"></div>
-
-  <div class="controls">
-
-    <button
-      id="startBtn"
-      class="primary"
-    >
-      Start Scan
-    </button>
-
-    <button
-      id="stopBtn"
-      class="stop"
-      disabled
-    >
-      Stop Scan
-    </button>
-
-    <button
-      id="rebuildBtn"
-      class="danger"
-    >
-      Rebuild From Genesis
-    </button>
-
-  </div>
-
-  <div class="search">
-    <input
-      id="searchInput"
-      type="search"
-      placeholder="Search whispers, transaction hashes, addresses, or block numbers…"
-      autocomplete="off"
-    >
-  </div>
-
-  <div class="progress-panel">
-
-    <div class="progress-top">
-
-      <div
-        id="progressLabel"
-        class="progress-label"
+    <section class="controls">
+      <button
+        id="startBtn"
+        class="primary"
+        onclick="startScan()"
       >
-        Ready to scan
+        Start Scan
+      </button>
+
+      <button
+        id="stopBtn"
+        class="danger"
+        onclick="stopScan()"
+        disabled
+      >
+        Stop Scan
+      </button>
+
+      <button
+        id="rebuildBtn"
+        onclick="rebuildFromGenesis()"
+      >
+        Rebuild From Genesis
+      </button>
+    </section>
+
+    <section class="status-panel">
+
+      <div class="status-top">
+
+        <div>
+          <div
+            id="statusText"
+            class="status-text"
+          >
+            Ready
+          </div>
+
+          <div
+            id="statusDetail"
+            class="status-detail"
+          >
+            Press Start Scan to verify the NEV369 chain from Genesis.
+          </div>
+        </div>
+
+        <div
+          id="statusPill"
+          class="status-pill"
+        >
+          IDLE
+        </div>
+
+      </div>
+
+      <div class="progress-track">
+        <div
+          id="progressBar"
+          class="progress-bar"
+        ></div>
       </div>
 
       <div
-        id="progressPercent"
-        class="progress-percent"
-      >
-        0%
-      </div>
-
-    </div>
-
-    <div class="progress-track">
-      <div
-        id="progressBar"
-        class="progress-bar"
+        id="errorBox"
+        class="error-box"
+        style="display:none"
       ></div>
-    </div>
 
-    <div
-      id="progressDetail"
-      class="progress-detail"
+    </section>
+
+    <section class="stats">
+
+      <div class="stat">
+        <div class="stat-label">
+          Chain Height
+        </div>
+
+        <div
+          id="chainHeight"
+          class="stat-value"
+        >
+          —
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">
+          Verified Through
+        </div>
+
+        <div
+          id="verifiedThrough"
+          class="stat-value"
+        >
+          —
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">
+          Whispers
+        </div>
+
+        <div
+          id="whisperCount"
+          class="stat-value"
+        >
+          0
+        </div>
+      </div>
+
+      <div class="stat">
+        <div class="stat-label">
+          Blocks Remaining
+        </div>
+
+        <div
+          id="blocksRemaining"
+          class="stat-value"
+        >
+          —
+        </div>
+      </div>
+
+    </section>
+
+    <section class="feed-header">
+
+      <h2>
+        Whispers
+      </h2>
+
+      <input
+        id="searchInput"
+        class="search"
+        type="search"
+        placeholder="Search whispers..."
+        autocomplete="off"
+      >
+
+    </section>
+
+    <section
+      id="feed"
+      class="feed"
     >
-      Click Start Scan to begin at Genesis.
-    </div>
-
-  </div>
-
-  <div class="stats">
-
-    <div class="stat">
-      <div class="stat-label">Chain height</div>
-      <div
-        id="chainHeight"
-        class="stat-value"
-      >
-        —
+      <div class="empty">
+        No whispers loaded yet.
       </div>
+    </section>
+
+    <div class="footer">
+      NEV369 · Genesis-to-tip verification · Public memo explorer
     </div>
 
-    <div class="stat">
-      <div class="stat-label">Verified through</div>
-      <div
-        id="verifiedThrough"
-        class="stat-value"
-      >
-        —
-      </div>
-    </div>
+  </main>
 
-    <div class="stat">
-      <div class="stat-label">Whispers</div>
-      <div
-        id="whisperCount"
-        class="stat-value"
-      >
-        0
-      </div>
-    </div>
+  <script>
+    /*
+      ============================================================
+      NEVWHISPER
+      Genesis → current chain scanner
+      Compact public whisper display
+      ============================================================
+    */
 
-    <div class="stat">
-      <div class="stat-label">Blocks remaining</div>
-      <div
-        id="blocksRemaining"
-        class="stat-value"
-      >
-        —
-      </div>
-    </div>
+    const NODE =
+      "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 
-  </div>
+    const DB_NAME =
+      "nevwhisper-genesis-v1";
 
-  <div class="feed-header">
+    const DB_VERSION = 1;
 
-    <h2>Whispers</h2>
+    const BATCH_SIZE = 10;
 
-    <div
-      id="feedCount"
-      class="feed-count"
-    >
-      0 whispers
-    </div>
+    const TIP_CHECK_INTERVAL = 100;
 
-  </div>
+    const MAX_RETRIES = 4;
 
-  <div
-    id="feed"
-    class="feed"
-  >
-    <div class="empty">
-      No whispers loaded yet.
-    </div>
-  </div>
+    const RETRY_DELAY = 1500;
 
-</div>
+    const AUTO_REFRESH_MS = 369000;
 
 
-<script>
-"use strict";
+    /*
+      ============================================================
+      STATE
+      ============================================================
+    */
 
+    const state = {
 
-/*
-==============================================================
- NEVWHISPER
- NEV369 MEMO CHAT
-==============================================================
+      verifiedThrough: -1,
 
- ARCHITECTURE
+      chainHeight: -1,
 
- The scanner maintains ONE continuous frontier:
+      whispers: new Map(),
 
-       Genesis #0
-           ↓
-           ↓
-       #1
-           ↓
-          ...
-           ↓
-       current tip
+      scanning: false,
 
- It NEVER maintains a giant "repair queue".
+      stopRequested: false,
 
- Every successfully fetched block advances the frontier.
+      blocksSinceTipCheck: 0
 
- Every ~100 blocks we check the live chain tip.
+    };
 
- If the chain has grown:
 
-       old target #5773
-       new target #5778
+    let db = null;
 
- the scanner simply continues:
 
-       #5774
-       #5775
-       #5776
-       #5777
-       #5778
+    /*
+      ============================================================
+      INDEXED DB
+      ============================================================
+    */
 
- Already verified blocks are NEVER rescanned.
+    function openDatabase() {
 
- STORAGE
-
- IndexedDB stores:
-   - scanner frontier
-   - whispers by transaction hash
-
- SYSTEM MEMOS
-
- NETWORK_REWARD and
- "Block XXXX reward"
- are excluded from the public feed.
-
-==============================================================
-*/
-
-
-/* ============================================================
-   CONFIGURATION
-   ============================================================ */
-
-const NODE =
-  "https://nevwhisper-proxy.mattcodeai91.workers.dev";
-
-const DB_NAME =
-  "nevwhisper-genesis-v1";
-
-const DB_VERSION =
-  1;
-
-/*
-  The Worker accepts batches of ten blocks.
-*/
-const BATCH_SIZE =
-  10;
-
-/*
-  Check the live blockchain tip every 100 verified blocks.
-*/
-const TIP_CHECK_INTERVAL =
-  100;
-
-/*
-  Transient Worker/upstream failures are retried.
-*/
-const MAX_RETRIES =
-  4;
-
-const RETRY_DELAY =
-  1500;
-
-/*
-  After a completed scan, check again periodically.
-*/
-const AUTO_REFRESH_MS =
-  369000;
-
-
-/* ============================================================
-   STATE
-   ============================================================ */
-
-const state = {
-
-  /*
-    Highest block successfully verified.
-
-    -1 means Genesis has not yet been verified.
-  */
-  verifiedThrough: -1,
-
-  /*
-    Current live blockchain height.
-  */
-  chainHeight: -1,
-
-  /*
-    tx_hash -> whisper
-  */
-  whispers: new Map(),
-
-  /*
-    Prevent overlapping scans.
-  */
-  scanning: false,
-
-  /*
-    Stop request.
-  */
-  stopRequested: false,
-
-  /*
-    Number of blocks processed since last tip check.
-  */
-  blocksSinceTipCheck: 0
-};
-
-
-/* ============================================================
-   DOM
-   ============================================================ */
-
-const els = {
-
-  statusDot:
-    document.getElementById(
-      "statusDot"
-    ),
-
-  statusText:
-    document.getElementById(
-      "statusText"
-    ),
-
-  notice:
-    document.getElementById(
-      "notice"
-    ),
-
-  startBtn:
-    document.getElementById(
-      "startBtn"
-    ),
-
-  stopBtn:
-    document.getElementById(
-      "stopBtn"
-    ),
-
-  rebuildBtn:
-    document.getElementById(
-      "rebuildBtn"
-    ),
-
-  searchInput:
-    document.getElementById(
-      "searchInput"
-    ),
-
-  progressLabel:
-    document.getElementById(
-      "progressLabel"
-    ),
-
-  progressPercent:
-    document.getElementById(
-      "progressPercent"
-    ),
-
-  progressBar:
-    document.getElementById(
-      "progressBar"
-    ),
-
-  progressDetail:
-    document.getElementById(
-      "progressDetail"
-    ),
-
-  chainHeight:
-    document.getElementById(
-      "chainHeight"
-    ),
-
-  verifiedThrough:
-    document.getElementById(
-      "verifiedThrough"
-    ),
-
-  whisperCount:
-    document.getElementById(
-      "whisperCount"
-    ),
-
-  blocksRemaining:
-    document.getElementById(
-      "blocksRemaining"
-    ),
-
-  feedCount:
-    document.getElementById(
-      "feedCount"
-    ),
-
-  feed:
-    document.getElementById(
-      "feed"
-    )
-};
-
-
-/* ============================================================
-   INDEXEDDB
-   ============================================================ */
-
-let dbPromise = null;
-
-
-function openDatabase() {
-
-  if (dbPromise) {
-    return dbPromise;
-  }
-
-  dbPromise =
-    new Promise(
-      (
-        resolve,
-        reject
-      ) => {
+      return new Promise((resolve, reject) => {
 
         const request =
           indexedDB.open(
@@ -780,1965 +705,1653 @@ function openDatabase() {
             DB_VERSION
           );
 
-        request.onupgradeneeded =
-          event => {
+        request.onupgradeneeded = event => {
 
-            const db =
-              event.target.result;
+          const database =
+            event.target.result;
 
-            if (
-              !db.objectStoreNames.contains(
-                "meta"
-              )
-            ) {
-
-              db.createObjectStore(
-                "meta"
-              );
-            }
-
-            if (
-              !db.objectStoreNames.contains(
-                "whispers"
-              )
-            ) {
-
-              db.createObjectStore(
-                "whispers",
-                {
-                  keyPath: "tx_hash"
-                }
-              );
-            }
-          };
-
-        request.onsuccess =
-          () => {
-
-            const db =
-              request.result;
-
-            db.onversionchange =
-              () => db.close();
-
-            resolve(db);
-          };
-
-        request.onerror =
-          () => {
-
-            reject(
-              request.error
-            );
-          };
-      }
-    );
-
-  return dbPromise;
-}
-
-
-async function loadDatabase() {
-
-  const db =
-    await openDatabase();
-
-  await new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-
-      const tx =
-        db.transaction(
-          [
-            "meta",
-            "whispers"
-          ],
-          "readonly"
-        );
-
-      const meta =
-        tx.objectStore(
-          "meta"
-        );
-
-      const whispers =
-        tx.objectStore(
-          "whispers"
-        );
-
-      const frontierRequest =
-        meta.get(
-          "verifiedThrough"
-        );
-
-      const whisperRequest =
-        whispers.getAll();
-
-      frontierRequest.onsuccess =
-        () => {
-
-          const value =
-            Number(
-              frontierRequest.result
-            );
-
-          state.verifiedThrough =
-            Number.isFinite(value)
-              ? value
-              : -1;
-        };
-
-      whisperRequest.onsuccess =
-        () => {
-
-          state.whispers.clear();
-
-          for (
-            const whisper
-            of whisperRequest.result
+          if (
+            !database.objectStoreNames.contains("meta")
           ) {
 
-            if (
-              whisper &&
-              whisper.tx_hash
-            ) {
-
-              state.whispers.set(
-                String(
-                  whisper.tx_hash
-                ),
-                whisper
-              );
-            }
+            database.createObjectStore(
+              "meta"
+            );
           }
+
+          if (
+            !database.objectStoreNames.contains("whispers")
+          ) {
+
+            database.createObjectStore(
+              "whispers",
+              {
+                keyPath: "tx_hash"
+              }
+            );
+
+          }
+
         };
 
-      tx.oncomplete =
-        resolve;
+        request.onsuccess = event => {
 
-      tx.onerror =
-        () => {
+          db = event.target.result;
+
+          resolve(db);
+
+        };
+
+        request.onerror = () => {
 
           reject(
-            tx.error
+            request.error ||
+            new Error(
+              "Could not open IndexedDB"
+            )
           );
+
         };
 
-      tx.onabort =
-        () => {
+      });
 
-          reject(
-            tx.error
-          );
-        };
     }
-  );
-}
 
 
-async function saveFrontier() {
+    function dbGet(storeName, key) {
 
-  const db =
-    await openDatabase();
+      return new Promise((resolve, reject) => {
 
-  await new Promise(
-    (
-      resolve,
-      reject
-    ) => {
+        const tx =
+          db.transaction(
+            storeName,
+            "readonly"
+          );
 
-      const tx =
-        db.transaction(
-          "meta",
-          "readwrite"
-        );
+        const store =
+          tx.objectStore(storeName);
 
-      tx.objectStore(
-        "meta"
-      ).put(
+        const request =
+          store.get(key);
+
+        request.onsuccess = () =>
+          resolve(request.result);
+
+        request.onerror = () =>
+          reject(request.error);
+
+      });
+
+    }
+
+
+    function dbPut(storeName, value, key) {
+
+      return new Promise((resolve, reject) => {
+
+        const tx =
+          db.transaction(
+            storeName,
+            "readwrite"
+          );
+
+        const store =
+          tx.objectStore(storeName);
+
+        const request =
+          key === undefined
+            ? store.put(value)
+            : store.put(value, key);
+
+        request.onsuccess = () =>
+          resolve();
+
+        request.onerror = () =>
+          reject(request.error);
+
+      });
+
+    }
+
+
+    function dbClear(storeName) {
+
+      return new Promise((resolve, reject) => {
+
+        const tx =
+          db.transaction(
+            storeName,
+            "readwrite"
+          );
+
+        const request =
+          tx.objectStore(storeName).clear();
+
+        request.onsuccess = () =>
+          resolve();
+
+        request.onerror = () =>
+          reject(request.error);
+
+      });
+
+    }
+
+
+    async function saveState() {
+
+      await dbPut(
+        "meta",
         state.verifiedThrough,
         "verifiedThrough"
       );
 
-      tx.oncomplete =
-        resolve;
+      await dbPut(
+        "meta",
+        state.chainHeight,
+        "chainHeight"
+      );
 
-      tx.onerror =
-        () => {
-
-          reject(
-            tx.error
-          );
-        };
     }
-  );
-}
 
 
-async function saveWhispers(
-  whispers
-) {
+    async function loadState() {
 
-  if (
-    !whispers.length
-  ) {
-    return;
-  }
-
-  const db =
-    await openDatabase();
-
-  await new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-
-      const tx =
-        db.transaction(
-          "whispers",
-          "readwrite"
+      const verified =
+        await dbGet(
+          "meta",
+          "verifiedThrough"
         );
 
-      const store =
-        tx.objectStore(
-          "whispers"
+      const chainHeight =
+        await dbGet(
+          "meta",
+          "chainHeight"
         );
 
-      for (
-        const whisper
-        of whispers
+      if (
+        typeof verified === "number"
       ) {
 
-        if (
-          whisper &&
-          whisper.tx_hash
-        ) {
+        state.verifiedThrough =
+          verified;
 
-          store.put(
-            whisper
-          );
-        }
       }
 
-      tx.oncomplete =
-        resolve;
+      if (
+        typeof chainHeight === "number"
+      ) {
 
-      tx.onerror =
-        () => {
+        state.chainHeight =
+          chainHeight;
 
-          reject(
-            tx.error
-          );
-        };
+      }
+
     }
-  );
-}
 
 
-async function clearDatabase() {
+    async function loadWhispers() {
 
-  const db =
-    await openDatabase();
+      return new Promise((resolve, reject) => {
 
-  await new Promise(
-    (
-      resolve,
-      reject
-    ) => {
-
-      const tx =
-        db.transaction(
-          [
-            "meta",
-            "whispers"
-          ],
-          "readwrite"
-        );
-
-      tx.objectStore(
-        "meta"
-      ).clear();
-
-      tx.objectStore(
-        "whispers"
-      ).clear();
-
-      tx.oncomplete =
-        resolve;
-
-      tx.onerror =
-        () => {
-
-          reject(
-            tx.error
+        const tx =
+          db.transaction(
+            "whispers",
+            "readonly"
           );
+
+        const store =
+          tx.objectStore("whispers");
+
+        const request =
+          store.openCursor();
+
+        request.onsuccess = event => {
+
+          const cursor =
+            event.target.result;
+
+          if (!cursor) {
+
+            resolve();
+
+            return;
+
+          }
+
+          const item =
+            cursor.value;
+
+          if (
+            item &&
+            item.tx_hash
+          ) {
+
+            state.whispers.set(
+              item.tx_hash,
+              item
+            );
+
+          }
+
+          cursor.continue();
+
         };
+
+        request.onerror = () =>
+          reject(request.error);
+
+      });
+
     }
-  );
-
-  state.verifiedThrough =
-    -1;
-
-  state.whispers.clear();
-}
 
 
-/* ============================================================
-   NETWORK
-   ============================================================ */
+    /*
+      ============================================================
+      NETWORK
+      ============================================================
+    */
 
-async function sleep(
-  milliseconds
-) {
-
-  return new Promise(
-    resolve =>
-      setTimeout(
-        resolve,
-        milliseconds
-      )
-  );
-}
-
-
-async function getJson(
-  path
-) {
-
-  let lastError = null;
-
-  for (
-    let attempt = 1;
-    attempt <= MAX_RETRIES;
-    attempt++
-  ) {
-
-    if (
-      state.stopRequested
+    async function getJson(
+      path,
+      attempt = 0
     ) {
 
-      throw new Error(
-        "SCAN_STOPPED"
-      );
-    }
-
-    try {
-
-      const response =
-        await fetch(
-          NODE + path,
-          {
-            method: "GET",
-            cache: "no-store"
-          }
-        );
-
-      const text =
-        await response.text();
-
-      let data;
+      const url =
+        NODE.replace(/\/$/, "") +
+        path;
 
       try {
 
-        data =
-          JSON.parse(
-            text
+        const response =
+          await fetch(
+            url,
+            {
+              method: "GET",
+              headers: {
+                "Accept":
+                  "application/json"
+              },
+              cache: "no-store"
+            }
           );
 
-      } catch {
+        const text =
+          await response.text();
 
-        throw new Error(
-          `Invalid JSON returned from ${path}`
-        );
-      }
+        let data;
 
-      if (
-        !response.ok
-      ) {
+        try {
 
-        throw new Error(
-          `${response.status}: ${
-            data?.error ||
-            response.statusText
-          }`
-        );
-      }
+          data =
+            JSON.parse(text);
 
-      return data;
+        } catch {
 
-    } catch (
-      error
-    ) {
+          throw new Error(
+            "Invalid JSON response"
+          );
 
-      lastError =
-        error;
-
-      if (
-        attempt <
-        MAX_RETRIES
-      ) {
-
-        updateProgress(
-          "Retrying network request",
-          currentPercent(),
-          `Attempt ${attempt + 1} of ${MAX_RETRIES}…`
-        );
-
-        await sleep(
-          RETRY_DELAY *
-          attempt
-        );
-      }
-    }
-  }
-
-  throw (
-    lastError ||
-    new Error(
-      "Network request failed"
-    )
-  );
-}
-
-
-async function getInfo() {
-
-  return await getJson(
-    "/info"
-  );
-}
-
-
-/* ============================================================
-   TIMESTAMP HANDLING
-   ============================================================ */
-
-function formatTimestamp(
-  value
-) {
-
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-
-    return "Unknown time";
-  }
-
-  const n =
-    Number(value);
-
-  if (
-    !Number.isFinite(n)
-  ) {
-
-    const d =
-      new Date(
-        value
-      );
-
-    if (
-      Number.isNaN(
-        d.getTime()
-      )
-    ) {
-
-      return "Unknown time";
-    }
-
-    return d.toLocaleString();
-  }
-
-  let milliseconds;
-
-  /*
-    NEV369 currently appears to expose
-    Unix timestamps in seconds.
-
-    This also handles:
-      milliseconds
-      microseconds
-      nanoseconds
-  */
-
-  if (
-    n < 1e12
-  ) {
-
-    milliseconds =
-      n * 1000;
-
-  } else if (
-    n < 1e15
-  ) {
-
-    milliseconds =
-      n;
-
-  } else if (
-    n < 1e18
-  ) {
-
-    milliseconds =
-      n / 1000;
-
-  } else {
-
-    milliseconds =
-      n / 1000000;
-  }
-
-  const date =
-    new Date(
-      milliseconds
-    );
-
-  if (
-    Number.isNaN(
-      date.getTime()
-    )
-  ) {
-
-    return "Unknown time";
-  }
-
-  return date.toLocaleString();
-}
-
-
-/* ============================================================
-   MEMO FILTERING
-   ============================================================ */
-
-function isSystemMemo(
-  tx
-) {
-
-  const sender =
-    String(
-      tx?.sender ??
-      ""
-    )
-      .trim()
-      .toUpperCase();
-
-  const memo =
-    String(
-      tx?.payload_memo ??
-      tx?.memo ??
-      ""
-    )
-      .trim();
-
-  /*
-    Network reward transactions are not public whispers.
-  */
-  if (
-    sender ===
-    "NETWORK_REWARD"
-  ) {
-
-    return true;
-  }
-
-  /*
-    Also filter the known reward memo format.
-  */
-  if (
-    /^Block\s+\d+\s+reward$/i.test(
-      memo
-    )
-  ) {
-
-    return true;
-  }
-
-  return false;
-}
-
-
-/* ============================================================
-   MEMO EXTRACTION
-   ============================================================ */
-
-function extractWhispers(
-  result
-) {
-
-  const output = [];
-
-  const whispers =
-    Array.isArray(
-      result?.whispers
-    )
-      ? result.whispers
-      : [];
-
-  for (
-    const item
-    of whispers
-  ) {
-
-    if (
-      !item
-    ) {
-      continue;
-    }
-
-    const memo =
-      String(
-        item.memo ??
-        item.payload_memo ??
-        ""
-      ).trim();
-
-    const hash =
-      String(
-        item.tx_hash ??
-        item.hash ??
-        ""
-      ).trim();
-
-    if (
-      !memo ||
-      !hash
-    ) {
-      continue;
-    }
-
-    /*
-      Defensive reward filtering.
-    */
-    const sender =
-      String(
-        item.sender ??
-        ""
-      )
-        .trim()
-        .toUpperCase();
-
-    if (
-      sender ===
-      "NETWORK_REWARD"
-    ) {
-      continue;
-    }
-
-    if (
-      /^Block\s+\d+\s+reward$/i.test(
-        memo
-      )
-    ) {
-      continue;
-    }
-
-    /*
-      IMPORTANT:
-      The Worker already supplies the actual blockchain block.
-      We preserve it exactly.
-    */
-    const block =
-      Number(
-        item.block
-      );
-
-    output.push({
-
-      block:
-        Number.isFinite(block)
-          ? block
-          : null,
-
-      timestamp:
-        item.timestamp ??
-        null,
-
-      tx_hash:
-        hash,
-
-      sender:
-        item.sender ??
-        "",
-
-      recipient:
-        item.recipient ??
-        "",
-
-      amount:
-        item.amount ??
-        0,
-
-      fee:
-        item.fee ??
-        0,
-
-      memo:
-        memo
-    });
-  }
-
-  return output;
-}
-
-
-/* ============================================================
-   MERGE / DEDUPLICATION
-   ============================================================ */
-
-function mergeWhispers(
-  whispers
-) {
-
-  const changed = [];
-
-  for (
-    const whisper
-    of whispers
-  ) {
-
-    if (
-      !whisper ||
-      !whisper.tx_hash
-    ) {
-      continue;
-    }
-
-    const hash =
-      String(
-        whisper.tx_hash
-      );
-
-    const existing =
-      state.whispers.get(
-        hash
-      );
-
-    if (!existing) {
-
-      state.whispers.set(
-        hash,
-        {
-          ...whisper,
-          tx_hash: hash
         }
-      );
 
-      changed.push(
-        state.whispers.get(
-          hash
-        )
-      );
+        if (!response.ok) {
 
-      continue;
+          throw new Error(
+            `${response.status}: ${
+              data.error ||
+              data.details ||
+              response.statusText
+            }`
+          );
+
+        }
+
+        return data;
+
+      } catch (error) {
+
+        if (
+          attempt <
+          MAX_RETRIES - 1
+        ) {
+
+          const delay =
+            RETRY_DELAY *
+            (attempt + 1);
+
+          setStatus(
+            "Retrying request...",
+            `${error.message} · retry ${
+              attempt + 2
+            }/${MAX_RETRIES}`,
+            "error"
+          );
+
+          await sleep(delay);
+
+          return getJson(
+            path,
+            attempt + 1
+          );
+
+        }
+
+        throw error;
+
+      }
+
     }
 
-    /*
-      Keep the authoritative block and other
-      information if a duplicate is encountered.
-    */
 
-    const merged = {
-      ...existing,
-      ...whisper,
-      tx_hash: hash
-    };
+    async function getInfo() {
 
-    state.whispers.set(
-      hash,
-      merged
-    );
+      return await getJson(
+        "/info"
+      );
+
+    }
+
 
     /*
-      Saving duplicates is harmless because
-      IndexedDB uses tx_hash as the primary key.
+      ============================================================
+      UTILITIES
+      ============================================================
     */
-    changed.push(
-      merged
-    );
-  }
 
-  return changed;
-}
+    function sleep(ms) {
 
+      return new Promise(
+        resolve =>
+          setTimeout(
+            resolve,
+            ms
+          )
+      );
 
-/* ============================================================
-   BATCH SCANNING
-   ============================================================ */
+    }
 
-/*
-  The blockchain is scanned FORWARD.
 
-  Our frontend range is:
-
-      start = 0
-      end   = 9
-
-  But the Worker API expects:
-
-      from = 9
-      to   = 0
-
-  So we convert the range here.
-*/
-
-async function scanBatch(
-  startHeight,
-  endHeight
-) {
-
-  if (
-    state.stopRequested
-  ) {
-
-    throw new Error(
-      "SCAN_STOPPED"
-    );
-  }
-
-  const from =
-    Number(
-      endHeight
-    );
-
-  const to =
-    Number(
-      startHeight
-    );
-
-  const result =
-    await getJson(
-      `/whispers?from=${from}&to=${to}`
-    );
-
-  if (
-    state.stopRequested
-  ) {
-
-    throw new Error(
-      "SCAN_STOPPED"
-    );
-  }
-
-  /*
-    Worker errors identify individual blocks
-    that were NOT successfully fetched.
-
-    A batch containing ANY failed block cannot
-    advance our continuous frontier.
-  */
-  const errors =
-    Array.isArray(
-      result?.errors
-    )
-      ? result.errors
-      : [];
-
-  if (
-    errors.length > 0
-  ) {
-
-    const failedHeights =
-      errors
-        .map(
-          error =>
-            Number(
-              error.height
-            )
-        )
-        .filter(
-          Number.isFinite
-        );
-
-    throw new Error(
-      `Batch ${startHeight}-${endHeight} had failed block(s): ${
-        failedHeights.join(", ")
-      }`
-    );
-  }
-
-  const whispers =
-    extractWhispers(
-      result
-    );
-
-  const changed =
-    mergeWhispers(
-      whispers
-    );
-
-  /*
-    Only now is the entire batch considered
-    verified.
-  */
-  state.verifiedThrough =
-    endHeight;
-
-  state.blocksSinceTipCheck +=
-    (
-      endHeight -
-      startHeight +
-      1
-    );
-
-  /*
-    Persist the actual frontier.
-  */
-  await saveFrontier();
-
-  if (
-    changed.length
-  ) {
-
-    await saveWhispers(
-      changed
-    );
-  }
-
-  return {
-    start:
-      startHeight,
-
-    end:
-      endHeight,
-
-    whispers:
-      changed.length
-  };
-}
-
-
-/* ============================================================
-   LIVE TIP CHECK
-   ============================================================ */
-
-async function refreshChainTip() {
-
-  const info =
-    await getInfo();
-
-  const height =
-    Number(
-      info.height ??
-      info.chain_height
-    );
-
-  if (
-    !Number.isFinite(
-      height
-    )
-  ) {
-
-    throw new Error(
-      "NEV369 node returned an invalid chain height."
-    );
-  }
-
-  state.chainHeight =
-    Math.floor(
-      height
-    );
-
-  state.blocksSinceTipCheck =
-    0;
-
-  updateStats();
-
-  return state.chainHeight;
-}
-
-
-/* ============================================================
-   PROGRESS
-   ============================================================ */
-
-function currentPercent() {
-
-  if (
-    state.chainHeight < 0
-  ) {
-    return 0;
-  }
-
-  if (
-    state.verifiedThrough < 0
-  ) {
-    return 0;
-  }
-
-  if (
-    state.verifiedThrough >=
-    state.chainHeight
-  ) {
-    return 100;
-  }
-
-  return (
-    (
-      state.verifiedThrough + 1
-    ) /
-    (
-      state.chainHeight + 1
-    )
-  ) * 100;
-}
-
-
-function updateProgress(
-  label,
-  percent,
-  detail
-) {
-
-  const safe =
-    Math.max(
-      0,
-      Math.min(
-        100,
-        Number(percent) || 0
-      )
-    );
-
-  els.progressLabel.textContent =
-    label;
-
-  els.progressPercent.textContent =
-    `${Math.round(safe)}%`;
-
-  els.progressBar.style.width =
-    `${safe}%`;
-
-  els.progressDetail.textContent =
-    detail;
-}
-
-
-/* ============================================================
-   UI
-   ============================================================ */
-
-function setStatus(
-  online,
-  message
-) {
-
-  els.statusText.textContent =
-    message;
-
-  if (
-    online
-  ) {
-
-    els.statusDot.classList.remove(
-      "offline"
-    );
-
-  } else {
-
-    els.statusDot.classList.add(
-      "offline"
-    );
-  }
-}
-
-
-function updateStats() {
-
-  els.chainHeight.textContent =
-    state.chainHeight >= 0
-      ? `#${state.chainHeight}`
-      : "—";
-
-  els.verifiedThrough.textContent =
-    state.verifiedThrough >= 0
-      ? `#${state.verifiedThrough}`
-      : "—";
-
-  els.whisperCount.textContent =
-    state.whispers.size.toLocaleString();
-
-  const remaining =
-    state.chainHeight >= 0
-      ? Math.max(
-          0,
-          state.chainHeight -
-          state.verifiedThrough
-        )
-      : 0;
-
-  els.blocksRemaining.textContent =
-    state.chainHeight >= 0
-      ? remaining.toLocaleString()
-      : "—";
-
-  renderFeed();
-}
-
-
-function renderFeed() {
-
-  const query =
-    els.searchInput.value
-      .trim()
-      .toLowerCase();
-
-  let items =
-    Array.from(
-      state.whispers.values()
-    );
-
-  items.sort(
-    (
-      a,
-      b
-    ) => {
-
-      const blockDifference =
-        Number(
-          b.block || 0
-        ) -
-        Number(
-          a.block || 0
-        );
-
-      if (
-        blockDifference !== 0
-      ) {
-
-        return blockDifference;
-      }
+    function escapeHtml(value) {
 
       return String(
-        b.tx_hash || ""
-      ).localeCompare(
+        value ?? ""
+      )
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+
+    }
+
+
+    function shortHash(
+      value,
+      start = 8,
+      end = 8
+    ) {
+
+      const text =
+        String(value || "");
+
+      if (
+        text.length <=
+        start + end + 3
+      ) {
+
+        return text;
+
+      }
+
+      return (
+        text.slice(0, start) +
+        "..." +
+        text.slice(-end)
+      );
+
+    }
+
+
+    function formatTimestamp(value) {
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+
+        return "Unknown time";
+
+      }
+
+      const n =
+        Number(value);
+
+      if (
+        !Number.isFinite(n)
+      ) {
+
+        const d =
+          new Date(value);
+
+        return Number.isNaN(
+          d.getTime()
+        )
+          ? "Unknown time"
+          : d.toLocaleString();
+
+      }
+
+      let milliseconds;
+
+      if (n < 1e12) {
+
+        milliseconds =
+          n * 1000;
+
+      } else if (n < 1e15) {
+
+        milliseconds =
+          n;
+
+      } else if (n < 1e18) {
+
+        milliseconds =
+          n / 1000;
+
+      } else {
+
+        milliseconds =
+          n / 1000000;
+
+      }
+
+      const d =
+        new Date(milliseconds);
+
+      return Number.isNaN(
+        d.getTime()
+      )
+        ? "Unknown time"
+        : d.toLocaleString();
+
+    }
+
+
+    function formatAmount(value) {
+
+      const n =
+        Number(value);
+
+      if (
+        !Number.isFinite(n)
+      ) {
+
+        return escapeHtml(
+          value ?? "0"
+        );
+
+      }
+
+      /*
+        NEV369 uses 8 decimal places.
+      */
+
+      const nev =
+        n / 100000000;
+
+      return (
+        new Intl.NumberFormat(
+          undefined,
+          {
+            maximumFractionDigits: 8
+          }
+        ).format(nev) +
+        " NEV"
+      );
+
+    }
+
+
+    function isRewardWhisper(item) {
+
+      const sender =
         String(
-          a.tx_hash || ""
+          item.sender || ""
+        ).trim()
+        .toUpperCase();
+
+      const memo =
+        String(
+          item.memo || ""
+        ).trim();
+
+      if (
+        sender ===
+        "NETWORK_REWARD"
+      ) {
+
+        return true;
+
+      }
+
+      if (
+        /^Block\s+\d+\s+reward$/i
+          .test(memo)
+      ) {
+
+        return true;
+
+      }
+
+      return false;
+
+    }
+
+
+    /*
+      ============================================================
+      EXPLORER LINKS
+      ============================================================
+    */
+
+    function txExplorerUrl(
+      txHash
+    ) {
+
+      return (
+        "https://q-lock-ecosystem.com/explorer/#/tx/" +
+        encodeURIComponent(
+          txHash
         )
       );
+
     }
-  );
 
-  if (
-    query
-  ) {
-
-    items =
-      items.filter(
-        whisper => {
-
-          const searchable =
-            [
-              whisper.memo,
-              whisper.tx_hash,
-              whisper.sender,
-              whisper.recipient,
-              whisper.block
-            ]
-              .join(" ")
-              .toLowerCase();
-
-          return searchable.includes(
-            query
-          );
-        }
-      );
-  }
-
-  els.feedCount.textContent =
-    `${items.length.toLocaleString()} whisper${
-      items.length === 1
-        ? ""
-        : "s"
-    }`;
-
-  if (
-    !items.length
-  ) {
-
-    els.feed.innerHTML = `
-      <div class="empty">
-        ${
-          query
-            ? "No whispers match your search."
-            : "No public whispers loaded yet."
-        }
-      </div>
-    `;
-
-    return;
-  }
-
-  const fragment =
-    document.createDocumentFragment();
-
-  /*
-    Keep rendering sane even if the chain eventually
-    contains a very large number of whispers.
-  */
-  const visible =
-    items.slice(
-      0,
-      500
-    );
-
-  for (
-    const whisper
-    of visible
-  ) {
-
-    const card =
-      document.createElement(
-        "article"
-      );
-
-    card.className =
-      "card";
-
-    const block =
-      Number(
-        whisper.block
-      );
-
-    const tx =
-      String(
-        whisper.tx_hash ||
-        ""
-      );
-
-    const sender =
-      String(
-        whisper.sender ||
-        ""
-      );
-
-    const recipient =
-      String(
-        whisper.recipient ||
-        ""
-      );
-
-    const amount =
-      Number(
-        whisper.amount
-      );
-
-    const amountText =
-      Number.isFinite(
-        amount
-      )
-        ? `${amount} NEV`
-        : String(
-            whisper.amount ??
-            ""
-          );
-
-    card.innerHTML = `
-
-      <div class="card-top">
-
-        <div class="block">
-          #${
-            Number.isFinite(
-              block
-            )
-              ? block
-              : "?"
-          }
-        </div>
-
-        <div class="time">
-          ${escapeHtml(
-            formatTimestamp(
-              whisper.timestamp
-            )
-          )}
-        </div>
-
-      </div>
-
-      <div class="memo">
-        ${escapeHtml(
-          whisper.memo ||
-          ""
-        )}
-      </div>
-
-      <div class="meta">
-
-        <div>
-          <strong>TX</strong>
-          <span class="hash">
-            ${escapeHtml(
-              tx
-            )}
-          </span>
-        </div>
-
-        <div>
-          <strong>From:</strong>
-          <span class="hash">
-            ${escapeHtml(
-              sender
-            )}
-          </span>
-        </div>
-
-        <div>
-          <strong>To:</strong>
-          <span class="hash">
-            ${escapeHtml(
-              recipient
-            )}
-          </span>
-        </div>
-
-        <div>
-          <strong>Amount:</strong>
-          ${escapeHtml(
-            amountText
-          )}
-        </div>
-
-      </div>
-    `;
-
-    fragment.appendChild(
-      card
-    );
-  }
-
-  els.feed.innerHTML = "";
-
-  els.feed.appendChild(
-    fragment
-  );
-}
-
-
-function escapeHtml(
-  value
-) {
-
-  return String(
-    value
-  )
-    .replaceAll(
-      "&",
-      "&amp;"
-    )
-    .replaceAll(
-      "<",
-      "&lt;"
-    )
-    .replaceAll(
-      ">",
-      "&gt;"
-    )
-    .replaceAll(
-      '"',
-      "&quot;"
-    )
-    .replaceAll(
-      "'",
-      "&#039;"
-    );
-}
-
-
-function showNotice(
-  message
-) {
-
-  els.notice.textContent =
-    message;
-
-  els.notice.classList.add(
-    "show"
-  );
-}
-
-
-function hideNotice() {
-
-  els.notice.classList.remove(
-    "show"
-  );
-}
-
-
-function setScanningUi(
-  scanning
-) {
-
-  els.startBtn.disabled =
-    scanning;
-
-  els.stopBtn.disabled =
-    !scanning;
-
-  els.rebuildBtn.disabled =
-    scanning;
-}
-
-
-/* ============================================================
-   THE CORE GENESIS → TIP SCANNER
-   ============================================================ */
-
-async function startScan() {
-
-  if (
-    state.scanning
-  ) {
-    return;
-  }
-
-  state.scanning =
-    true;
-
-  state.stopRequested =
-    false;
-
-  setScanningUi(
-    true
-  );
-
-  hideNotice();
-
-  try {
-
-    setStatus(
-      true,
-      "Connected · NEV369"
-    );
 
     /*
-      Get the live tip before doing anything.
+      Address links are kept compact.
+      The exact explorer route may differ between
+      implementations, so address text remains clickable
+      using the explorer's search/address fragment.
     */
-    updateProgress(
-      "Reading current chain",
-      currentPercent(),
-      "Getting the latest NEV369 block height…"
-    );
 
-    await refreshChainTip();
+    function addressExplorerUrl(
+      address
+    ) {
+
+      return (
+        "https://q-lock-ecosystem.com/explorer/#/address/" +
+        encodeURIComponent(
+          address
+        )
+      );
+
+    }
+
 
     /*
-      ========================================================
-      CONTINUOUS GENESIS → TIP LOOP
-      ========================================================
+      ============================================================
+      WHISPER EXTRACTION
+      ============================================================
     */
 
-    while (
-      !state.stopRequested
+    function extractWhispers(
+      result
+    ) {
+
+      const source =
+        Array.isArray(
+          result?.whispers
+        )
+          ? result.whispers
+          : [];
+
+      const output = [];
+
+      for (
+        const item of source
+      ) {
+
+        if (
+          !item
+        ) {
+
+          continue;
+
+        }
+
+        const memo =
+          String(
+            item.memo || ""
+          ).trim();
+
+        const txHash =
+          String(
+            item.tx_hash || ""
+          ).trim();
+
+        if (
+          !memo ||
+          !txHash
+        ) {
+
+          continue;
+
+        }
+
+        if (
+          isRewardWhisper(item)
+        ) {
+
+          continue;
+
+        }
+
+        output.push({
+
+          block:
+            Number(
+              item.block ?? 0
+            ),
+
+          timestamp:
+            item.timestamp ??
+            null,
+
+          tx_hash:
+            txHash,
+
+          sender:
+            String(
+              item.sender || ""
+            ),
+
+          recipient:
+            String(
+              item.recipient || ""
+            ),
+
+          amount:
+            item.amount ??
+            0,
+
+          fee:
+            item.fee ??
+            0,
+
+          memo
+
+        });
+
+      }
+
+      return output;
+
+    }
+
+
+    async function mergeWhispers(
+      items
+    ) {
+
+      for (
+        const item of items
+      ) {
+
+        state.whispers.set(
+          item.tx_hash,
+          item
+        );
+
+        await dbPut(
+          "whispers",
+          item
+        );
+
+      }
+
+    }
+
+
+    /*
+      ============================================================
+      SCANNING
+      ============================================================
+    */
+
+    async function scanBatch(
+      startHeight,
+      endHeight
     ) {
 
       /*
-        If we've reached the known tip, check whether
-        the blockchain has grown.
-      */
-      if (
-        state.verifiedThrough >=
-        state.chainHeight
-      ) {
+        Worker expects:
+        from = higher block
+        to   = lower block
 
-        updateProgress(
-          "Checking latest block",
-          100,
-          `Verified through #${state.verifiedThrough}. Checking whether a new block has arrived…`
+        Frontend presents:
+        start → end
+      */
+
+      const result =
+        await getJson(
+          `/whispers?from=${endHeight}&to=${startHeight}`
         );
 
-        const previousTip =
-          state.chainHeight;
+      if (
+        Array.isArray(
+          result.errors
+        ) &&
+        result.errors.length > 0
+      ) {
 
-        await refreshChainTip();
+        const first =
+          result.errors[0];
 
-        if (
-          state.chainHeight <=
-          previousTip
+        throw new Error(
+          `Block ${first.height}: ${first.error}`
+        );
+
+      }
+
+      const whispers =
+        extractWhispers(result);
+
+      await mergeWhispers(
+        whispers
+      );
+
+      /*
+        Only after every block in this
+        batch has succeeded do we advance
+        the verified frontier.
+      */
+
+      state.verifiedThrough =
+        endHeight;
+
+      state.blocksSinceTipCheck +=
+        endHeight -
+        startHeight +
+        1;
+
+      await saveState();
+
+      render();
+
+    }
+
+
+    async function startScan() {
+
+      if (
+        state.scanning
+      ) {
+
+        return;
+
+      }
+
+      state.scanning =
+        true;
+
+      state.stopRequested =
+        false;
+
+      updateButtons();
+
+      hideError();
+
+      try {
+
+        let info =
+          await getInfo();
+
+        let chainHeight =
+          Number(
+            info.height ??
+            info.chain_height ??
+            0
+          );
+
+        state.chainHeight =
+          chainHeight;
+
+        await saveState();
+
+        render();
+
+        setStatus(
+          "Scanning Genesis → current",
+          `Starting from block ${
+            state.verifiedThrough + 1
+          }`,
+          "running"
+        );
+
+        while (
+          !state.stopRequested
         ) {
 
           /*
-            We are completely current.
+            If we have reached the current tip,
+            verify the tip before declaring current.
           */
 
-          updateProgress(
-            "Chain current",
-            100,
-            `Genesis #0 through #${state.verifiedThrough} verified. Waiting for the next NEV369 block…`
+          if (
+            state.verifiedThrough >=
+            state.chainHeight
+          ) {
+
+            info =
+              await getInfo();
+
+            chainHeight =
+              Number(
+                info.height ??
+                info.chain_height ??
+                0
+              );
+
+            state.chainHeight =
+              chainHeight;
+
+            await saveState();
+
+            render();
+
+            if (
+              state.verifiedThrough >=
+              state.chainHeight
+            ) {
+
+              setStatus(
+                "Chain current",
+                `Verified through #${
+                  state.verifiedThrough
+                }`,
+                "current"
+              );
+
+              break;
+
+            }
+
+            continue;
+
+          }
+
+
+          /*
+            Periodically re-check the live tip.
+          */
+
+          if (
+            state.blocksSinceTipCheck >=
+            TIP_CHECK_INTERVAL
+          ) {
+
+            info =
+              await getInfo();
+
+            chainHeight =
+              Number(
+                info.height ??
+                info.chain_height ??
+                0
+              );
+
+            state.chainHeight =
+              chainHeight;
+
+            state.blocksSinceTipCheck =
+              0;
+
+            await saveState();
+
+            render();
+
+          }
+
+
+          const start =
+            state.verifiedThrough + 1;
+
+          const end =
+            Math.min(
+              start + BATCH_SIZE - 1,
+              state.chainHeight
+            );
+
+          setStatus(
+            `Scanning #${start} → #${end}`,
+            `Genesis verified through #${
+              state.verifiedThrough
+            }`,
+            "running"
           );
 
-          updateStats();
-
-          break;
-        }
-
-        /*
-          Chain grew.
-          The loop continues naturally into the new blocks.
-        */
-
-        continue;
-      }
-
-
-      /*
-        ======================================================
-        CHECKPOINT TIP
-        ======================================================
-      */
-
-      if (
-        state.blocksSinceTipCheck >=
-        TIP_CHECK_INTERVAL
-      ) {
-
-        const oldTip =
-          state.chainHeight;
-
-        updateProgress(
-          "Checking latest block",
-          currentPercent(),
-          `Verified through #${state.verifiedThrough}. Checking the live chain tip…`
-        );
-
-        await refreshChainTip();
-
-        if (
-          state.chainHeight >
-          oldTip
-        ) {
-
-          updateProgress(
-            "New blocks detected",
-            currentPercent(),
-            `Chain advanced from #${oldTip} to #${state.chainHeight}. Continuing forward.`
-          );
-        }
-      }
-
-
-      /*
-        ======================================================
-        DETERMINE NEXT BATCH
-        ======================================================
-      */
-
-      const start =
-        state.verifiedThrough + 1;
-
-      const end =
-        Math.min(
-          start +
-          BATCH_SIZE -
-          1,
-          state.chainHeight
-        );
-
-      /*
-        This is the key:
-
-        We ALWAYS scan exactly the next contiguous
-        batch.
-
-        No jumping.
-        No repair queue.
-        No rescanning old blocks.
-      */
-
-      updateProgress(
-        "Scanning Genesis → current",
-        currentPercent(),
-        `Scanning blocks #${start} → #${end}`
-      );
-
-
-      /*
-        ======================================================
-        SCAN BATCH
-        ======================================================
-      */
-
-      try {
-
-        const result =
           await scanBatch(
             start,
             end
           );
 
-        /*
-          Show discovery immediately.
-        */
-        if (
-          result.whispers > 0
-        ) {
+          if (
+            state.stopRequested
+          ) {
 
-          updateProgress(
-            "Whisper discovered",
-            currentPercent(),
-            `${result.whispers} new public whisper(s) found in #${start} → #${end}`
-          );
+            break;
 
-        } else {
+          }
 
-          updateProgress(
-            "Scanning Genesis → current",
-            currentPercent(),
-            `Verified #${start} → #${end}`
-          );
         }
 
-        updateStats();
+      } catch (error) {
 
-      } catch (
-        error
+        console.error(
+          "Scan failed:",
+          error
+        );
+
+        showError(
+          error.message
+        );
+
+        setStatus(
+          "Scan paused",
+          "The verified frontier was not advanced past the failed batch.",
+          "error"
+        );
+
+      } finally {
+
+        state.scanning =
+          false;
+
+        updateButtons();
+
+        render();
+
+        if (
+          state.stopRequested
+        ) {
+
+          setStatus(
+            "Scan stopped",
+            `Safe checkpoint: verified through #${
+              state.verifiedThrough
+            }`,
+            "idle"
+          );
+
+        }
+
+      }
+
+    }
+
+
+    function stopScan() {
+
+      if (
+        !state.scanning
       ) {
 
-        if (
-          String(
-            error?.message
-          ) ===
-          "SCAN_STOPPED"
-        ) {
+        return;
 
-          throw error;
-        }
-
-        /*
-          IMPORTANT:
-
-          The frontier does NOT move.
-
-          Therefore the failed batch will simply be
-          retried on the next loop.
-
-          This prevents gaps.
-        */
-
-        console.warn(
-          "Batch failed:",
-          start,
-          end,
-          error
-        );
-
-        updateProgress(
-          "Retrying block batch",
-          currentPercent(),
-          `Could not verify #${start} → #${end}. The frontier remains at #${state.verifiedThrough}. Retrying…`
-        );
-
-        await sleep(
-          RETRY_DELAY
-        );
       }
-    }
 
-
-    /*
-      ========================================================
-      STOPPED
-      ========================================================
-    */
-
-    if (
-      state.stopRequested
-    ) {
-
-      updateProgress(
-        "Scan stopped",
-        currentPercent(),
-        `Saved through #${state.verifiedThrough}. Click Start Scan to continue from exactly where it stopped.`
-      );
-
-      return;
-    }
-
-
-    /*
-      ========================================================
-      CURRENT
-      ========================================================
-    */
-
-    updateStats();
-
-    updateProgress(
-      "Chain current",
-      100,
-      `Genesis #0 through #${state.verifiedThrough} verified. Waiting for the next block.`
-    );
-
-    setStatus(
-      true,
-      "Connected · NEV369"
-    );
-
-  } catch (
-    error
-  ) {
-
-    if (
-      String(
-        error?.message
-      ) ===
-      "SCAN_STOPPED"
-    ) {
-
-      updateProgress(
-        "Scan stopped",
-        currentPercent(),
-        `Saved through #${state.verifiedThrough}. Click Start Scan to continue.`
-      );
-
-    } else {
-
-      console.error(
-        "NevWhisper scan error:",
-        error
-      );
+      state.stopRequested =
+        true;
 
       setStatus(
-        false,
-        "Connection problem"
+        "Stopping...",
+        "Finishing the current request safely.",
+        "running"
       );
 
-      updateProgress(
-        "Scan paused",
-        currentPercent(),
-        String(
-          error?.message ||
-          error
+      updateButtons();
+
+    }
+
+
+    async function rebuildFromGenesis() {
+
+      if (
+        state.scanning
+      ) {
+
+        return;
+
+      }
+
+      const confirmed =
+        confirm(
+          "Rebuild the scanner from Genesis? This will erase the saved verification frontier and whisper database."
+        );
+
+      if (
+        !confirmed
+      ) {
+
+        return;
+
+      }
+
+      state.verifiedThrough =
+        -1;
+
+      state.chainHeight =
+        -1;
+
+      state.whispers.clear();
+
+      state.blocksSinceTipCheck =
+        0;
+
+      hideError();
+
+      try {
+
+        await dbClear(
+          "meta"
+        );
+
+        await dbClear(
+          "whispers"
+        );
+
+        await saveState();
+
+        render();
+
+        setStatus(
+          "Reset complete",
+          "Press Start Scan to begin again at Genesis.",
+          "idle"
+        );
+
+      } catch (error) {
+
+        showError(
+          error.message
+        );
+
+      }
+
+    }
+
+
+    /*
+      ============================================================
+      RENDERING
+      ============================================================
+    */
+
+    function render() {
+
+      document.getElementById(
+        "chainHeight"
+      ).textContent =
+        state.chainHeight >= 0
+          ? `#${state.chainHeight}`
+          : "—";
+
+      document.getElementById(
+        "verifiedThrough"
+      ).textContent =
+        state.verifiedThrough >= 0
+          ? `#${state.verifiedThrough}`
+          : "—";
+
+      document.getElementById(
+        "whisperCount"
+      ).textContent =
+        state.whispers.size;
+
+      const remaining =
+        state.chainHeight >= 0
+          ? Math.max(
+              0,
+              state.chainHeight -
+              state.verifiedThrough
+            )
+          : null;
+
+      document.getElementById(
+        "blocksRemaining"
+      ).textContent =
+        remaining === null
+          ? "—"
+          : remaining;
+
+      let progress = 0;
+
+      if (
+        state.chainHeight >= 0 &&
+        state.verifiedThrough >= 0
+      ) {
+
+        progress =
+          Math.min(
+            100,
+            (
+              (state.verifiedThrough + 1) /
+              (state.chainHeight + 1)
+            ) *
+            100
+          );
+
+      }
+
+      document.getElementById(
+        "progressBar"
+      ).style.width =
+        `${progress}%`;
+
+      renderFeed();
+
+    }
+
+
+    function renderFeed() {
+
+      const feed =
+        document.getElementById(
+          "feed"
+        );
+
+      const query =
+        document.getElementById(
+          "searchInput"
+        ).value
+        .trim()
+        .toLowerCase();
+
+      const items =
+        Array.from(
+          state.whispers.values()
         )
-      );
+        .filter(item => {
 
-      showNotice(
-        "The scanner encountered a network problem. Your verified frontier is safe. Start Scan will continue from the last successfully verified block."
-      );
+          if (!query) {
+
+            return true;
+
+          }
+
+          return [
+            item.memo,
+            item.sender,
+            item.recipient,
+            item.tx_hash,
+            String(item.block)
+          ]
+            .join(" ")
+            .toLowerCase()
+            .includes(query);
+
+        })
+        .sort((a, b) => {
+
+          if (
+            b.block !==
+            a.block
+          ) {
+
+            return b.block -
+              a.block;
+
+          }
+
+          return String(
+            b.tx_hash
+          ).localeCompare(
+            String(a.tx_hash)
+          );
+
+        });
+
+      if (
+        items.length === 0
+      ) {
+
+        feed.innerHTML =
+          `<div class="empty">
+            ${
+              query
+                ? "No whispers match your search."
+                : "No whispers loaded yet."
+            }
+          </div>`;
+
+        return;
+
+      }
+
+      feed.innerHTML =
+        items
+          .map(
+            renderWhisper
+          )
+          .join("");
+
     }
 
-  } finally {
 
-    state.scanning =
-      false;
-
-    state.stopRequested =
-      false;
-
-    setScanningUi(
-      false
-    );
-
-    updateStats();
-  }
-}
-
-
-/* ============================================================
-   STOP SCAN
-   ============================================================ */
-
-function stopScan() {
-
-  if (
-    !state.scanning
-  ) {
-    return;
-  }
-
-  state.stopRequested =
-    true;
-
-  els.stopBtn.disabled =
-    true;
-
-  updateProgress(
-    "Stopping scan…",
-    currentPercent(),
-    "The current request will finish, then the scanner will stop safely."
-  );
-}
-
-
-/* ============================================================
-   REBUILD FROM GENESIS
-   ============================================================ */
-
-async function rebuildFromGenesis() {
-
-  if (
-    state.scanning
-  ) {
-    return;
-  }
-
-  const confirmed =
-    window.confirm(
-      "Rebuild the NevWhisper index from Genesis?\n\nThis clears only the local browser index. It does NOT affect the NEV369 blockchain or any transactions."
-    );
-
-  if (
-    !confirmed
-  ) {
-    return;
-  }
-
-  try {
-
-    await clearDatabase();
-
-    state.chainHeight =
-      -1;
-
-    state.verifiedThrough =
-      -1;
-
-    state.blocksSinceTipCheck =
-      0;
-
-    updateStats();
-
-    updateProgress(
-      "Ready for Genesis",
-      0,
-      "Local index cleared. The next scan will begin at block #0."
-    );
-
-    await startScan();
-
-  } catch (
-    error
-  ) {
-
-    console.error(
-      "Genesis rebuild failed:",
-      error
-    );
-
-    showNotice(
-      `Could not rebuild the local index: ${error}`
-    );
-  }
-}
-
-
-/* ============================================================
-   EVENTS
-   ============================================================ */
-
-els.startBtn.addEventListener(
-  "click",
-  startScan
-);
-
-els.stopBtn.addEventListener(
-  "click",
-  stopScan
-);
-
-els.rebuildBtn.addEventListener(
-  "click",
-  rebuildFromGenesis
-);
-
-els.searchInput.addEventListener(
-  "input",
-  renderFeed
-);
-
-
-/* ============================================================
-   AUTOMATIC FUTURE CHECK
-   ============================================================ */
-
-/*
-  IMPORTANT:
-
-  The page does NOT automatically start a huge scan on reload.
-
-  If the scanner is idle, this timer will check again after
-  369 seconds.
-
-  Because the frontier is persisted in IndexedDB, it resumes
-  exactly where it left off.
-*/
-
-setInterval(
-  () => {
-
-    if (
-      !state.scanning
+    function renderWhisper(
+      item
     ) {
 
-      startScan();
+      const block =
+        Number(
+          item.block
+        );
+
+      const tx =
+        escapeHtml(
+          item.tx_hash
+        );
+
+      const sender =
+        String(
+          item.sender || ""
+        );
+
+      const recipient =
+        String(
+          item.recipient || ""
+        );
+
+      const senderDisplay =
+        sender
+          ? shortHash(
+              sender,
+              10,
+              8
+            )
+          : "Unknown";
+
+      const recipientDisplay =
+        recipient
+          ? shortHash(
+              recipient,
+              10,
+              8
+            )
+          : "Unknown";
+
+      const txDisplay =
+        shortHash(
+          tx,
+          10,
+          10
+        );
+
+      return `
+        <article class="whisper">
+
+          <div class="whisper-head">
+
+            <div class="block">
+              #${escapeHtml(block)}
+            </div>
+
+            <div class="time">
+              ${escapeHtml(
+                formatTimestamp(
+                  item.timestamp
+                )
+              )}
+            </div>
+
+          </div>
+
+          <div class="memo">
+            ${escapeHtml(
+              item.memo
+            )}
+          </div>
+
+          <div class="details">
+
+            <div class="detail-label">
+              Amount
+            </div>
+
+            <div class="detail-value amount">
+              ${formatAmount(
+                item.amount
+              )}
+            </div>
+
+
+            <div class="detail-label">
+              TX
+            </div>
+
+            <div class="detail-value">
+
+              <a
+                class="hash-link"
+                href="${txExplorerUrl(
+                  tx
+                )}"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="${tx}"
+              >
+                <span class="short">
+                  ${txDisplay}
+                </span>
+
+                <span class="external">
+                  ↗
+                </span>
+              </a>
+
+            </div>
+
+
+            <div class="detail-label">
+              From
+            </div>
+
+            <div class="detail-value">
+
+              ${
+                sender
+                  ? `
+                    <a
+                      class="address-link"
+                      href="${addressExplorerUrl(
+                        sender
+                      )}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="${escapeHtml(
+                        sender
+                      )}"
+                    >
+                      <span class="short">
+                        ${escapeHtml(
+                          senderDisplay
+                        )}
+                      </span>
+
+                      <span class="external">
+                        ↗
+                      </span>
+                    </a>
+                  `
+                  : "Unknown"
+              }
+
+            </div>
+
+
+            <div class="detail-label">
+              To
+            </div>
+
+            <div class="detail-value">
+
+              ${
+                recipient
+                  ? `
+                    <a
+                      class="address-link"
+                      href="${addressExplorerUrl(
+                        recipient
+                      )}"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      title="${escapeHtml(
+                        recipient
+                      )}"
+                    >
+                      <span class="short">
+                        ${escapeHtml(
+                          recipientDisplay
+                        )}
+                      </span>
+
+                      <span class="external">
+                        ↗
+                      </span>
+                    </a>
+                  `
+                  : "Unknown"
+              }
+
+            </div>
+
+          </div>
+
+        </article>
+      `;
+
     }
 
-  },
-  AUTO_REFRESH_MS
-);
 
+    /*
+      ============================================================
+      STATUS / BUTTONS
+      ============================================================
+    */
 
-/* ============================================================
-   INITIALIZATION
-   ============================================================ */
-
-(async function init() {
-
-  try {
-
-    await loadDatabase();
-
-    updateStats();
-
-    setStatus(
-      true,
-      "Ready · NEV369"
-    );
-
-    if (
-      state.verifiedThrough >= 0
+    function setStatus(
+      title,
+      detail,
+      mode = "idle"
     ) {
 
-      updateProgress(
-        "Ready to continue",
-        currentPercent(),
-        `Local index is verified through #${state.verifiedThrough}. Click Start Scan to continue toward the current chain tip.`
-      );
+      document.getElementById(
+        "statusText"
+      ).textContent =
+        title;
 
-    } else {
+      document.getElementById(
+        "statusDetail"
+      ).textContent =
+        detail;
 
-      updateProgress(
-        "Ready for Genesis",
-        0,
-        "No chain index exists yet. Click Start Scan to begin at block #0."
-      );
+      const pill =
+        document.getElementById(
+          "statusPill"
+        );
+
+      pill.className =
+        "status-pill";
+
+      if (
+        mode === "running"
+      ) {
+
+        pill.classList.add(
+          "running"
+        );
+
+        pill.textContent =
+          "SCANNING";
+
+      } else if (
+        mode === "current"
+      ) {
+
+        pill.classList.add(
+          "current"
+        );
+
+        pill.textContent =
+          "CURRENT";
+
+      } else if (
+        mode === "error"
+      ) {
+
+        pill.classList.add(
+          "error"
+        );
+
+        pill.textContent =
+          "ERROR";
+
+      } else {
+
+        pill.textContent =
+          "IDLE";
+
+      }
+
     }
 
-  } catch (
-    error
-  ) {
 
-    console.error(
-      "IndexedDB initialization failed:",
-      error
-    );
+    function updateButtons() {
 
-    setStatus(
-      false,
-      "Local database unavailable"
-    );
+      const running =
+        state.scanning;
 
-    showNotice(
-      "NevWhisper could not open its local IndexedDB database. Check that browser storage is enabled."
-    );
-  }
+      document.getElementById(
+        "startBtn"
+      ).disabled =
+        running;
 
-})();
-</script>
+      document.getElementById(
+        "stopBtn"
+      ).disabled =
+        !running;
+
+      document.getElementById(
+        "rebuildBtn"
+      ).disabled =
+        running;
+
+    }
+
+
+    function showError(
+      message
+    ) {
+
+      const box =
+        document.getElementById(
+          "errorBox"
+        );
+
+      box.textContent =
+        message;
+
+      box.style.display =
+        "block";
+
+    }
+
+
+    function hideError() {
+
+      const box =
+        document.getElementById(
+          "errorBox"
+        );
+
+      box.textContent =
+        "";
+
+      box.style.display =
+        "none";
+
+    }
+
+
+    /*
+      ============================================================
+      STARTUP
+      ============================================================
+    */
+
+    async function initialise() {
+
+      try {
+
+        await openDatabase();
+
+        await loadState();
+
+        await loadWhispers();
+
+        render();
+
+        setStatus(
+          "Ready",
+          state.verifiedThrough >= 0
+            ? `Saved checkpoint: verified through #${state.verifiedThrough}. Press Start Scan to continue.`
+            : "Press Start Scan to verify the NEV369 chain from Genesis.",
+          "idle"
+        );
+
+        updateButtons();
+
+      } catch (error) {
+
+        console.error(
+          "Initialisation failed:",
+          error
+        );
+
+        showError(
+          error.message
+        );
+
+        setStatus(
+          "Initialisation failed",
+          "IndexedDB could not be opened.",
+          "error"
+        );
+
+      }
+
+    }
+
+
+    document
+      .getElementById(
+        "searchInput"
+      )
+      .addEventListener(
+        "input",
+        renderFeed
+      );
+
+
+    initialise();
+
+
+    /*
+      ============================================================
+      PERIODIC LIVE CHECK
+      ============================================================
+
+      This does NOT start immediately.
+
+      If the page is left open and idle for 369 seconds,
+      it will resume scanning to pick up new blocks.
+    */
+
+    setInterval(() => {
+
+      if (
+        !state.scanning
+      ) {
+
+        startScan();
+
+      }
+
+    }, AUTO_REFRESH_MS);
+
+  </script>
 
 </body>
 </html>

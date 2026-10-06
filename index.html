@@ -3,712 +3,484 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>NevWhisper — NEV369 Memo Chat</title>
 
 <style>
-:root {
-  --bg: #09080f;
-  --bg-soft: #0e0c17;
-  --panel: #12101d;
-  --panel-2: #171423;
-  --panel-3: #1c182a;
-
-  --border: rgba(154, 122, 255, 0.16);
-  --border-strong: rgba(154, 122, 255, 0.28);
-
-  --purple: #9b7cff;
-  --purple-bright: #b59aff;
-  --purple-soft: rgba(155, 124, 255, 0.12);
-
-  --blue: #62a8ff;
-  --green: #62e6a5;
-  --yellow: #ffd166;
-  --red: #ff6b81;
-
-  --text: #f4f1fb;
-  --text-soft: #c9c4d7;
-  --muted: #858094;
-
-  --radius: 18px;
-  --radius-small: 12px;
-
-  --shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
-}
-
-* {
-  box-sizing: border-box;
-}
-
-html {
-  background: var(--bg);
-}
-
-body {
-  margin: 0;
-  min-height: 100vh;
-  background:
-    radial-gradient(circle at 50% -10%, rgba(112, 78, 210, 0.16), transparent 38%),
-    radial-gradient(circle at 100% 20%, rgba(53, 93, 190, 0.07), transparent 32%),
-    var(--bg);
-  color: var(--text);
-  font-family:
-    Inter,
-    ui-sans-serif,
-    system-ui,
-    -apple-system,
-    BlinkMacSystemFont,
-    "Segoe UI",
-    sans-serif;
-}
-
-a {
-  color: inherit;
-}
-
-button,
-input {
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-}
-
-.container {
-  width: min(1100px, calc(100% - 28px));
-  margin: 0 auto;
-  padding: 34px 0 70px;
-}
-
-/* --------------------------------------------------
-   HEADER
--------------------------------------------------- */
-
-.header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20px;
-  margin-bottom: 28px;
-}
-
-.brand {
-  min-width: 0;
-}
-
-.brand-title {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin: 0;
-  font-size: clamp(26px, 5vw, 38px);
-  font-weight: 750;
-  letter-spacing: -0.045em;
-}
-
-.brand-mark {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  background: var(--purple);
-  box-shadow:
-    0 0 12px rgba(155, 124, 255, 0.75),
-    0 0 28px rgba(155, 124, 255, 0.3);
-}
-
-.subtitle {
-  margin-top: 7px;
-  color: var(--muted);
-  font-size: 13px;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.live-area {
-  text-align: right;
-  white-space: nowrap;
-}
-
-.live-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  color: var(--text-soft);
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
-
-.live-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--green);
-  box-shadow: 0 0 12px rgba(98, 230, 165, 0.65);
-}
-
-.live-dot.scanning {
-  background: var(--purple);
-  box-shadow: 0 0 12px rgba(155, 124, 255, 0.7);
-  animation: pulse 1.4s ease-in-out infinite;
-}
-
-.live-dot.error {
-  background: var(--red);
-  box-shadow: 0 0 12px rgba(255, 107, 129, 0.6);
-}
-
-@keyframes pulse {
-  0%, 100% {
-    opacity: 1;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.55;
-    transform: scale(0.78);
-  }
-}
-
-/* --------------------------------------------------
-   STATUS / COUNTDOWN
--------------------------------------------------- */
-
-.status-panel {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-
-  padding: 14px 17px;
-  margin-bottom: 18px;
-
-  border: 1px solid var(--border);
-  border-radius: var(--radius-small);
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(155, 124, 255, 0.075),
-      rgba(98, 168, 255, 0.025)
-    ),
-    var(--panel);
-}
-
-.status-main {
-  min-width: 0;
-}
-
-.status-label {
-  color: var(--text-soft);
-  font-size: 13px;
-  font-weight: 650;
-}
-
-.status-detail {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.countdown {
-  flex-shrink: 0;
-  color: var(--purple-bright);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-/* --------------------------------------------------
-   ARCHITECT PIN
--------------------------------------------------- */
-
-.architect {
-  position: relative;
-  overflow: hidden;
-
-  margin-bottom: 22px;
-  padding: 23px 24px;
-
-  border: 1px solid rgba(155, 124, 255, 0.3);
-  border-radius: var(--radius);
-
-  background:
-    radial-gradient(
-      circle at 0% 0%,
-      rgba(155, 124, 255, 0.16),
-      transparent 42%
-    ),
-    radial-gradient(
-      circle at 100% 100%,
-      rgba(98, 168, 255, 0.055),
-      transparent 35%
-    ),
-    var(--panel);
-
-  box-shadow:
-    0 18px 55px rgba(58, 31, 115, 0.12),
-    inset 0 1px 0 rgba(255,255,255,0.025);
-}
-
-.architect::after {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 3px;
-  height: 100%;
-  background: linear-gradient(
-    180deg,
-    var(--purple-bright),
-    rgba(98, 168, 255, 0.55)
-  );
-}
-
-.architect-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.architect-title {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  color: var(--purple-bright);
-}
-
-.pin {
-  font-size: 15px;
-}
-
-.architect-tag {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-}
-
-.architect-message {
-  color: var(--text);
-  font-size: clamp(18px, 3vw, 24px);
-  line-height: 1.4;
-  letter-spacing: -0.018em;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.architect-meta {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 8px 14px;
-  margin-top: 17px;
-
-  color: var(--muted);
-  font-size: 12px;
-}
-
-.architect-meta strong {
-  color: var(--text-soft);
-}
-
-.architect-meta a {
-  color: var(--purple-bright);
-  text-decoration: none;
-}
-
-.architect-meta a:hover {
-  text-decoration: underline;
-}
-
-/* --------------------------------------------------
-   STATS
--------------------------------------------------- */
-
-.stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.stat {
-  min-width: 0;
-  padding: 15px 16px;
-
-  border: 1px solid var(--border);
-  border-radius: var(--radius-small);
-  background: rgba(18, 16, 29, 0.8);
-}
-
-.stat-label {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.stat-value {
-  margin-top: 7px;
-  color: var(--text);
-  font-size: 20px;
-  font-weight: 720;
-  letter-spacing: -0.025em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* --------------------------------------------------
-   PROGRESS
--------------------------------------------------- */
-
-.progress-panel {
-  margin-bottom: 22px;
-}
-
-.progress-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-
-.progress-label {
-  color: var(--text-soft);
-  font-size: 12px;
-  font-weight: 650;
-}
-
-.progress-percent {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.progress-track {
-  height: 5px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: rgba(255,255,255,0.06);
-}
-
-.progress-fill {
-  width: 0%;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(
-    90deg,
-    var(--purple),
-    var(--blue)
-  );
-  box-shadow: 0 0 14px rgba(155, 124, 255, 0.35);
-  transition: width 0.35s ease;
-}
-
-/* --------------------------------------------------
-   SEARCH
--------------------------------------------------- */
-
-.search-wrap {
-  position: relative;
-  margin-bottom: 20px;
-}
-
-.search {
-  width: 100%;
-  height: 48px;
-  padding: 0 17px 0 44px;
-
-  border: 1px solid var(--border);
-  border-radius: 14px;
-
-  outline: none;
-
-  color: var(--text);
-  background: rgba(18, 16, 29, 0.9);
-
-  transition:
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-.search::placeholder {
-  color: #6f6a7d;
-}
-
-.search:focus {
-  border-color: var(--border-strong);
-  box-shadow: 0 0 0 3px rgba(155, 124, 255, 0.07);
-}
-
-.search-icon {
-  position: absolute;
-  left: 17px;
-  top: 50%;
-  transform: translateY(-50%);
-
-  color: var(--muted);
-  font-size: 16px;
-  pointer-events: none;
-}
-
-/* --------------------------------------------------
-   SECTION HEADING
--------------------------------------------------- */
-
-.section-heading {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 12px;
-
-  margin: 0 2px 10px;
-}
-
-.section-title {
-  color: var(--text-soft);
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.section-count {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-/* --------------------------------------------------
-   WHISPERS
--------------------------------------------------- */
-
-.whispers {
-  display: grid;
-  gap: 9px;
-}
-
-.whisper {
-  padding: 16px 17px;
-
-  border: 1px solid var(--border);
-  border-radius: 15px;
-
-  background:
-    linear-gradient(
-      135deg,
-      rgba(255,255,255,0.012),
-      rgba(155, 124, 255, 0.018)
-    ),
-    var(--panel);
-
-  transition:
-    border-color 0.18s ease,
-    background 0.18s ease,
-    transform 0.18s ease;
-}
-
-.whisper:hover {
-  border-color: var(--border-strong);
-  background: var(--panel-2);
-}
-
-.whisper.new {
-  animation: newWhisper 1.8s ease-out;
-}
-
-@keyframes newWhisper {
-  0% {
-    border-color: rgba(155, 124, 255, 0.8);
-    box-shadow: 0 0 28px rgba(155, 124, 255, 0.14);
-  }
-  100% {
-    border-color: var(--border);
-    box-shadow: none;
-  }
-}
-
-.whisper-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
-  margin-bottom: 11px;
-}
-
-.block-link {
-  color: var(--purple-bright);
-  font-size: 13px;
-  font-weight: 750;
-  text-decoration: none;
-}
-
-.block-link:hover {
-  text-decoration: underline;
-}
-
-.timestamp {
-  color: var(--muted);
-  font-size: 11px;
-  text-align: right;
-}
-
-.memo {
-  color: var(--text);
-  font-size: 15px;
-  line-height: 1.55;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-
-.details {
-  display: grid;
-  grid-template-columns: 90px minmax(0, 1fr);
-  gap: 6px 12px;
-  margin-top: 14px;
-}
-
-.detail-label {
-  color: var(--muted);
-  font-size: 11px;
-}
-
-.detail-value {
-  min-width: 0;
-  color: var(--text-soft);
-  font-size: 11px;
-  overflow-wrap: anywhere;
-}
-
-.detail-value a {
-  color: var(--text-soft);
-  text-decoration: none;
-}
-
-.detail-value a:hover {
-  color: var(--purple-bright);
-  text-decoration: underline;
-}
-
-.empty {
-  padding: 38px 20px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-small);
-  color: var(--muted);
-  text-align: center;
-  font-size: 13px;
-}
-
-/* --------------------------------------------------
-   FOOTER / CONTROLS
--------------------------------------------------- */
-
-.controls {
-  display: flex;
-  justify-content: center;
-  margin-top: 24px;
-}
-
-.rebuild {
-  padding: 9px 14px;
-
-  border: 1px solid var(--border);
-  border-radius: 10px;
-
-  color: var(--muted);
-  background: transparent;
-
-  font-size: 11px;
-}
-
-.rebuild:hover {
-  color: var(--text-soft);
-  border-color: var(--border-strong);
-  background: rgba(155, 124, 255, 0.04);
-}
-
-.footer {
-  margin-top: 38px;
-  color: #555162;
-  font-size: 10px;
-  text-align: center;
-  letter-spacing: 0.04em;
-}
-
-/* --------------------------------------------------
-   RESPONSIVE
--------------------------------------------------- */
-
-@media (max-width: 720px) {
-  .container {
-    width: min(100% - 18px, 1100px);
-    padding-top: 22px;
-  }
-
-  .header {
-    align-items: flex-start;
-  }
-
-  .live-area {
-    display: none;
-  }
-
-  .stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .status-panel {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .countdown {
-    font-size: 12px;
-  }
-
-  .architect {
-    padding: 20px 19px;
-  }
-
-  .whisper-top {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 5px;
-  }
-
-  .timestamp {
-    text-align: left;
-  }
-}
-
-@media (max-width: 430px) {
-  .stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
-  }
-
-  .stat {
-    padding: 12px;
-  }
-
-  .stat-value {
-    font-size: 17px;
-  }
-
-  .details {
-    grid-template-columns: 70px minmax(0, 1fr);
-  }
-}
+    :root {
+        --bg: #09090d;
+        --panel: #111118;
+        --panel-2: #171722;
+        --border: rgba(255,255,255,0.08);
+        --text: #f5f3ff;
+        --muted: #9692a8;
+        --purple: #8b5cf6;
+        --purple-2: #a78bfa;
+        --blue: #4f8cff;
+        --green: #43d17a;
+        --danger: #ff5c7a;
+        --shadow: 0 18px 50px rgba(0,0,0,0.35);
+    }
+
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
+        background: var(--bg);
+    }
+
+    body {
+        margin: 0;
+        min-height: 100vh;
+        font-family:
+            Inter,
+            ui-sans-serif,
+            system-ui,
+            -apple-system,
+            BlinkMacSystemFont,
+            "Segoe UI",
+            sans-serif;
+        background:
+            radial-gradient(circle at top right, rgba(91,54,180,0.14), transparent 30%),
+            radial-gradient(circle at top left, rgba(56,96,190,0.08), transparent 25%),
+            var(--bg);
+        color: var(--text);
+    }
+
+    a {
+        color: inherit;
+        text-decoration: none;
+    }
+
+    .container {
+        width: min(1100px, calc(100% - 28px));
+        margin: 0 auto;
+        padding: 34px 0 60px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        gap: 20px;
+        margin-bottom: 28px;
+    }
+
+    .brand {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .logo {
+        width: 48px;
+        height: 48px;
+        border-radius: 15px;
+        display: grid;
+        place-items: center;
+        font-size: 24px;
+        font-weight: 800;
+        background:
+            linear-gradient(145deg, rgba(139,92,246,0.28), rgba(79,140,255,0.12)),
+            #15121e;
+        border: 1px solid rgba(167,139,250,0.2);
+        box-shadow: 0 0 30px rgba(139,92,246,0.12);
+    }
+
+    h1 {
+        margin: 0;
+        font-size: clamp(25px, 4vw, 34px);
+        letter-spacing: -0.8px;
+    }
+
+    .subtitle {
+        margin-top: 5px;
+        color: var(--muted);
+        font-size: 14px;
+    }
+
+    .status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 13px;
+        padding-top: 7px;
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 12px rgba(67,209,122,0.65);
+    }
+
+    .status-dot.scanning {
+        animation: pulse 1.3s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.35; transform: scale(0.75); }
+    }
+
+    .hero {
+        background:
+            linear-gradient(135deg, rgba(139,92,246,0.12), rgba(79,140,255,0.05)),
+            var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        padding: 24px;
+        box-shadow: var(--shadow);
+        margin-bottom: 16px;
+    }
+
+    .hero-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .hero-label {
+        color: var(--purple-2);
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        font-size: 11px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .countdown {
+        font-size: 27px;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+    }
+
+    .countdown small {
+        color: var(--muted);
+        font-size: 12px;
+        font-weight: 500;
+        letter-spacing: 0;
+    }
+
+    .progress-wrap {
+        margin-top: 22px;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: space-between;
+        gap: 15px;
+        color: var(--muted);
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .progress {
+        height: 7px;
+        background: rgba(255,255,255,0.06);
+        border-radius: 999px;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        height: 100%;
+        width: 0%;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--purple), var(--blue));
+        box-shadow: 0 0 18px rgba(139,92,246,0.4);
+        transition: width 0.4s ease;
+    }
+
+    .stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        margin-bottom: 16px;
+    }
+
+    .stat {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 17px;
+    }
+
+    .stat-label {
+        color: var(--muted);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 7px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 750;
+    }
+
+    .search {
+        width: 100%;
+        padding: 15px 17px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        outline: none;
+        background: rgba(255,255,255,0.035);
+        color: var(--text);
+        font-size: 14px;
+        margin-bottom: 18px;
+    }
+
+    .search:focus {
+        border-color: rgba(139,92,246,0.5);
+        box-shadow: 0 0 0 3px rgba(139,92,246,0.08);
+    }
+
+    .search::placeholder {
+        color: #716d80;
+    }
+
+    .section-title {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 22px 2px 12px;
+    }
+
+    .section-title h2 {
+        margin: 0;
+        font-size: 17px;
+        letter-spacing: -0.2px;
+    }
+
+    .section-title span {
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .architect {
+        background:
+            linear-gradient(145deg, rgba(139,92,246,0.13), rgba(79,140,255,0.04)),
+            var(--panel);
+        border: 1px solid rgba(139,92,246,0.24);
+        border-radius: 21px;
+        padding: 21px;
+        margin-bottom: 20px;
+        box-shadow: 0 12px 40px rgba(68,35,140,0.12);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .architect::after {
+        content: "";
+        position: absolute;
+        width: 180px;
+        height: 180px;
+        right: -90px;
+        top: -90px;
+        background: rgba(139,92,246,0.09);
+        filter: blur(35px);
+        border-radius: 50%;
+    }
+
+    .architect-head {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        align-items: center;
+        margin-bottom: 14px;
+    }
+
+    .pin {
+        font-size: 11px;
+        color: var(--purple-2);
+        background: rgba(139,92,246,0.1);
+        border: 1px solid rgba(139,92,246,0.2);
+        padding: 6px 9px;
+        border-radius: 999px;
+        white-space: nowrap;
+    }
+
+    .architect-name {
+        font-weight: 750;
+    }
+
+    .architect-time {
+        color: var(--muted);
+        font-size: 12px;
+        margin-top: 3px;
+    }
+
+    .architect-memo {
+        font-size: 16px;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+    }
+
+    .whisper-list {
+        display: grid;
+        gap: 10px;
+    }
+
+    .whisper {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+        transition: transform 0.18s ease, border-color 0.18s ease;
+    }
+
+    .whisper:hover {
+        transform: translateY(-1px);
+        border-color: rgba(139,92,246,0.24);
+    }
+
+    .whisper.new {
+        animation: newWhisper 1.6s ease;
+    }
+
+    @keyframes newWhisper {
+        0% {
+            box-shadow: 0 0 0 0 rgba(139,92,246,0.5);
+            border-color: rgba(139,92,246,0.65);
+        }
+        100% {
+            box-shadow: 0 0 0 18px rgba(139,92,246,0);
+            border-color: var(--border);
+        }
+    }
+
+    .whisper-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 11px;
+    }
+
+    .block {
+        font-size: 12px;
+        font-weight: 750;
+        color: var(--purple-2);
+    }
+
+    .time {
+        color: var(--muted);
+        font-size: 11px;
+    }
+
+    .memo {
+        font-size: 15px;
+        line-height: 1.55;
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        margin-bottom: 15px;
+    }
+
+    .details {
+        display: grid;
+        grid-template-columns: 90px 1fr;
+        gap: 6px 12px;
+        font-size: 11px;
+    }
+
+    .details .label {
+        color: var(--muted);
+    }
+
+    .details .value {
+        color: #c9c4d8;
+        min-width: 0;
+        overflow-wrap: anywhere;
+    }
+
+    .details a {
+        color: var(--blue);
+    }
+
+    .empty {
+        padding: 35px 20px;
+        text-align: center;
+        color: var(--muted);
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+    }
+
+    .scanner-details {
+        margin-top: 22px;
+        background: rgba(255,255,255,0.025);
+        border: 1px solid var(--border);
+        border-radius: 17px;
+        padding: 14px 16px;
+    }
+
+    .scanner-details summary {
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 12px;
+    }
+
+    .scanner-content {
+        margin-top: 12px;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.7;
+    }
+
+    .footer {
+        margin-top: 35px;
+        text-align: center;
+        color: #656172;
+        font-size: 11px;
+    }
+
+    @media (max-width: 720px) {
+        .container {
+            width: min(100% - 18px, 1100px);
+            padding-top: 20px;
+        }
+
+        .header {
+            margin-bottom: 20px;
+        }
+
+        .stats {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .hero {
+            padding: 19px;
+            border-radius: 20px;
+        }
+
+        .architect,
+        .whisper {
+            border-radius: 17px;
+        }
+    }
+
+    @media (max-width: 430px) {
+        .stats {
+            gap: 8px;
+        }
+
+        .stat {
+            padding: 14px;
+        }
+
+        .stat-value {
+            font-size: 17px;
+        }
+
+        .details {
+            grid-template-columns: 72px 1fr;
+        }
+    }
 </style>
 </head>
 
@@ -716,1676 +488,1397 @@ button {
 
 <div class="container">
 
-  <header class="header">
-    <div class="brand">
-      <h1 class="brand-title">
-        <span class="brand-mark"></span>
-        NevWhisper
-      </h1>
-      <div class="subtitle">NEV369 Memo Chat</div>
-    </div>
+    <header class="header">
+        <div class="brand">
+            <div class="logo">N</div>
+            <div>
+                <h1>NevWhisper</h1>
+                <div class="subtitle">NEV369 Memo Chat</div>
+            </div>
+        </div>
 
-    <div class="live-area">
-      <div class="live-status">
-        <span id="liveDot" class="live-dot"></span>
-        <span id="liveStatus">LIVE</span>
-      </div>
-    </div>
-  </header>
+        <div class="status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">Connecting…</span>
+        </div>
+    </header>
 
-  <section class="status-panel">
-    <div class="status-main">
-      <div id="statusLabel" class="status-label">Ready</div>
-      <div id="statusDetail" class="status-detail">
-        Waiting for scanner
-      </div>
-    </div>
+    <section class="hero">
+        <div class="hero-top">
+            <div>
+                <div class="hero-label">NEV369 Archive</div>
+                <div class="countdown">
+                    <span id="countdown">369</span>
+                    <small>seconds until next scan</small>
+                </div>
+            </div>
+        </div>
 
-    <div id="countdown" class="countdown">
-      Next Scan in 369 seconds
-    </div>
-  </section>
+        <div class="progress-wrap">
+            <div class="progress-label">
+                <span id="progressText">Preparing archive…</span>
+                <span id="progressPercent">0%</span>
+            </div>
 
-  <!-- THE ARCHITECT -->
-  <section id="architect" class="architect">
+            <div class="progress">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+    </section>
 
-    <div class="architect-header">
-      <div class="architect-title">
-        <span class="pin">📌</span>
-        THE ARCHITECT
-      </div>
+    <section class="stats">
+        <div class="stat">
+            <div class="stat-label">Chain Height</div>
+            <div class="stat-value" id="chainHeight">—</div>
+        </div>
 
-      <div class="architect-tag">
-        Latest message
-      </div>
-    </div>
+        <div class="stat">
+            <div class="stat-label">Verified Through</div>
+            <div class="stat-value" id="verifiedThrough">—</div>
+        </div>
 
-    <div id="architectMessage" class="architect-message">
-      Genesis premine — Architect
-    </div>
+        <div class="stat">
+            <div class="stat-label">Whispers</div>
+            <div class="stat-value" id="whisperCount">0</div>
+        </div>
 
-    <div id="architectMeta" class="architect-meta">
-      <span>Block <strong>#0</strong></span>
-      <span>GENESIS</span>
-    </div>
+        <div class="stat">
+            <div class="stat-label">Blocks Remaining</div>
+            <div class="stat-value" id="blocksRemaining">—</div>
+        </div>
+    </section>
 
-  </section>
-
-  <!-- STATS -->
-  <section class="stats">
-
-    <div class="stat">
-      <div class="stat-label">Chain Height</div>
-      <div id="chainHeight" class="stat-value">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Verified</div>
-      <div id="verifiedThrough" class="stat-value">—</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Whispers</div>
-      <div id="whisperCount" class="stat-value">0</div>
-    </div>
-
-    <div class="stat">
-      <div class="stat-label">Remaining</div>
-      <div id="blocksRemaining" class="stat-value">—</div>
-    </div>
-
-  </section>
-
-  <!-- PROGRESS -->
-  <section class="progress-panel">
-    <div class="progress-top">
-      <div class="progress-label">Genesis → Live archive</div>
-      <div id="progressPercent" class="progress-percent">0%</div>
-    </div>
-
-    <div class="progress-track">
-      <div id="progressFill" class="progress-fill"></div>
-    </div>
-  </section>
-
-  <!-- SEARCH -->
-  <div class="search-wrap">
-    <span class="search-icon">⌕</span>
     <input
-      id="search"
-      class="search"
-      type="search"
-      autocomplete="off"
-      placeholder="Search whispers, blocks, transactions, addresses..."
-      aria-label="Search whispers"
+        id="search"
+        class="search"
+        type="search"
+        placeholder="Search memo, block, TX, sender or recipient…"
+        autocomplete="off"
     >
-  </div>
 
-  <!-- WHISPERS -->
-  <div class="section-heading">
-    <div class="section-title">Whispers</div>
-    <div id="sectionCount" class="section-count">0 whispers</div>
-  </div>
+    <div id="architectSection"></div>
 
-  <section id="whispers" class="whispers"></section>
+    <div class="section-title">
+        <h2>Whisper Archive</h2>
+        <span id="archiveLabel">5 messages preserved</span>
+    </div>
 
-  <div class="controls">
-    <button id="rebuild" class="rebuild" type="button">
-      Rebuild From Genesis
-    </button>
-  </div>
+    <div id="whisperList" class="whisper-list"></div>
 
-  <div class="footer">
-    NEV369 · NevWhisper · Genesis → Live
-  </div>
+    <details class="scanner-details">
+        <summary>Scanner details</summary>
+
+        <div class="scanner-content">
+            <div>Status: <span id="scannerStatus">Starting…</span></div>
+            <div>Database: nevwhisper-genesis-v1</div>
+            <div>Scan batch: 10 blocks</div>
+            <div>Automatic scan interval: 369 seconds</div>
+            <div>Genesis verification: continuous</div>
+        </div>
+    </details>
+
+    <div class="footer">
+        NEV369 • CanonicalMessage v1 • GodShield
+    </div>
 
 </div>
 
 <script>
-"use strict";
+/* ============================================================
+   NEVWHISPER — PERSISTENT SCANNER
+   IMPORTANT:
+   - Existing IndexedDB is preserved.
+   - whispers are individual records keyed by tx_hash.
+   - Do NOT create an "all" record.
+   ============================================================ */
 
-/* ==================================================
-   CONFIGURATION
-================================================== */
-
-const NODE = "https://nevwhisper-proxy.mattcodeai91.workers.dev";
+const API =
+    "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 
 const DB_NAME = "nevwhisper-genesis-v1";
 const DB_VERSION = 1;
 
 const BATCH_SIZE = 10;
 const TIP_CHECK_INTERVAL = 100;
-
 const MAX_RETRIES = 4;
 const RETRY_DELAY = 1500;
-
 const AUTO_REFRESH_MS = 369000;
-const AUTO_REFRESH_SECONDS = 369;
-
-/*
-  Architect identification.
-
-  Genesis is the initial Architect pin.
-
-  If the chain later identifies the Architect with a
-  sender/address containing ARCHITECT, that message
-  will also be treated as an Architect message.
-
-  GENESIS remains recognised so the original pin
-  always has a valid identity.
-*/
-const ARCHITECT_IDENTITIES = [
-  "GENESIS",
-  "ARCHITECT",
-  "THE ARCHITECT"
-];
-
-/* ==================================================
-   STATE
-================================================== */
 
 const state = {
-  verifiedThrough: -1,
-  chainHeight: -1,
-  whispers: new Map(),
-  scanning: false,
-  stopRequested: false,
-  blocksSinceTipCheck: 0,
-
-  countdown: AUTO_REFRESH_SECONDS,
-  countdownTimer: null,
-
-  latestArchitect: null,
-  newWhisperBlocks: new Set()
+    verifiedThrough: -1,
+    chainHeight: -1,
+    whispers: new Map(),
+    scanning: false,
+    stopRequested: false,
+    blocksSinceTipCheck: 0,
+    nextScanAt: Date.now() + AUTO_REFRESH_MS,
+    newWhispers: new Set()
 };
 
-/* ==================================================
+let db = null;
+
+
+/* ============================================================
    DOM
-================================================== */
+   ============================================================ */
 
-const els = {
-  statusLabel: document.getElementById("statusLabel"),
-  statusDetail: document.getElementById("statusDetail"),
-  countdown: document.getElementById("countdown"),
+const $ = id => document.getElementById(id);
 
-  liveDot: document.getElementById("liveDot"),
-  liveStatus: document.getElementById("liveStatus"),
 
-  architectMessage: document.getElementById("architectMessage"),
-  architectMeta: document.getElementById("architectMeta"),
+/* ============================================================
+   INDEXEDDB
+   ============================================================ */
 
-  chainHeight: document.getElementById("chainHeight"),
-  verifiedThrough: document.getElementById("verifiedThrough"),
-  whisperCount: document.getElementById("whisperCount"),
-  blocksRemaining: document.getElementById("blocksRemaining"),
+function openDatabase() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-  progressPercent: document.getElementById("progressPercent"),
-  progressFill: document.getElementById("progressFill"),
+        request.onerror = () => reject(request.error);
 
-  search: document.getElementById("search"),
-  whispers: document.getElementById("whispers"),
-  sectionCount: document.getElementById("sectionCount"),
+        request.onupgradeneeded = event => {
+            const database = event.target.result;
 
-  rebuild: document.getElementById("rebuild")
-};
+            /*
+             * Only create stores if they don't already exist.
+             * NEVER replace the existing schema.
+             */
 
-/* ==================================================
-   HELPERS
-================================================== */
+            if (!database.objectStoreNames.contains("meta")) {
+                database.createObjectStore("meta", {
+                    keyPath: "key"
+                });
+            }
 
-function escapeHtml(value) {
-  return String(value ?? "")
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+            if (!database.objectStoreNames.contains("whispers")) {
+                database.createObjectStore("whispers", {
+                    keyPath: "tx_hash"
+                });
+            }
+        };
+
+        request.onsuccess = () => {
+            db = request.result;
+            resolve(db);
+        };
+    });
 }
 
-function shorten(value, start = 12, end = 10) {
-  if (!value) return "—";
 
-  const text = String(value);
+function dbGet(storeName, key) {
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readonly");
+        const store = tx.objectStore(storeName);
+        const request = store.get(key);
 
-  if (text.length <= start + end + 3) {
-    return text;
-  }
-
-  return text.slice(0, start) + "..." + text.slice(-end);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
 }
 
-function formatNumber(value) {
-  const n = Number(value);
 
-  if (!Number.isFinite(n)) {
-    return "—";
-  }
+function dbGetAll(storeName) {
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readonly");
+        const store = tx.objectStore(storeName);
+        const request = store.getAll();
 
-  return n.toLocaleString();
+        request.onsuccess = () => resolve(request.result || []);
+        request.onerror = () => reject(request.error);
+    });
 }
 
-function formatAmount(value) {
-  if (value === null || value === undefined || value === "") {
-    return "—";
-  }
 
-  const n = Number(value);
+function dbPut(storeName, value) {
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeName, "readwrite");
+        const store = tx.objectStore(storeName);
 
-  if (!Number.isFinite(n)) {
-    return String(value);
-  }
+        const request = store.put(value);
 
-  /*
-    NEV369 uses 8 decimal places.
-  */
-  const nev = n / 100000000;
-
-  return nev.toLocaleString(undefined, {
-    maximumFractionDigits: 8
-  }) + " NEV";
+        request.onsuccess = () => resolve();
+        request.onerror = () => reject(request.error);
+    });
 }
 
-function formatTimestamp(value) {
-  if (
-    value === null ||
-    value === undefined ||
-    value === ""
-  ) {
-    return "Unknown time";
-  }
 
-  const n = Number(value);
-
-  if (!Number.isFinite(n)) {
-    const d = new Date(value);
-
-    return Number.isNaN(d.getTime())
-      ? "Unknown time"
-      : d.toLocaleString();
-  }
-
-  let milliseconds;
-
-  if (n < 1e12) {
-    milliseconds = n * 1000;
-  } else if (n < 1e15) {
-    milliseconds = n;
-  } else if (n < 1e18) {
-    milliseconds = n / 1000;
-  } else {
-    milliseconds = n / 1000000;
-  }
-
-  const d = new Date(milliseconds);
-
-  return Number.isNaN(d.getTime())
-    ? "Unknown time"
-    : d.toLocaleString();
-}
-
-function txUrl(tx) {
-  if (!tx) return "#";
-
-  return "https://q-lock-ecosystem.com/explorer/#/tx/" +
-    encodeURIComponent(tx);
-}
-
-function blockUrl(height) {
-  return "https://q-lock-ecosystem.com/explorer/#/block/" +
-    encodeURIComponent(height);
-}
-
-function addressUrl(address) {
-  if (!address) return "#";
-
-  return "https://q-lock-ecosystem.com/explorer/#/address/" +
-    encodeURIComponent(address);
-}
-
-/* ==================================================
-   DATABASE
-================================================== */
-
-let dbPromise = null;
-
-function openDb() {
-  if (dbPromise) return dbPromise;
-
-  dbPromise = new Promise((resolve, reject) => {
-
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onupgradeneeded = event => {
-      const db = event.target.result;
-
-      if (!db.objectStoreNames.contains("meta")) {
-        db.createObjectStore("meta");
-      }
-
-      if (!db.objectStoreNames.contains("whispers")) {
-        db.createObjectStore("whispers", {
-          keyPath: "block"
-        });
-      }
-    };
-
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onerror = () => {
-      reject(request.error);
-    };
-  });
-
-  return dbPromise;
-}
-
-async function dbGet(storeName, key) {
-  const db = await openDb();
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readonly");
-    const store = tx.objectStore(storeName);
-    const request = store.get(key);
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function dbPut(storeName, value, key) {
-  const db = await openDb();
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const store = tx.objectStore(storeName);
-
-    const request =
-      key === undefined
-        ? store.put(value)
-        : store.put(value, key);
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
-
-async function dbClear(storeName) {
-  const db = await openDb();
-
-  return new Promise((resolve, reject) => {
-    const tx = db.transaction(storeName, "readwrite");
-    const store = tx.objectStore(storeName);
-    const request = store.clear();
-
-    request.onsuccess = () => resolve();
-    request.onerror = () => reject(request.error);
-  });
-}
+/* ============================================================
+   LOAD EXISTING DATABASE
+   ============================================================ */
 
 async function loadDatabase() {
-  const verified = await dbGet(
-    "meta",
-    "verifiedThrough"
-  );
+    /*
+     * THIS IS THE IMPORTANT FIX.
+     *
+     * The previous UI tried:
+     *
+     *     whispers.get("all")
+     *
+     * That was wrong.
+     *
+     * Existing whispers are individual records:
+     *
+     *     tx_hash -> whisper
+     *
+     * Therefore we load them all.
+     */
 
-  const height = await dbGet(
-    "meta",
-    "chainHeight"
-  );
+    const savedVerified = await dbGet("meta", "verifiedThrough");
+    const savedHeight = await dbGet("meta", "chainHeight");
 
-  const whispers = await dbGet(
-    "whispers",
-    "all"
-  );
+    if (savedVerified && Number.isFinite(Number(savedVerified.value))) {
+        state.verifiedThrough = Number(savedVerified.value);
+    }
 
-  state.verifiedThrough =
-    Number.isFinite(Number(verified))
-      ? Number(verified)
-      : -1;
+    if (savedHeight && Number.isFinite(Number(savedHeight.value))) {
+        state.chainHeight = Number(savedHeight.value);
+    }
 
-  state.chainHeight =
-    Number.isFinite(Number(height))
-      ? Number(height)
-      : -1;
+    const records = await dbGetAll("whispers");
 
-  state.whispers.clear();
+    state.whispers.clear();
 
-  /*
-    Preferred storage format is one record per block.
-    The "all" fallback is retained for compatibility.
-  */
-  if (Array.isArray(whispers)) {
-    for (const whisper of whispers) {
-      if (whisper && Number.isFinite(Number(whisper.block))) {
+    for (const whisper of records) {
+        if (!whisper || !whisper.tx_hash) {
+            continue;
+        }
+
         state.whispers.set(
-          Number(whisper.block),
-          whisper
+            whisper.tx_hash,
+            whisper
         );
-      }
     }
-  }
 
-  /*
-    Reconstruct Architect pin.
-  */
-  state.latestArchitect = null;
+    render();
 
-  for (const whisper of state.whispers.values()) {
-    if (isArchitectWhisper(whisper)) {
-      if (
-        !state.latestArchitect ||
-        Number(whisper.block) >
-        Number(state.latestArchitect.block)
-      ) {
-        state.latestArchitect = whisper;
-      }
-    }
-  }
+    updateStatus(
+        state.whispers.size
+            ? "Archive loaded"
+            : "Archive ready"
+    );
 }
 
-async function saveCheckpoint() {
-  await dbPut(
-    "meta",
-    state.verifiedThrough,
-    "verifiedThrough"
-  );
 
-  await dbPut(
-    "meta",
-    state.chainHeight,
-    "chainHeight"
-  );
+/* ============================================================
+   SAVE SCANNER STATE
+   ============================================================ */
+
+async function saveMeta() {
+    await dbPut("meta", {
+        key: "verifiedThrough",
+        value: state.verifiedThrough
+    });
+
+    await dbPut("meta", {
+        key: "chainHeight",
+        value: state.chainHeight
+    });
 }
+
+
+/* ============================================================
+   WHISPER STORAGE
+   ============================================================ */
 
 async function saveWhisper(whisper) {
-  await dbPut(
-    "whispers",
-    whisper,
-    whisper.block
-  );
-}
-
-/*
-  Save all whisper records as one compatibility record
-  as well. This makes rebuilding / loading robust across
-  earlier versions of NevWhisper.
-*/
-async function saveWhisperSnapshot() {
-  const list = Array.from(state.whispers.values());
-
-  await dbPut(
-    "whispers",
-    list,
-    "all"
-  );
-}
-
-/* ==================================================
-   NETWORK
-================================================== */
-
-async function sleep(ms) {
-  return new Promise(resolve => {
-    setTimeout(resolve, ms);
-  });
-}
-
-async function getJson(path, attempt = 0) {
-
-  try {
-    const response = await fetch(
-      NODE.replace(/\/$/, "") + path,
-      {
-        cache: "no-store"
-      }
-    );
-
-    const text = await response.text();
-
-    let data;
-
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = text;
-    }
-
-    if (!response.ok) {
-      const error = new Error(
-        `${response.status} — ${
-          data && data.error
-            ? data.error
-            : response.statusText
-        }`
-      );
-
-      error.status = response.status;
-
-      throw error;
-    }
-
-    return data;
-
-  } catch (error) {
-
-    if (attempt >= MAX_RETRIES) {
-      throw error;
-    }
-
-    await sleep(
-      RETRY_DELAY * Math.pow(2, attempt)
-    );
-
-    return getJson(path, attempt + 1);
-  }
-}
-
-async function getInfo() {
-  const data = await getJson("/info");
-
-  const height =
-    Number(data?.height ?? data?.chain_height);
-
-  if (!Number.isFinite(height)) {
-    throw new Error("Node returned no valid chain height.");
-  }
-
-  state.chainHeight = height;
-
-  await dbPut(
-    "meta",
-    state.chainHeight,
-    "chainHeight"
-  );
-
-  return data;
-}
-
-/* ==================================================
-   WHISPER NORMALISATION
-================================================== */
-
-function firstValue(object, keys) {
-
-  for (const key of keys) {
-    if (
-      object &&
-      object[key] !== undefined &&
-      object[key] !== null &&
-      object[key] !== ""
-    ) {
-      return object[key];
-    }
-  }
-
-  return null;
-}
-
-function normalizeWhisper(item) {
-
-  if (!item || typeof item !== "object") {
-    return null;
-  }
-
-  const blockValue = firstValue(
-    item,
-    [
-      "block",
-      "height",
-      "block_height",
-      "blockHeight"
-    ]
-  );
-
-  const block = Number(blockValue);
-
-  if (!Number.isFinite(block)) {
-    return null;
-  }
-
-  const memo = firstValue(
-    item,
-    [
-      "memo",
-      "payload_memo",
-      "message",
-      "text"
-    ]
-  );
-
-  if (
-    memo === null ||
-    memo === undefined ||
-    String(memo).trim() === ""
-  ) {
-    return null;
-  }
-
-  const sender = firstValue(
-    item,
-    [
-      "from",
-      "sender",
-      "from_address",
-      "sender_address"
-    ]
-  );
-
-  const to = firstValue(
-    item,
-    [
-      "to",
-      "recipient",
-      "to_address",
-      "recipient_address"
-    ]
-  );
-
-  const tx = firstValue(
-    item,
-    [
-      "tx",
-      "txid",
-      "tx_hash",
-      "transaction",
-      "transaction_hash",
-      "hash"
-    ]
-  );
-
-  const timestamp = firstValue(
-    item,
-    [
-      "timestamp",
-      "time",
-      "created_at",
-      "block_timestamp"
-    ]
-  );
-
-  const amount = firstValue(
-    item,
-    [
-      "amount",
-      "value",
-      "amount_base_units"
-    ]
-  );
-
-  return {
-    block,
-    memo: String(memo),
-    sender: sender ? String(sender) : "",
-    to: to ? String(to) : "",
-    tx: tx ? String(tx) : "",
-    timestamp,
-    amount
-  };
-}
-
-function extractWhispers(payload) {
-
-  if (Array.isArray(payload)) {
-    return payload;
-  }
-
-  if (!payload || typeof payload !== "object") {
-    return [];
-  }
-
-  const candidates = [
-    payload.whispers,
-    payload.results,
-    payload.data,
-    payload.messages,
-    payload.items
-  ];
-
-  for (const candidate of candidates) {
-    if (Array.isArray(candidate)) {
-      return candidate;
-    }
-  }
-
-  /*
-    Some endpoints may return a single object.
-  */
-  if (
-    payload.block !== undefined ||
-    payload.height !== undefined
-  ) {
-    return [payload];
-  }
-
-  return [];
-}
-
-/* ==================================================
-   REWARD FILTER
-================================================== */
-
-function isNetworkReward(whisper) {
-
-  const sender =
-    String(whisper?.sender || "")
-      .trim()
-      .toUpperCase();
-
-  const memo =
-    String(whisper?.memo || "")
-      .trim();
-
-  if (sender === "NETWORK_REWARD") {
-    return true;
-  }
-
-  if (/^Block\s+\d+\s+reward$/i.test(memo)) {
-    return true;
-  }
-
-  return false;
-}
-
-/* ==================================================
-   ARCHITECT DETECTION
-================================================== */
-
-function isArchitectWhisper(whisper) {
-
-  if (!whisper) {
-    return false;
-  }
-
-  const sender =
-    String(whisper.sender || "")
-      .trim()
-      .toUpperCase();
-
-  /*
-    Explicit Architect / Genesis sender identities.
-  */
-  if (
-    ARCHITECT_IDENTITIES.some(identity =>
-      sender === identity
-    )
-  ) {
-    return true;
-  }
-
-  /*
-    Also support future chain labels such as:
-      "ARCHITECT"
-      "THE ARCHITECT"
-      "Architect Node"
-  */
-  if (
-    sender.includes("ARCHITECT")
-  ) {
-    return true;
-  }
-
-  /*
-    Preserve the original Genesis Architect message
-    even if its sender metadata is represented differently
-    by a future node version.
-  */
-  const memo =
-    String(whisper.memo || "")
-      .trim()
-      .toLowerCase();
-
-  if (
-    blockNumberIsGenesis(whisper) &&
-    memo.includes("genesis premine") &&
-    memo.includes("architect")
-  ) {
-    return true;
-  }
-
-  return false;
-}
-
-function blockNumberIsGenesis(whisper) {
-  return Number(whisper?.block) === 0;
-}
-
-function updateArchitect(whisper) {
-
-  if (!isArchitectWhisper(whisper)) {
-    return;
-  }
-
-  if (
-    !state.latestArchitect ||
-    Number(whisper.block) >
-    Number(state.latestArchitect.block)
-  ) {
-    state.latestArchitect = whisper;
-    renderArchitect();
-  }
-}
-
-/* ==================================================
-   SCANNING
-================================================== */
-
-async function scanBatch(startHeight, endHeight) {
-
-  setScanningStatus(
-    `Scanning #${startHeight} → #${endHeight}`,
-    `Verifying ${endHeight - startHeight + 1} blocks`
-  );
-
-  const payload = await getJson(
-    `/whispers?from=${endHeight}&to=${startHeight}`
-  );
-
-  const raw = extractWhispers(payload);
-
-  const batchWhispers = [];
-
-  for (const item of raw) {
-
-    const whisper = normalizeWhisper(item);
-
-    if (!whisper) {
-      continue;
-    }
-
-    if (isNetworkReward(whisper)) {
-      continue;
+    if (!whisper || !whisper.tx_hash) {
+        return;
     }
 
     /*
-      Only retain messages within the requested range.
-    */
-    if (
-      whisper.block < startHeight ||
-      whisper.block > endHeight
-    ) {
-      continue;
-    }
+     * Store each whisper individually.
+     * This preserves multiple whispers in the same block.
+     */
+
+    await dbPut("whispers", whisper);
 
     state.whispers.set(
-      whisper.block,
-      whisper
+        whisper.tx_hash,
+        whisper
     );
-
-    batchWhispers.push(whisper);
-
-    updateArchitect(whisper);
-
-    await saveWhisper(whisper);
-  }
-
-  /*
-    Save the batch boundary only after the entire
-    request succeeded.
-  */
-  state.verifiedThrough = endHeight;
-
-  state.blocksSinceTipCheck +=
-    endHeight - startHeight + 1;
-
-  await saveCheckpoint();
-  await saveWhisperSnapshot();
-
-  renderAll();
-
-  return batchWhispers;
 }
 
-async function startScan() {
 
-  if (state.scanning) {
-    return;
-  }
-
-  state.scanning = true;
-  state.stopRequested = false;
-
-  stopCountdown();
-
-  setScanningStatus(
-    "Scanning archive…",
-    "Genesis → live chain"
-  );
-
-  try {
-
-    await getInfo();
-
-    while (!state.stopRequested) {
-
-      const nextStart =
-        state.verifiedThrough + 1;
-
-      if (
-        nextStart > state.chainHeight
-      ) {
-        /*
-          Archive has caught the current tip.
-        */
-        const latestInfo = await getInfo();
-
-        if (
-          state.verifiedThrough >=
-          state.chainHeight
-        ) {
-          setCurrentStatus();
-
-          state.scanning = false;
-
-          startCountdown();
-
-          renderAll();
-
-          return;
-        }
-
-        continue;
-      }
-
-      const nextEnd = Math.min(
-        nextStart + BATCH_SIZE - 1,
-        state.chainHeight
-      );
-
-      await scanBatch(
-        nextStart,
-        nextEnd
-      );
-
-      /*
-        Periodically refresh the live tip while
-        the historical archive scan is moving.
-      */
-      if (
-        state.blocksSinceTipCheck >=
-        TIP_CHECK_INTERVAL
-      ) {
-        state.blocksSinceTipCheck = 0;
-
-        const oldHeight =
-          state.chainHeight;
-
-        await getInfo();
-
-        if (
-          state.chainHeight !== oldHeight
-        ) {
-          renderAll();
-        }
-      }
+async function saveWhispers(whispers) {
+    if (!Array.isArray(whispers)) {
+        return;
     }
 
-  } catch (error) {
+    for (const whisper of whispers) {
+        await saveWhisper(whisper);
+    }
+}
 
-    console.error(error);
 
-    state.scanning = false;
+/* ============================================================
+   FETCH
+   ============================================================ */
 
-    setErrorStatus(
-      "Scanner paused",
-      error?.message ||
-      "Unable to reach the NEV369 proxy."
+async function fetchJSON(path, attempt = 0) {
+    try {
+        const response = await fetch(
+            API.replace(/\/$/, "") + path,
+            {
+                cache: "no-store"
+            }
+        );
+
+        const text = await response.text();
+
+        let data;
+
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
+
+        if (!response.ok) {
+            throw new Error(
+                `${response.status} — ${
+                    data && data.error
+                        ? data.error
+                        : response.statusText
+                }`
+            );
+        }
+
+        return data;
+
+    } catch (error) {
+
+        if (attempt >= MAX_RETRIES) {
+            throw error;
+        }
+
+        await sleep(
+            RETRY_DELAY * Math.pow(2, attempt)
+        );
+
+        return fetchJSON(
+            path,
+            attempt + 1
+        );
+    }
+}
+
+
+function sleep(ms) {
+    return new Promise(
+        resolve => setTimeout(resolve, ms)
+    );
+}
+
+
+/* ============================================================
+   TIP
+   ============================================================ */
+
+async function getTip() {
+    const info = await fetchJSON("/info");
+
+    const height =
+        Number(
+            info.height ??
+            info.chain_height
+        );
+
+    if (!Number.isFinite(height)) {
+        throw new Error("Invalid chain height");
+    }
+
+    state.chainHeight = height;
+
+    await dbPut("meta", {
+        key: "chainHeight",
+        value: height
+    });
+
+    return height;
+}
+
+
+/* ============================================================
+   MEMO FILTER
+   ============================================================ */
+
+function isRewardWhisper(whisper) {
+    const sender =
+        String(
+            whisper.from ??
+            whisper.sender ??
+            ""
+        ).toUpperCase();
+
+    const memo =
+        String(
+            whisper.memo ??
+            whisper.payload_memo ??
+            ""
+        );
+
+    if (sender === "NETWORK_REWARD") {
+        return true;
+    }
+
+    if (/^Block\s+\d+\s+reward$/i.test(memo)) {
+        return true;
+    }
+
+    return false;
+}
+
+
+/* ============================================================
+   NORMALIZE WHISPER
+   ============================================================ */
+
+function normalizeWhisper(item) {
+    if (!item) {
+        return null;
+    }
+
+    const memo =
+        item.memo ??
+        item.payload_memo ??
+        item.message ??
+        "";
+
+    const txHash =
+        item.tx_hash ??
+        item.txHash ??
+        item.hash ??
+        item.transaction_hash;
+
+    if (!txHash) {
+        return null;
+    }
+
+    const block =
+        Number(
+            item.block ??
+            item.block_height ??
+            item.height ??
+            0
+        );
+
+    const from =
+        item.from ??
+        item.sender ??
+        "";
+
+    const to =
+        item.to ??
+        item.recipient ??
+        "";
+
+    const amount =
+        item.amount ??
+        item.value ??
+        0;
+
+    const timestamp =
+        item.timestamp ??
+        item.time ??
+        item.created_at ??
+        null;
+
+    return {
+        ...item,
+        tx_hash: String(txHash),
+        block: Number.isFinite(block) ? block : 0,
+        memo: String(memo),
+        from: String(from),
+        to: String(to),
+        amount,
+        timestamp
+    };
+}
+
+
+/* ============================================================
+   SCAN BATCH
+   ============================================================ */
+
+async function scanBatch(startHeight, endHeight) {
+
+    updateStatus(
+        `Scanning #${startHeight} → #${endHeight}`
     );
 
-    startCountdown();
+    const result = await fetchJSON(
+        `/whispers?from=${endHeight}&to=${startHeight}`
+    );
 
-    renderAll();
+    let items = [];
 
-  } finally {
+    if (Array.isArray(result)) {
+        items = result;
+    } else if (Array.isArray(result.whispers)) {
+        items = result.whispers;
+    } else if (Array.isArray(result.results)) {
+        items = result.results;
+    } else if (Array.isArray(result.data)) {
+        items = result.data;
+    }
 
-    state.scanning = false;
-  }
+    const normalized = [];
+
+    for (const item of items) {
+        const whisper = normalizeWhisper(item);
+
+        if (!whisper) {
+            continue;
+        }
+
+        if (isRewardWhisper(whisper)) {
+            continue;
+        }
+
+        normalized.push(whisper);
+    }
+
+    const previousCount = state.whispers.size;
+
+    await saveWhispers(normalized);
+
+    if (state.whispers.size > previousCount) {
+        for (
+            const whisper of normalized
+        ) {
+            if (!state.newWhispers.has(whisper.tx_hash)) {
+                state.newWhispers.add(
+                    whisper.tx_hash
+                );
+            }
+        }
+    }
+
+    /*
+     * Only advance the verification frontier
+     * after the entire batch succeeded.
+     */
+
+    state.verifiedThrough = endHeight;
+
+    state.blocksSinceTipCheck +=
+        endHeight - startHeight + 1;
+
+    await dbPut("meta", {
+        key: "verifiedThrough",
+        value: state.verifiedThrough
+    });
+
+    await dbPut("meta", {
+        key: "chainHeight",
+        value: state.chainHeight
+    });
+
+    render();
 }
 
-/* ==================================================
-   COUNTDOWN
-================================================== */
 
-function stopCountdown() {
+/* ============================================================
+   MAIN SCANNER
+   ============================================================ */
 
-  if (state.countdownTimer) {
-    clearInterval(state.countdownTimer);
-    state.countdownTimer = null;
-  }
-}
+async function scanArchive() {
 
-function startCountdown() {
-
-  stopCountdown();
-
-  /*
-    Don't run the automatic timer if there is no
-    known chain yet.
-  */
-  if (state.chainHeight < 0) {
-    return;
-  }
-
-  state.countdown =
-    AUTO_REFRESH_SECONDS;
-
-  updateCountdown();
-
-  state.countdownTimer =
-    setInterval(() => {
-
-      if (state.scanning) {
+    if (state.scanning) {
         return;
-      }
+    }
 
-      state.countdown--;
+    state.scanning = true;
+    state.stopRequested = false;
 
-      if (state.countdown <= 0) {
+    updateScanningUI(true);
 
-        state.countdown = 0;
+    try {
 
-        updateCountdown();
-
-        stopCountdown();
+        const tip = await getTip();
 
         /*
-          Immediately begin the next scan.
-        */
-        startScan();
+         * Resume EXACTLY after the last verified block.
+         */
 
-        return;
-      }
+        let next =
+            Math.max(
+                0,
+                state.verifiedThrough + 1
+            );
 
-      updateCountdown();
+        /*
+         * If already caught up, still verify the tip.
+         */
+
+        if (next > tip) {
+
+            const secondTip =
+                await getTip();
+
+            if (next > secondTip) {
+                updateStatus("Chain current");
+                state.nextScanAt =
+                    Date.now() + AUTO_REFRESH_MS;
+                return;
+            }
+
+            next =
+                Math.max(
+                    0,
+                    state.verifiedThrough + 1
+                );
+        }
+
+        while (
+            next <= state.chainHeight &&
+            !state.stopRequested
+        ) {
+
+            /*
+             * Refresh the live tip periodically.
+             * This allows new blocks to be picked up
+             * without disturbing historical progress.
+             */
+
+            if (
+                state.blocksSinceTipCheck >=
+                TIP_CHECK_INTERVAL
+            ) {
+                await getTip();
+                state.blocksSinceTipCheck = 0;
+            }
+
+            const end =
+                Math.min(
+                    next + BATCH_SIZE - 1,
+                    state.chainHeight
+                );
+
+            await scanBatch(
+                next,
+                end
+            );
+
+            next = end + 1;
+
+            render();
+        }
+
+        /*
+         * Final live-tip check.
+         */
+
+        const finalTip =
+            await getTip();
+
+        if (
+            state.verifiedThrough >=
+            finalTip
+        ) {
+            updateStatus("Chain current");
+        } else {
+            updateStatus(
+                "New blocks detected"
+            );
+        }
+
+        state.nextScanAt =
+            Date.now() + AUTO_REFRESH_MS;
+
+    } catch (error) {
+
+        console.error(
+            "NevWhisper scanner error:",
+            error
+        );
+
+        updateStatus(
+            "Scan paused — retrying automatically"
+        );
+
+    } finally {
+
+        state.scanning = false;
+
+        updateScanningUI(false);
+
+        render();
+    }
+}
+
+
+/* ============================================================
+   AUTOMATIC 369 SECOND TIMER
+   ============================================================ */
+
+function startAutoScanner() {
+
+    state.nextScanAt =
+        Date.now() + AUTO_REFRESH_MS;
+
+    setInterval(() => {
+
+        const remaining =
+            Math.max(
+                0,
+                state.nextScanAt - Date.now()
+            );
+
+        const seconds =
+            Math.ceil(
+                remaining / 1000
+            );
+
+        $("countdown").textContent =
+            seconds;
+
+        if (
+            remaining <= 0 &&
+            !state.scanning
+        ) {
+            state.nextScanAt =
+                Date.now() + AUTO_REFRESH_MS;
+
+            scanArchive();
+        }
 
     }, 1000);
 }
 
-function updateCountdown() {
 
-  if (state.scanning) {
+/* ============================================================
+   UI
+   ============================================================ */
 
-    els.countdown.textContent =
-      "Scanning live chain…";
+function updateStatus(text) {
+    $("statusText").textContent = text;
+    $("scannerStatus").textContent = text;
+}
 
-    return;
-  }
 
-  const seconds =
-    Math.max(
-      0,
-      Math.floor(state.countdown)
+function updateScanningUI(scanning) {
+
+    const dot =
+        $("statusDot");
+
+    if (scanning) {
+        dot.classList.add("scanning");
+    } else {
+        dot.classList.remove("scanning");
+    }
+}
+
+
+/* ============================================================
+   TIMESTAMP
+   ============================================================ */
+
+function formatTimestamp(value) {
+
+    if (
+        value === null ||
+        value === undefined ||
+        value === ""
+    ) {
+        return "Unknown time";
+    }
+
+    const n = Number(value);
+
+    if (!Number.isFinite(n)) {
+
+        const d =
+            new Date(value);
+
+        return Number.isNaN(
+            d.getTime()
+        )
+            ? "Unknown time"
+            : d.toLocaleString();
+    }
+
+    let milliseconds;
+
+    if (n < 1e12) {
+        milliseconds = n * 1000;
+    } else if (n < 1e15) {
+        milliseconds = n;
+    } else if (n < 1e18) {
+        milliseconds = n / 1000;
+    } else {
+        milliseconds = n / 1000000;
+    }
+
+    const d =
+        new Date(milliseconds);
+
+    return Number.isNaN(
+        d.getTime()
+    )
+        ? "Unknown time"
+        : d.toLocaleString();
+}
+
+
+/* ============================================================
+   AMOUNT
+   ============================================================ */
+
+function formatAmount(value) {
+
+    const n = Number(value);
+
+    if (!Number.isFinite(n)) {
+        return String(value ?? "0");
+    }
+
+    /*
+     * NEV369 has 8 decimals.
+     */
+
+    const nev =
+        n / 100000000;
+
+    return nev.toLocaleString(
+        undefined,
+        {
+            maximumFractionDigits: 8
+        }
+    ) + " NEV";
+}
+
+
+/* ============================================================
+   SHORT HASH
+   ============================================================ */
+
+function shortHash(value) {
+
+    const s = String(value ?? "");
+
+    if (s.length <= 18) {
+        return s;
+    }
+
+    return (
+        s.slice(0, 10) +
+        "…" +
+        s.slice(-8)
     );
-
-  els.countdown.textContent =
-    `Next Scan in ${seconds} seconds`;
 }
 
-/* ==================================================
-   STATUS
-================================================== */
 
-function setScanningStatus(label, detail) {
+/* ============================================================
+   EXPLORER LINKS
+   ============================================================ */
 
-  els.statusLabel.textContent = label;
-  els.statusDetail.textContent = detail;
+function txLink(hash) {
 
-  els.liveStatus.textContent = "SCANNING";
-
-  els.liveDot.classList.add("scanning");
-  els.liveDot.classList.remove("error");
-
-  updateCountdown();
+    return (
+        "https://q-lock-ecosystem.com/explorer/#/tx/" +
+        encodeURIComponent(hash)
+    );
 }
 
-function setCurrentStatus() {
 
-  els.statusLabel.textContent =
-    "Chain current";
+function blockLink(block) {
 
-  els.statusDetail.textContent =
-    `Verified through #${state.verifiedThrough}`;
-
-  els.liveStatus.textContent =
-    "LIVE";
-
-  els.liveDot.classList.remove(
-    "scanning",
-    "error"
-  );
-
-  updateCountdown();
+    return (
+        "https://q-lock-ecosystem.com/node/block/" +
+        encodeURIComponent(block)
+    );
 }
 
-function setErrorStatus(label, detail) {
 
-  els.statusLabel.textContent = label;
-  els.statusDetail.textContent = detail;
+/* ============================================================
+   ARCHITECT DETECTION
+   ============================================================ */
 
-  els.liveStatus.textContent = "PAUSED";
+function isArchitect(whisper) {
 
-  els.liveDot.classList.remove("scanning");
-  els.liveDot.classList.add("error");
+    const from =
+        String(
+            whisper.from ??
+            whisper.sender ??
+            ""
+        ).toUpperCase();
 
-  updateCountdown();
+    const memo =
+        String(
+            whisper.memo ??
+            whisper.payload_memo ??
+            ""
+        ).toLowerCase();
+
+    if (from === "GENESIS") {
+        return true;
+    }
+
+    if (
+        memo.includes("architect")
+    ) {
+        return true;
+    }
+
+    return false;
 }
 
-/* ==================================================
-   RENDER ARCHITECT
-================================================== */
+
+/* ============================================================
+   RENDER ARCHITECT PIN
+   ============================================================ */
 
 function renderArchitect() {
 
-  const whisper =
-    state.latestArchitect;
+    const architects =
+        [...state.whispers.values()]
+            .filter(isArchitect)
+            .sort(
+                (a, b) =>
+                    Number(b.block || 0) -
+                    Number(a.block || 0)
+            );
 
-  if (!whisper) {
-    els.architectMessage.textContent =
-      "Waiting for the Architect…";
+    if (!architects.length) {
+        $("architectSection").innerHTML = "";
+        return;
+    }
 
-    els.architectMeta.innerHTML =
-      "<span>No Architect message indexed yet.</span>";
+    const latest =
+        architects[0];
 
-    return;
-  }
-
-  els.architectMessage.textContent =
-    whisper.memo;
-
-  const block =
-    Number(whisper.block);
-
-  const timestamp =
-    formatTimestamp(whisper.timestamp);
-
-  const sender =
-    whisper.sender || "UNKNOWN";
-
-  const tx =
-    whisper.tx;
-
-  let html = `
-    <span>
-      Block
-      <strong>
-        <a
-          href="${escapeHtml(blockUrl(block))}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >#${formatNumber(block)}</a>
-      </strong>
-    </span>
-
-    <span>${escapeHtml(timestamp)}</span>
-
-    <span>
-      From
-      <strong>${escapeHtml(sender)}</strong>
-    </span>
-  `;
-
-  if (tx) {
-    html += `
-      <span>
-        <a
-          href="${escapeHtml(txUrl(tx))}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >View transaction ↗</a>
-      </span>
-    `;
-  }
-
-  els.architectMeta.innerHTML = html;
-}
-
-/* ==================================================
-   RENDER STATS
-================================================== */
-
-function renderStats() {
-
-  els.chainHeight.textContent =
-    state.chainHeight >= 0
-      ? "#" + formatNumber(state.chainHeight)
-      : "—";
-
-  els.verifiedThrough.textContent =
-    state.verifiedThrough >= 0
-      ? "#" + formatNumber(state.verifiedThrough)
-      : "—";
-
-  els.whisperCount.textContent =
-    formatNumber(state.whispers.size);
-
-  const remaining =
-    state.chainHeight >= 0
-      ? Math.max(
-          0,
-          state.chainHeight -
-          state.verifiedThrough
-        )
-      : null;
-
-  els.blocksRemaining.textContent =
-    remaining === null
-      ? "—"
-      : formatNumber(remaining);
-}
-
-/* ==================================================
-   RENDER PROGRESS
-================================================== */
-
-function renderProgress() {
-
-  if (
-    state.chainHeight < 0 ||
-    state.verifiedThrough < 0
-  ) {
-    els.progressFill.style.width = "0%";
-    els.progressPercent.textContent = "0%";
-    return;
-  }
-
-  const total =
-    state.chainHeight + 1;
-
-  const verified =
-    Math.min(
-      total,
-      state.verifiedThrough + 1
-    );
-
-  const percentage =
-    total <= 0
-      ? 0
-      : Math.min(
-          100,
-          Math.max(
-            0,
-            (verified / total) * 100
-          )
+    const memo =
+        String(
+            latest.memo ??
+            latest.payload_memo ??
+            ""
         );
 
-  els.progressFill.style.width =
-    percentage.toFixed(2) + "%";
+    $("architectSection").innerHTML = `
+        <div class="section-title">
+            <h2>The Architect</h2>
+            <span>Latest message</span>
+        </div>
 
-  els.progressPercent.textContent =
-    percentage.toFixed(1) + "%";
+        <div class="architect">
+
+            <div class="architect-head">
+
+                <div>
+                    <div class="architect-name">
+                        The Architect
+                    </div>
+
+                    <div class="architect-time">
+                        Block #${latest.block}
+                        •
+                        ${escapeHTML(
+                            formatTimestamp(
+                                latest.timestamp
+                            )
+                        )}
+                    </div>
+                </div>
+
+                <div class="pin">
+                    📌 Pinned
+                </div>
+
+            </div>
+
+            <div class="architect-memo">
+                ${escapeHTML(memo)}
+            </div>
+
+        </div>
+    `;
 }
 
-/* ==================================================
-   SEARCH
-================================================== */
 
-function whisperMatches(
-  whisper,
-  query
-) {
-
-  if (!query) {
-    return true;
-  }
-
-  const q =
-    query.toLowerCase();
-
-  const haystack = [
-    whisper.memo,
-    whisper.sender,
-    whisper.to,
-    whisper.tx,
-    String(whisper.block),
-    formatTimestamp(whisper.timestamp)
-  ]
-    .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
-
-  return haystack.includes(q);
-}
-
-/* ==================================================
-   RENDER WHISPERS
-================================================== */
+/* ============================================================
+   RENDER ARCHIVE
+   ============================================================ */
 
 function renderWhispers() {
 
-  const query =
-    els.search.value
-      .trim()
-      .toLowerCase();
+    const query =
+        $("search").value
+            .trim()
+            .toLowerCase();
 
-  const whispers =
-    Array.from(state.whispers.values())
-      .filter(whisper =>
-        whisperMatches(
-          whisper,
-          query
+    let whispers =
+        [...state.whispers.values()]
+            .sort(
+                (a, b) =>
+                    Number(b.block || 0) -
+                    Number(a.block || 0)
+            );
+
+    if (query) {
+
+        whispers =
+            whispers.filter(
+                whisper => {
+
+                    const haystack = [
+                        whisper.memo,
+                        whisper.payload_memo,
+                        whisper.tx_hash,
+                        whisper.from,
+                        whisper.to,
+                        whisper.sender,
+                        whisper.recipient,
+                        whisper.block
+                    ]
+                        .filter(
+                            value =>
+                                value !==
+                                undefined &&
+                                value !== null
+                        )
+                        .join(" ")
+                        .toLowerCase();
+
+                    return haystack.includes(
+                        query
+                    );
+                }
+            );
+    }
+
+    $("whisperCount").textContent =
+        state.whispers.size;
+
+    $("archiveLabel").textContent =
+        `${state.whispers.size} ${
+            state.whispers.size === 1
+                ? "message"
+                : "messages"
+        } preserved`;
+
+    if (!whispers.length) {
+
+        $("whisperList").innerHTML = `
+            <div class="empty">
+                ${
+                    query
+                        ? "No whispers match your search."
+                        : "No whispers indexed yet."
+                }
+            </div>
+        `;
+
+        return;
+    }
+
+    $("whisperList").innerHTML =
+        whispers.map(
+            whisper => {
+
+                const memo =
+                    String(
+                        whisper.memo ??
+                        whisper.payload_memo ??
+                        ""
+                    );
+
+                const tx =
+                    String(
+                        whisper.tx_hash ??
+                        ""
+                    );
+
+                const from =
+                    String(
+                        whisper.from ??
+                        whisper.sender ??
+                        ""
+                    );
+
+                const to =
+                    String(
+                        whisper.to ??
+                        whisper.recipient ??
+                        ""
+                    );
+
+                const isNew =
+                    state.newWhispers.has(
+                        tx
+                    );
+
+                return `
+                    <article
+                        class="whisper ${
+                            isNew
+                                ? "new"
+                                : ""
+                        }"
+                    >
+
+                        <div class="whisper-top">
+
+                            <a
+                                class="block"
+                                href="${blockLink(
+                                    whisper.block
+                                )}"
+                                target="_blank"
+                                rel="noopener"
+                            >
+                                #${whisper.block}
+                            </a>
+
+                            <span class="time">
+                                ${escapeHTML(
+                                    formatTimestamp(
+                                        whisper.timestamp
+                                    )
+                                )}
+                            </span>
+
+                        </div>
+
+                        <div class="memo">
+                            ${escapeHTML(memo)}
+                        </div>
+
+                        <div class="details">
+
+                            <div class="label">
+                                Amount
+                            </div>
+
+                            <div class="value">
+                                ${escapeHTML(
+                                    formatAmount(
+                                        whisper.amount
+                                    )
+                                )}
+                            </div>
+
+                            <div class="label">
+                                TX
+                            </div>
+
+                            <div class="value">
+                                <a
+                                    href="${txLink(tx)}"
+                                    target="_blank"
+                                    rel="noopener"
+                                >
+                                    ${escapeHTML(
+                                        shortHash(tx)
+                                    )} ↗
+                                </a>
+                            </div>
+
+                            <div class="label">
+                                From
+                            </div>
+
+                            <div class="value">
+                                ${escapeHTML(
+                                    from
+                                )}
+                            </div>
+
+                            <div class="label">
+                                To
+                            </div>
+
+                            <div class="value">
+                                ${escapeHTML(
+                                    to
+                                )}
+                            </div>
+
+                        </div>
+
+                    </article>
+                `;
+            }
         )
-      )
-      .sort(
-        (a, b) =>
-          Number(b.block) -
-          Number(a.block)
-      );
+        .join("");
 
-  els.sectionCount.textContent =
-    `${whispers.length} ${
-      whispers.length === 1
-        ? "whisper"
-        : "whispers"
-    }`;
+    /*
+     * New-message animation is only needed once.
+     */
 
-  if (!whispers.length) {
+    setTimeout(() => {
+        state.newWhispers.clear();
+    }, 1800);
+}
 
-    els.whispers.innerHTML = `
-      <div class="empty">
-        ${
-          query
-            ? "No whispers match your search."
-            : "No whispers indexed yet."
-        }
-      </div>
-    `;
 
-    return;
-  }
+/* ============================================================
+   PROGRESS
+   ============================================================ */
 
-  const fragment =
-    document.createDocumentFragment();
+function renderProgress() {
 
-  for (const whisper of whispers) {
+    const height =
+        Number(state.chainHeight);
 
-    const card =
-      document.createElement("article");
-
-    card.className = "whisper";
+    const verified =
+        Number(state.verifiedThrough);
 
     if (
-      state.newWhisperBlocks.has(
-        Number(whisper.block)
-      )
+        !Number.isFinite(height) ||
+        height < 0
     ) {
-      card.classList.add("new");
+        return;
+    }
 
-      setTimeout(() => {
-        state.newWhisperBlocks.delete(
-          Number(whisper.block)
+    const safeVerified =
+        Math.max(
+            -1,
+            Math.min(
+                verified,
+                height
+            )
         );
-      }, 2200);
-    }
 
-    const block =
-      Number(whisper.block);
+    const completed =
+        safeVerified + 1;
 
-    const memo =
-      escapeHtml(whisper.memo);
+    const total =
+        height + 1;
 
-    const timestamp =
-      escapeHtml(
-        formatTimestamp(
-          whisper.timestamp
-        )
-      );
+    const percent =
+        total > 0
+            ? Math.min(
+                100,
+                (completed / total) * 100
+            )
+            : 0;
 
-    const amount =
-      formatAmount(
-        whisper.amount
-      );
+    const remaining =
+        Math.max(
+            0,
+            height - safeVerified
+        );
 
-    const sender =
-      whisper.sender || "—";
+    $("chainHeight").textContent =
+        "#" + height;
 
-    const to =
-      whisper.to || "—";
+    $("verifiedThrough").textContent =
+        safeVerified >= 0
+            ? "#" + safeVerified
+            : "—";
 
-    const tx =
-      whisper.tx || "";
+    $("blocksRemaining").textContent =
+        remaining.toLocaleString();
 
-    card.innerHTML = `
-      <div class="whisper-top">
+    $("progressPercent").textContent =
+        percent.toFixed(1) + "%";
 
-        <a
-          class="block-link"
-          href="${escapeHtml(blockUrl(block))}"
-          target="_blank"
-          rel="noopener noreferrer"
-          title="Open block #${block}"
-        >
-          #${formatNumber(block)} ↗
-        </a>
+    $("progressBar").style.width =
+        percent + "%";
 
-        <div class="timestamp">
-          ${timestamp}
-        </div>
-
-      </div>
-
-      <div class="memo">
-        ${memo}
-      </div>
-
-      <div class="details">
-
-        <div class="detail-label">
-          Amount
-        </div>
-
-        <div
-          class="detail-value"
-          title="${escapeHtml(
-            whisper.amount ?? ""
-          )}"
-        >
-          ${escapeHtml(amount)}
-        </div>
-
-        <div class="detail-label">
-          TX
-        </div>
-
-        <div class="detail-value">
-
-          ${
-            tx
-              ? `
-                <a
-                  href="${escapeHtml(txUrl(tx))}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="${escapeHtml(tx)}"
-                >
-                  ${escapeHtml(
-                    shorten(tx, 12, 10)
-                  )} ↗
-                </a>
-              `
-              : "—"
-          }
-
-        </div>
-
-        <div class="detail-label">
-          From
-        </div>
-
-        <div
-          class="detail-value"
-          title="${escapeHtml(sender)}"
-        >
-          ${
-            sender !== "—"
-              ? `
-                <a
-                  href="${escapeHtml(
-                    addressUrl(sender)
-                  )}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  ${escapeHtml(
-                    shorten(sender, 12, 10)
-                  )} ↗
-                </a>
-              `
-              : "—"
-          }
-        </div>
-
-        <div class="detail-label">
-          To
-        </div>
-
-        <div
-          class="detail-value"
-          title="${escapeHtml(to)}"
-        >
-          ${
-            to !== "—"
-              ? `
-                <a
-                  href="${escapeHtml(
-                    addressUrl(to)
-                  )}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  ${escapeHtml(
-                    shorten(to, 12, 10)
-                  )} ↗
-                </a>
-              `
-              : "—"
-          }
-        </div>
-
-      </div>
-    `;
-
-    fragment.appendChild(card);
-  }
-
-  els.whispers.replaceChildren(fragment);
+    $("progressText").textContent =
+        safeVerified >= height
+            ? "Genesis → Live • Fully verified"
+            : `Genesis → #${safeVerified} verified`;
 }
 
-/* ==================================================
-   RENDER EVERYTHING
-================================================== */
 
-function renderAll() {
-  renderStats();
-  renderProgress();
-  renderArchitect();
-  renderWhispers();
-  updateCountdown();
+/* ============================================================
+   MAIN RENDER
+   ============================================================ */
+
+function render() {
+    renderProgress();
+    renderArchitect();
+    renderWhispers();
 }
 
-/* ==================================================
-   REBUILD
-================================================== */
 
-async function rebuildFromGenesis() {
+/* ============================================================
+   ESCAPE HTML
+   ============================================================ */
 
-  if (state.scanning) {
-    return;
-  }
+function escapeHTML(value) {
 
-  const confirmed =
-    window.confirm(
-      "Rebuild the NevWhisper archive from Genesis?\n\n" +
-      "This clears the local indexed archive and " +
-      "starts again from block #0."
-    );
-
-  if (!confirmed) {
-    return;
-  }
-
-  stopCountdown();
-
-  await dbClear("meta");
-  await dbClear("whispers");
-
-  state.verifiedThrough = -1;
-  state.chainHeight = -1;
-  state.whispers.clear();
-  state.latestArchitect = null;
-  state.blocksSinceTipCheck = 0;
-  state.newWhisperBlocks.clear();
-
-  renderAll();
-
-  await startScan();
+    return String(
+        value ?? ""
+    )
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
 }
 
-/* ==================================================
-   EVENT LISTENERS
-================================================== */
 
-els.search.addEventListener(
-  "input",
-  renderWhispers
+/* ============================================================
+   SEARCH
+   ============================================================ */
+
+$("search").addEventListener(
+    "input",
+    () => renderWhispers()
 );
 
-els.rebuild.addEventListener(
-  "click",
-  rebuildFromGenesis
-);
 
-/* ==================================================
-   INITIALISE
-================================================== */
+/* ============================================================
+   STARTUP
+   ============================================================ */
 
-async function init() {
+async function start() {
 
-  try {
-
-    await loadDatabase();
-
-    renderAll();
-
-    /*
-      Load the current chain height immediately,
-      but do not force a full scan just because the
-      page opened.
-    */
     try {
-      await getInfo();
+
+        await openDatabase();
+
+        /*
+         * FIRST:
+         * Load the existing completed archive.
+         *
+         * This is what restores your 5 whispers.
+         */
+
+        await loadDatabase();
+
+        /*
+         * Then check the live chain.
+         */
+
+        await getTip();
+
+        render();
+
+        /*
+         * Continue scanning from the saved
+         * verification frontier.
+         *
+         * If you're already fully caught up,
+         * this simply confirms the current tip.
+         */
+
+        await scanArchive();
+
+        /*
+         * Keep the 369-second automatic cycle.
+         */
+
+        startAutoScanner();
+
     } catch (error) {
-      console.warn(
-        "Initial chain info unavailable:",
-        error
-      );
+
+        console.error(
+            "NevWhisper startup error:",
+            error
+        );
+
+        updateStatus(
+            "Unable to connect"
+        );
     }
-
-    renderAll();
-
-    /*
-      If the archive is behind the chain, the user can
-      press Rebuild From Genesis or the automatic timer
-      will eventually start the scan.
-
-      If the archive is already current, the same timer
-      checks for new blocks every 369 seconds.
-    */
-    startCountdown();
-
-  } catch (error) {
-
-    console.error(error);
-
-    setErrorStatus(
-      "Initialisation error",
-      error?.message ||
-      "Unable to initialise NevWhisper."
-    );
-  }
 }
 
-init();
+start();
+
 </script>
 
 </body>

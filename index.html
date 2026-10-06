@@ -8,28 +8,30 @@
 
   <style>
     :root {
-      --bg: #0b0f14;
-      --panel: #111720;
-      --panel-2: #151d28;
-      --border: #263241;
-      --text: #eef3f8;
-      --muted: #8d9aaa;
-      --accent: #7dd3fc;
-      --accent-2: #38bdf8;
-      --success: #86efac;
-      --warning: #fcd34d;
-      --danger: #fca5a5;
-      --shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
+      --bg: #090d12;
+      --panel: #111821;
+      --panel-hover: #151f2a;
+      --border: #253241;
+      --text: #edf3f8;
+      --muted: #8997a6;
+      --accent: #67d5ff;
+      --accent-dark: #075985;
+      --green: #86efac;
+      --red: #fca5a5;
+      --yellow: #fde68a;
     }
 
     * {
       box-sizing: border-box;
     }
 
-    html,
+    html {
+      background: var(--bg);
+    }
+
     body {
       margin: 0;
-      padding: 0;
+      min-height: 100vh;
       background: var(--bg);
       color: var(--text);
       font-family:
@@ -41,10 +43,6 @@
         sans-serif;
     }
 
-    body {
-      min-height: 100vh;
-    }
-
     a {
       color: var(--accent);
       text-decoration: none;
@@ -54,13 +52,22 @@
       text-decoration: underline;
     }
 
-    .wrap {
-      width: min(1100px, calc(100% - 28px));
+    button,
+    input {
+      font: inherit;
+    }
+
+    .container {
+      width: min(1050px, calc(100% - 28px));
       margin: 0 auto;
       padding: 28px 0 60px;
     }
 
-    header {
+    /* =========================================================
+       HEADER
+       ========================================================= */
+
+    .header {
       margin-bottom: 22px;
     }
 
@@ -74,56 +81,72 @@
       width: 44px;
       height: 44px;
       border-radius: 12px;
-      display: grid;
-      place-items: center;
-      background: linear-gradient(135deg, #0ea5e9, #2563eb);
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      background:
+        linear-gradient(
+          135deg,
+          #0284c7,
+          #2563eb
+        );
+
       color: white;
+      font-size: 16px;
       font-weight: 900;
-      font-size: 18px;
-      box-shadow: 0 8px 22px rgba(14, 165, 233, 0.22);
+
+      box-shadow:
+        0 8px 25px rgba(14, 165, 233, 0.2);
     }
 
-    h1 {
+    .title {
       margin: 0;
       font-size: 25px;
       line-height: 1.1;
     }
 
     .subtitle {
-      margin: 5px 0 0;
+      margin-top: 5px;
       color: var(--muted);
-      font-size: 14px;
+      font-size: 13px;
     }
+
+    /* =========================================================
+       CONTROLS
+       ========================================================= */
 
     .controls {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 18px;
+      gap: 9px;
+      margin-bottom: 16px;
     }
 
     button {
-      border: 1px solid var(--border);
-      background: var(--panel-2);
-      color: var(--text);
-      padding: 10px 15px;
+      padding: 9px 14px;
+
       border-radius: 9px;
-      font-size: 14px;
-      font-weight: 700;
+      border: 1px solid var(--border);
+
+      background: #141d27;
+      color: var(--text);
+
+      font-size: 13px;
+      font-weight: 800;
+
       cursor: pointer;
-      transition:
-        background 0.15s ease,
-        border-color 0.15s ease,
-        transform 0.1s ease;
     }
 
     button:hover:not(:disabled) {
-      background: #1b2633;
-      border-color: #3a4b60;
+      background: #1a2632;
+      border-color: #3b4d61;
     }
 
-    button:active:not(:disabled) {
-      transform: translateY(1px);
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
     }
 
     button.primary {
@@ -135,234 +158,328 @@
       background: #0369a1;
     }
 
-    button.danger {
-      border-color: #7f1d1d;
-      color: #fecaca;
+    button.stop {
+      color: var(--red);
+      border-color: #6f1d1d;
     }
 
-    button.danger:hover:not(:disabled) {
-      background: #2a1417;
+    button.stop:hover:not(:disabled) {
+      background: #251113;
     }
 
-    button:disabled {
-      opacity: 0.45;
-      cursor: not-allowed;
-    }
+    /* =========================================================
+       STATUS
+       ========================================================= */
 
-    .status-panel {
+    .status {
+      padding: 15px;
+
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 14px;
-      padding: 17px;
-      margin-bottom: 18px;
-      box-shadow: var(--shadow);
+      border-radius: 12px;
+
+      margin-bottom: 14px;
     }
 
-    .status-top {
+    .status-row {
       display: flex;
-      align-items: center;
       justify-content: space-between;
+      align-items: flex-start;
+
       gap: 15px;
-      margin-bottom: 12px;
+
+      margin-bottom: 11px;
     }
 
-    .status-text {
-      font-weight: 700;
+    .status-title {
       font-size: 14px;
+      font-weight: 800;
     }
 
     .status-detail {
-      color: var(--muted);
-      font-size: 13px;
       margin-top: 4px;
+      color: var(--muted);
+      font-size: 12px;
     }
 
     .status-pill {
-      flex: 0 0 auto;
+      flex-shrink: 0;
+
       padding: 5px 9px;
+
       border-radius: 999px;
-      font-size: 12px;
-      font-weight: 800;
-      background: #17212c;
-      color: var(--muted);
+
+      background: #18222d;
       border: 1px solid var(--border);
+
+      color: var(--muted);
+
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
     }
 
     .status-pill.running {
       color: var(--accent);
-      border-color: #075985;
       background: #082f49;
+      border-color: #075985;
     }
 
     .status-pill.current {
-      color: var(--success);
-      border-color: #166534;
+      color: var(--green);
       background: #052e16;
+      border-color: #166534;
     }
 
     .status-pill.error {
-      color: var(--danger);
-      border-color: #7f1d1d;
+      color: var(--red);
       background: #2a0d0d;
+      border-color: #7f1d1d;
     }
 
     .progress-track {
-      height: 8px;
-      background: #080c11;
-      border-radius: 999px;
+      width: 100%;
+      height: 7px;
+
       overflow: hidden;
-      border: 1px solid #1b2531;
+
+      background: #070b10;
+      border-radius: 999px;
+
+      border: 1px solid #18232f;
     }
 
     .progress-bar {
-      height: 100%;
       width: 0%;
-      background: linear-gradient(
-        90deg,
-        var(--accent-2),
-        #818cf8
-      );
+      height: 100%;
+
+      background:
+        linear-gradient(
+          90deg,
+          #0ea5e9,
+          #6366f1
+        );
+
       transition: width 0.25s ease;
     }
 
+    .error {
+      display: none;
+
+      margin-top: 10px;
+      padding: 9px 10px;
+
+      background: #250d0d;
+      border: 1px solid #6f1d1d;
+      border-radius: 8px;
+
+      color: var(--red);
+
+      font-size: 12px;
+
+      overflow-wrap: anywhere;
+    }
+
+    /* =========================================================
+       STATS
+       ========================================================= */
+
     .stats {
       display: grid;
-      grid-template-columns: repeat(4, 1fr);
-      gap: 10px;
-      margin-bottom: 18px;
+      grid-template-columns:
+        repeat(4, minmax(0, 1fr));
+
+      gap: 9px;
+
+      margin-bottom: 22px;
     }
 
     .stat {
+      padding: 12px 13px;
+
       background: var(--panel);
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 13px 14px;
+      border-radius: 10px;
     }
 
     .stat-label {
+      margin-bottom: 4px;
+
       color: var(--muted);
-      font-size: 11px;
+
+      font-size: 10px;
+      font-weight: 800;
+
       text-transform: uppercase;
       letter-spacing: 0.07em;
-      margin-bottom: 5px;
     }
 
     .stat-value {
-      font-size: 19px;
-      font-weight: 800;
+      font-size: 18px;
+      font-weight: 900;
     }
+
+    /* =========================================================
+       FEED HEADER
+       ========================================================= */
 
     .feed-header {
       display: flex;
       align-items: center;
       justify-content: space-between;
+
       gap: 12px;
-      margin: 22px 0 12px;
+
+      margin-bottom: 10px;
     }
 
-    .feed-header h2 {
+    .feed-title {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .feed-title h2 {
       margin: 0;
+
       font-size: 18px;
     }
 
+    .feed-count {
+      color: var(--muted);
+      font-size: 12px;
+    }
+
     .search {
-      width: 260px;
+      width: 250px;
       max-width: 100%;
-      border: 1px solid var(--border);
+
+      padding: 8px 10px;
+
       background: var(--panel);
+
+      border: 1px solid var(--border);
+      border-radius: 8px;
+
       color: var(--text);
-      border-radius: 9px;
-      padding: 9px 11px;
+
       outline: none;
-      font-size: 13px;
+
+      font-size: 12px;
     }
 
     .search:focus {
-      border-color: var(--accent-2);
+      border-color: var(--accent);
     }
+
+    /* =========================================================
+       WHISPER FEED
+       ========================================================= */
 
     .feed {
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
     }
 
-    /*
-      Compact whisper card
-    */
-
     .whisper {
+      padding: 13px 15px;
+
       background: var(--panel);
+
       border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 16px;
-      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.16);
+      border-radius: 10px;
+
+      transition:
+        background 0.15s ease,
+        border-color 0.15s ease;
     }
 
     .whisper:hover {
-      border-color: #344457;
+      background: var(--panel-hover);
+      border-color: #35475a;
     }
 
-    .whisper-head {
+    /* ---------------------------------------------------------
+       TOP LINE
+       --------------------------------------------------------- */
+
+    .whisper-top {
       display: flex;
       align-items: center;
       justify-content: space-between;
+
       gap: 12px;
-      margin-bottom: 10px;
+
+      margin-bottom: 8px;
     }
 
-    .block {
+    .block-number {
       color: var(--accent);
+
+      font-size: 13px;
       font-weight: 900;
-      font-size: 14px;
-      white-space: nowrap;
     }
 
-    .time {
+    .timestamp {
       color: var(--muted);
-      font-size: 12px;
+
+      font-size: 11px;
+
       text-align: right;
       white-space: nowrap;
     }
 
+    /* ---------------------------------------------------------
+       MEMO
+       --------------------------------------------------------- */
+
     .memo {
+      margin-bottom: 11px;
+
       color: var(--text);
-      font-size: 15px;
-      line-height: 1.5;
+
+      font-size: 14px;
+      line-height: 1.45;
+
       font-weight: 600;
+
       overflow-wrap: anywhere;
-      margin-bottom: 12px;
     }
+
+    /* ---------------------------------------------------------
+       DETAILS
+       --------------------------------------------------------- */
 
     .details {
       display: grid;
-      grid-template-columns: 100px minmax(0, 1fr);
-      row-gap: 7px;
-      column-gap: 10px;
-      font-size: 12px;
+
+      grid-template-columns:
+        62px
+        minmax(0, 1fr);
+
+      column-gap: 12px;
+      row-gap: 6px;
+
+      font-size: 11px;
     }
 
-    .detail-label {
+    .label {
       color: var(--muted);
-      font-weight: 700;
-    }
-
-    .detail-value {
-      min-width: 0;
-      overflow-wrap: anywhere;
-    }
-
-    .amount {
-      color: var(--success);
       font-weight: 800;
     }
 
-    .hash-link,
-    .address-link {
-      display: inline-flex;
-      align-items: center;
-      gap: 5px;
-      max-width: 100%;
+    .value {
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .amount {
+      color: var(--green);
+      font-weight: 900;
+    }
+
+    .mono {
       font-family:
         ui-monospace,
         SFMono-Regular,
@@ -370,53 +487,96 @@
         Monaco,
         Consolas,
         monospace;
+    }
+
+    /* ---------------------------------------------------------
+       SHORT LINKS
+       --------------------------------------------------------- */
+
+    .compact-link {
+      display: inline-flex;
+
+      align-items: center;
+
+      max-width: 100%;
+
+      gap: 4px;
+
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+
       font-size: 11px;
     }
 
-    .short {
+    .short-text {
+      display: block;
+
+      max-width: 100%;
+
       overflow: hidden;
+
       text-overflow: ellipsis;
+
       white-space: nowrap;
-      vertical-align: bottom;
     }
 
     .external {
+      flex-shrink: 0;
+
+      color: var(--accent);
+
       font-family: inherit;
-      font-size: 11px;
-      opacity: 0.7;
-      flex: 0 0 auto;
+
+      font-size: 10px;
     }
+
+    /* ---------------------------------------------------------
+       EMPTY
+       --------------------------------------------------------- */
 
     .empty {
+      padding: 30px 15px;
+
       background: var(--panel);
+
       border: 1px dashed var(--border);
-      border-radius: 12px;
-      padding: 28px;
+      border-radius: 10px;
+
       color: var(--muted);
+
       text-align: center;
+
+      font-size: 13px;
     }
+
+    /* =========================================================
+       FOOTER
+       ========================================================= */
 
     .footer {
-      margin-top: 28px;
-      color: #687586;
-      font-size: 11px;
+      margin-top: 25px;
+
+      color: #5f6d7c;
+
       text-align: center;
+
+      font-size: 10px;
     }
 
-    .error-box {
-      margin-top: 10px;
-      padding: 9px 11px;
-      border-radius: 8px;
-      background: #250d0d;
-      border: 1px solid #6f1d1d;
-      color: #fecaca;
-      font-size: 12px;
-      overflow-wrap: anywhere;
-    }
+    /* =========================================================
+       MOBILE
+       ========================================================= */
 
-    @media (max-width: 760px) {
+    @media (max-width: 700px) {
+
       .stats {
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns:
+          repeat(2, minmax(0, 1fr));
       }
 
       .feed-header {
@@ -429,30 +589,35 @@
       }
     }
 
-    @media (max-width: 560px) {
-      .wrap {
-        width: min(100% - 18px, 1100px);
+    @media (max-width: 500px) {
+
+      .container {
+        width: calc(100% - 16px);
         padding-top: 18px;
       }
 
-      h1 {
+      .title {
         font-size: 21px;
       }
 
       .whisper {
-        padding: 12px;
+        padding: 11px 12px;
       }
 
-      .whisper-head {
+      .whisper-top {
         align-items: flex-start;
       }
 
-      .time {
+      .timestamp {
         white-space: normal;
       }
 
       .details {
-        grid-template-columns: 72px minmax(0, 1fr);
+        grid-template-columns:
+          55px
+          minmax(0, 1fr);
+
+        column-gap: 9px;
       }
 
       .controls button {
@@ -463,22 +628,44 @@
 </head>
 
 <body>
-  <main class="wrap">
 
-    <header>
+  <main class="container">
+
+    <!-- =====================================================
+         HEADER
+         ====================================================== -->
+
+    <header class="header">
+
       <div class="brand">
-        <div class="logo">NW</div>
+
+        <div class="logo">
+          NW
+        </div>
 
         <div>
-          <h1>NevWhisper</h1>
+
+          <h1 class="title">
+            NevWhisper
+          </h1>
+
           <div class="subtitle">
             NEV369 Memo Chat — public on-chain whispers
           </div>
+
         </div>
+
       </div>
+
     </header>
 
+
+    <!-- =====================================================
+         CONTROLS
+         ====================================================== -->
+
     <section class="controls">
+
       <button
         id="startBtn"
         class="primary"
@@ -489,7 +676,7 @@
 
       <button
         id="stopBtn"
-        class="danger"
+        class="stop"
         onclick="stopScan()"
         disabled
       >
@@ -502,16 +689,23 @@
       >
         Rebuild From Genesis
       </button>
+
     </section>
 
-    <section class="status-panel">
 
-      <div class="status-top">
+    <!-- =====================================================
+         STATUS
+         ====================================================== -->
+
+    <section class="status">
+
+      <div class="status-row">
 
         <div>
+
           <div
-            id="statusText"
-            class="status-text"
+            id="statusTitle"
+            class="status-title"
           >
             Ready
           </div>
@@ -522,6 +716,7 @@
           >
             Press Start Scan to verify the NEV369 chain from Genesis.
           </div>
+
         </div>
 
         <div
@@ -533,24 +728,33 @@
 
       </div>
 
+
       <div class="progress-track">
+
         <div
           id="progressBar"
           class="progress-bar"
         ></div>
+
       </div>
+
 
       <div
         id="errorBox"
-        class="error-box"
-        style="display:none"
+        class="error"
       ></div>
 
     </section>
 
+
+    <!-- =====================================================
+         STATS
+         ====================================================== -->
+
     <section class="stats">
 
       <div class="stat">
+
         <div class="stat-label">
           Chain Height
         </div>
@@ -561,9 +765,12 @@
         >
           —
         </div>
+
       </div>
 
+
       <div class="stat">
+
         <div class="stat-label">
           Verified Through
         </div>
@@ -574,9 +781,12 @@
         >
           —
         </div>
+
       </div>
 
+
       <div class="stat">
+
         <div class="stat-label">
           Whispers
         </div>
@@ -587,9 +797,12 @@
         >
           0
         </div>
+
       </div>
 
+
       <div class="stat">
+
         <div class="stat-label">
           Blocks Remaining
         </div>
@@ -600,15 +813,33 @@
         >
           —
         </div>
+
       </div>
 
     </section>
 
+
+    <!-- =====================================================
+         WHISPER HEADER
+         ====================================================== -->
+
     <section class="feed-header">
 
-      <h2>
-        Whispers
-      </h2>
+      <div class="feed-title">
+
+        <h2>
+          Whispers
+        </h2>
+
+        <span
+          id="feedCount"
+          class="feed-count"
+        >
+          0 whispers
+        </span>
+
+      </div>
+
 
       <input
         id="searchInput"
@@ -620,14 +851,22 @@
 
     </section>
 
+
+    <!-- =====================================================
+         FEED
+         ====================================================== -->
+
     <section
       id="feed"
       class="feed"
     >
+
       <div class="empty">
         No whispers loaded yet.
       </div>
+
     </section>
+
 
     <div class="footer">
       NEV369 · Genesis-to-tip verification · Public memo explorer
@@ -635,38 +874,63 @@
 
   </main>
 
+
   <script>
+
     /*
-      ============================================================
-      NEVWHISPER
-      Genesis → current chain scanner
-      Compact public whisper display
-      ============================================================
+    ============================================================
+    NEVWHISPER
+    ============================================================
+
+    Genesis → current scanner
+
+    IMPORTANT:
+    - Uses IndexedDB
+    - Does NOT use localStorage
+    - Verifies blocks continuously
+    - Does not skip failed batches
+    - Filters network reward memos
+    - Checks live chain tip periodically
+    ============================================================
     */
+
 
     const NODE =
       "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 
+
     const DB_NAME =
       "nevwhisper-genesis-v1";
 
-    const DB_VERSION = 1;
 
-    const BATCH_SIZE = 10;
+    const DB_VERSION =
+      1;
 
-    const TIP_CHECK_INTERVAL = 100;
 
-    const MAX_RETRIES = 4;
+    const BATCH_SIZE =
+      10;
 
-    const RETRY_DELAY = 1500;
 
-    const AUTO_REFRESH_MS = 369000;
+    const TIP_CHECK_INTERVAL =
+      100;
+
+
+    const MAX_RETRIES =
+      4;
+
+
+    const RETRY_DELAY =
+      1500;
+
+
+    const AUTO_REFRESH_MS =
+      369000;
 
 
     /*
-      ============================================================
-      STATE
-      ============================================================
+    ============================================================
+    STATE
+    ============================================================
     */
 
     const state = {
@@ -690,150 +954,216 @@
 
 
     /*
-      ============================================================
-      INDEXED DB
-      ============================================================
+    ============================================================
+    INDEXED DB
+    ============================================================
     */
 
     function openDatabase() {
 
-      return new Promise((resolve, reject) => {
+      return new Promise(
+        (resolve, reject) => {
 
-        const request =
-          indexedDB.open(
-            DB_NAME,
-            DB_VERSION
-          );
-
-        request.onupgradeneeded = event => {
-
-          const database =
-            event.target.result;
-
-          if (
-            !database.objectStoreNames.contains("meta")
-          ) {
-
-            database.createObjectStore(
-              "meta"
+          const request =
+            indexedDB.open(
+              DB_NAME,
+              DB_VERSION
             );
-          }
 
-          if (
-            !database.objectStoreNames.contains("whispers")
-          ) {
 
-            database.createObjectStore(
-              "whispers",
-              {
-                keyPath: "tx_hash"
+          request.onupgradeneeded =
+            event => {
+
+              const database =
+                event.target.result;
+
+
+              if (
+                !database.objectStoreNames.contains(
+                  "meta"
+                )
+              ) {
+
+                database.createObjectStore(
+                  "meta"
+                );
+
               }
+
+
+              if (
+                !database.objectStoreNames.contains(
+                  "whispers"
+                )
+              ) {
+
+                database.createObjectStore(
+                  "whispers",
+                  {
+                    keyPath: "tx_hash"
+                  }
+                );
+
+              }
+
+            };
+
+
+          request.onsuccess =
+            event => {
+
+              db =
+                event.target.result;
+
+              resolve(db);
+
+            };
+
+
+          request.onerror =
+            () => {
+
+              reject(
+                request.error ||
+                new Error(
+                  "Could not open IndexedDB."
+                )
+              );
+
+            };
+
+        }
+      );
+
+    }
+
+
+    function dbGet(
+      storeName,
+      key
+    ) {
+
+      return new Promise(
+        (resolve, reject) => {
+
+          const tx =
+            db.transaction(
+              storeName,
+              "readonly"
             );
 
-          }
 
-        };
-
-        request.onsuccess = event => {
-
-          db = event.target.result;
-
-          resolve(db);
-
-        };
-
-        request.onerror = () => {
-
-          reject(
-            request.error ||
-            new Error(
-              "Could not open IndexedDB"
-            )
-          );
-
-        };
-
-      });
-
-    }
+          const store =
+            tx.objectStore(
+              storeName
+            );
 
 
-    function dbGet(storeName, key) {
+          const request =
+            store.get(key);
 
-      return new Promise((resolve, reject) => {
 
-        const tx =
-          db.transaction(
-            storeName,
-            "readonly"
-          );
+          request.onsuccess =
+            () => {
 
-        const store =
-          tx.objectStore(storeName);
+              resolve(
+                request.result
+              );
 
-        const request =
-          store.get(key);
+            };
 
-        request.onsuccess = () =>
-          resolve(request.result);
 
-        request.onerror = () =>
-          reject(request.error);
+          request.onerror =
+            () => {
 
-      });
+              reject(
+                request.error
+              );
+
+            };
+
+        }
+      );
 
     }
 
 
-    function dbPut(storeName, value, key) {
+    function dbPut(
+      storeName,
+      value,
+      key
+    ) {
 
-      return new Promise((resolve, reject) => {
+      return new Promise(
+        (resolve, reject) => {
 
-        const tx =
-          db.transaction(
-            storeName,
-            "readwrite"
-          );
+          const tx =
+            db.transaction(
+              storeName,
+              "readwrite"
+            );
 
-        const store =
-          tx.objectStore(storeName);
 
-        const request =
-          key === undefined
-            ? store.put(value)
-            : store.put(value, key);
+          const store =
+            tx.objectStore(
+              storeName
+            );
 
-        request.onsuccess = () =>
-          resolve();
 
-        request.onerror = () =>
-          reject(request.error);
+          const request =
+            key === undefined
+              ? store.put(value)
+              : store.put(value, key);
 
-      });
+
+          request.onsuccess =
+            () => resolve();
+
+
+          request.onerror =
+            () =>
+              reject(
+                request.error
+              );
+
+        }
+      );
 
     }
 
 
-    function dbClear(storeName) {
+    function dbClear(
+      storeName
+    ) {
 
-      return new Promise((resolve, reject) => {
+      return new Promise(
+        (resolve, reject) => {
 
-        const tx =
-          db.transaction(
-            storeName,
-            "readwrite"
-          );
+          const tx =
+            db.transaction(
+              storeName,
+              "readwrite"
+            );
 
-        const request =
-          tx.objectStore(storeName).clear();
 
-        request.onsuccess = () =>
-          resolve();
+          const request =
+            tx.objectStore(
+              storeName
+            ).clear();
 
-        request.onerror = () =>
-          reject(request.error);
 
-      });
+          request.onsuccess =
+            () => resolve();
+
+
+          request.onerror =
+            () =>
+              reject(
+                request.error
+              );
+
+        }
+      );
 
     }
 
@@ -845,6 +1175,7 @@
         state.verifiedThrough,
         "verifiedThrough"
       );
+
 
       await dbPut(
         "meta",
@@ -863,14 +1194,17 @@
           "verifiedThrough"
         );
 
-      const chainHeight =
+
+      const height =
         await dbGet(
           "meta",
           "chainHeight"
         );
 
+
       if (
-        typeof verified === "number"
+        typeof verified ===
+        "number"
       ) {
 
         state.verifiedThrough =
@@ -878,12 +1212,14 @@
 
       }
 
+
       if (
-        typeof chainHeight === "number"
+        typeof height ===
+        "number"
       ) {
 
         state.chainHeight =
-          chainHeight;
+          height;
 
       }
 
@@ -892,64 +1228,80 @@
 
     async function loadWhispers() {
 
-      return new Promise((resolve, reject) => {
+      return new Promise(
+        (resolve, reject) => {
 
-        const tx =
-          db.transaction(
-            "whispers",
-            "readonly"
-          );
-
-        const store =
-          tx.objectStore("whispers");
-
-        const request =
-          store.openCursor();
-
-        request.onsuccess = event => {
-
-          const cursor =
-            event.target.result;
-
-          if (!cursor) {
-
-            resolve();
-
-            return;
-
-          }
-
-          const item =
-            cursor.value;
-
-          if (
-            item &&
-            item.tx_hash
-          ) {
-
-            state.whispers.set(
-              item.tx_hash,
-              item
+          const tx =
+            db.transaction(
+              "whispers",
+              "readonly"
             );
 
-          }
 
-          cursor.continue();
+          const store =
+            tx.objectStore(
+              "whispers"
+            );
 
-        };
 
-        request.onerror = () =>
-          reject(request.error);
+          const request =
+            store.openCursor();
 
-      });
+
+          request.onsuccess =
+            event => {
+
+              const cursor =
+                event.target.result;
+
+
+              if (!cursor) {
+
+                resolve();
+
+                return;
+
+              }
+
+
+              const item =
+                cursor.value;
+
+
+              if (
+                item &&
+                item.tx_hash
+              ) {
+
+                state.whispers.set(
+                  item.tx_hash,
+                  item
+                );
+
+              }
+
+
+              cursor.continue();
+
+            };
+
+
+          request.onerror =
+            () =>
+              reject(
+                request.error
+              );
+
+        }
+      );
 
     }
 
 
     /*
-      ============================================================
-      NETWORK
-      ============================================================
+    ============================================================
+    NETWORK
+    ============================================================
     */
 
     async function getJson(
@@ -958,8 +1310,11 @@
     ) {
 
       const url =
-        NODE.replace(/\/$/, "") +
-        path;
+        NODE.replace(
+          /\/$/,
+          ""
+        ) + path;
+
 
       try {
 
@@ -968,18 +1323,24 @@
             url,
             {
               method: "GET",
+
               headers: {
-                "Accept":
+                Accept:
                   "application/json"
               },
-              cache: "no-store"
+
+              cache:
+                "no-store"
             }
           );
+
 
         const text =
           await response.text();
 
+
         let data;
+
 
         try {
 
@@ -989,12 +1350,15 @@
         } catch {
 
           throw new Error(
-            "Invalid JSON response"
+            "Invalid JSON response."
           );
 
         }
 
-        if (!response.ok) {
+
+        if (
+          !response.ok
+        ) {
 
           throw new Error(
             `${response.status}: ${
@@ -1005,6 +1369,7 @@
           );
 
         }
+
 
         return data;
 
@@ -1019,6 +1384,7 @@
             RETRY_DELAY *
             (attempt + 1);
 
+
           setStatus(
             "Retrying request...",
             `${error.message} · retry ${
@@ -1027,7 +1393,11 @@
             "error"
           );
 
-          await sleep(delay);
+
+          await sleep(
+            delay
+          );
+
 
           return getJson(
             path,
@@ -1035,6 +1405,7 @@
           );
 
         }
+
 
         throw error;
 
@@ -1053,9 +1424,9 @@
 
 
     /*
-      ============================================================
-      UTILITIES
-      ============================================================
+    ============================================================
+    UTILITIES
+    ============================================================
     */
 
     function sleep(ms) {
@@ -1071,48 +1442,82 @@
     }
 
 
-    function escapeHtml(value) {
+    function escapeHtml(
+      value
+    ) {
 
       return String(
         value ?? ""
       )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+        .replaceAll(
+          "&",
+          "&amp;"
+        )
+        .replaceAll(
+          "<",
+          "&lt;"
+        )
+        .replaceAll(
+          ">",
+          "&gt;"
+        )
+        .replaceAll(
+          '"',
+          "&quot;"
+        )
+        .replaceAll(
+          "'",
+          "&#039;"
+        );
 
     }
 
 
     function shortHash(
       value,
-      start = 8,
-      end = 8
+      first = 10,
+      last = 8
     ) {
 
       const text =
-        String(value || "");
+        String(
+          value || ""
+        );
+
 
       if (
         text.length <=
-        start + end + 3
+        first + last + 3
       ) {
 
         return text;
 
       }
 
+
       return (
-        text.slice(0, start) +
+        text.slice(
+          0,
+          first
+        ) +
         "..." +
-        text.slice(-end)
+        text.slice(
+          -last
+        )
       );
 
     }
 
 
-    function formatTimestamp(value) {
+    /*
+    ============================================================
+    TIMESTAMP
+    ============================================================
+    */
+
+    function formatTimestamp(
+      value
+    ) {
 
       if (
         value === null ||
@@ -1124,37 +1529,48 @@
 
       }
 
+
       const n =
         Number(value);
+
 
       if (
         !Number.isFinite(n)
       ) {
 
-        const d =
+        const date =
           new Date(value);
 
+
         return Number.isNaN(
-          d.getTime()
+          date.getTime()
         )
           ? "Unknown time"
-          : d.toLocaleString();
+          : date.toLocaleString();
 
       }
 
+
       let milliseconds;
 
-      if (n < 1e12) {
+
+      if (
+        n < 1e12
+      ) {
 
         milliseconds =
           n * 1000;
 
-      } else if (n < 1e15) {
+      } else if (
+        n < 1e15
+      ) {
 
         milliseconds =
           n;
 
-      } else if (n < 1e18) {
+      } else if (
+        n < 1e18
+      ) {
 
         milliseconds =
           n / 1000;
@@ -1166,22 +1582,44 @@
 
       }
 
-      const d =
-        new Date(milliseconds);
+
+      const date =
+        new Date(
+          milliseconds
+        );
+
 
       return Number.isNaN(
-        d.getTime()
+        date.getTime()
       )
         ? "Unknown time"
-        : d.toLocaleString();
+        : date.toLocaleString();
 
     }
 
 
-    function formatAmount(value) {
+    /*
+    ============================================================
+    AMOUNT
+    ============================================================
+
+    NEV369 has 8 decimals.
+
+    Example:
+
+    1000000000000000 base units
+    =
+    10,000,000 NEV
+    ============================================================
+    */
+
+    function formatAmount(
+      value
+    ) {
 
       const n =
         Number(value);
+
 
       if (
         !Number.isFinite(n)
@@ -1193,38 +1631,51 @@
 
       }
 
-      /*
-        NEV369 uses 8 decimal places.
-      */
 
       const nev =
         n / 100000000;
+
 
       return (
         new Intl.NumberFormat(
           undefined,
           {
-            maximumFractionDigits: 8
+            maximumFractionDigits:
+              8
           }
-        ).format(nev) +
+        ).format(
+          nev
+        ) +
         " NEV"
       );
 
     }
 
 
-    function isRewardWhisper(item) {
+    /*
+    ============================================================
+    REWARD FILTER
+    ============================================================
+    */
+
+    function isReward(
+      item
+    ) {
 
       const sender =
         String(
           item.sender || ""
-        ).trim()
-        .toUpperCase();
+        )
+          .trim()
+          .toUpperCase();
+
 
       const memo =
         String(
           item.memo || ""
-        ).trim();
+        )
+          .trim();
+
 
       if (
         sender ===
@@ -1235,6 +1686,7 @@
 
       }
 
+
       if (
         /^Block\s+\d+\s+reward$/i
           .test(memo)
@@ -1244,18 +1696,19 @@
 
       }
 
+
       return false;
 
     }
 
 
     /*
-      ============================================================
-      EXPLORER LINKS
-      ============================================================
+    ============================================================
+    EXPLORER LINKS
+    ============================================================
     */
 
-    function txExplorerUrl(
+    function txUrl(
       txHash
     ) {
 
@@ -1269,14 +1722,7 @@
     }
 
 
-    /*
-      Address links are kept compact.
-      The exact explorer route may differ between
-      implementations, so address text remains clickable
-      using the explorer's search/address fragment.
-    */
-
-    function addressExplorerUrl(
+    function addressUrl(
       address
     ) {
 
@@ -1291,9 +1737,9 @@
 
 
     /*
-      ============================================================
-      WHISPER EXTRACTION
-      ============================================================
+    ============================================================
+    EXTRACT WHISPERS
+    ============================================================
     */
 
     function extractWhispers(
@@ -1307,29 +1753,32 @@
           ? result.whispers
           : [];
 
+
       const output = [];
+
 
       for (
         const item of source
       ) {
 
-        if (
-          !item
-        ) {
+        if (!item) {
 
           continue;
 
         }
+
 
         const memo =
           String(
             item.memo || ""
           ).trim();
 
+
         const txHash =
           String(
             item.tx_hash || ""
           ).trim();
+
 
         if (
           !memo ||
@@ -1340,13 +1789,15 @@
 
         }
 
+
         if (
-          isRewardWhisper(item)
+          isReward(item)
         ) {
 
           continue;
 
         }
+
 
         output.push({
 
@@ -1386,6 +1837,7 @@
 
       }
 
+
       return output;
 
     }
@@ -1404,6 +1856,7 @@
           item
         );
 
+
         await dbPut(
           "whispers",
           item
@@ -1415,9 +1868,9 @@
 
 
     /*
-      ============================================================
-      SCANNING
-      ============================================================
+    ============================================================
+    SCAN ONE CONTIGUOUS BATCH
+    ============================================================
     */
 
     async function scanBatch(
@@ -1427,17 +1880,25 @@
 
       /*
         Worker expects:
-        from = higher block
-        to   = lower block
 
-        Frontend presents:
-        start → end
+        from = highest block
+        to   = lowest block
+
+        Example:
+
+        frontend:
+        #0 → #9
+
+        Worker:
+        from=9&to=0
       */
+
 
       const result =
         await getJson(
           `/whispers?from=${endHeight}&to=${startHeight}`
         );
+
 
       if (
         Array.isArray(
@@ -1449,32 +1910,39 @@
         const first =
           result.errors[0];
 
+
         throw new Error(
           `Block ${first.height}: ${first.error}`
         );
 
       }
 
+
       const whispers =
-        extractWhispers(result);
+        extractWhispers(
+          result
+        );
+
 
       await mergeWhispers(
         whispers
       );
 
+
       /*
-        Only after every block in this
-        batch has succeeded do we advance
-        the verified frontier.
+        ONLY after every requested block
+        succeeded do we move the checkpoint.
       */
 
       state.verifiedThrough =
         endHeight;
 
+
       state.blocksSinceTipCheck +=
         endHeight -
         startHeight +
         1;
+
 
       await saveState();
 
@@ -1482,6 +1950,12 @@
 
     }
 
+
+    /*
+    ============================================================
+    START SCAN
+    ============================================================
+    */
 
     async function startScan() {
 
@@ -1493,20 +1967,25 @@
 
       }
 
+
       state.scanning =
         true;
 
+
       state.stopRequested =
         false;
+
 
       updateButtons();
 
       hideError();
 
+
       try {
 
         let info =
           await getInfo();
+
 
         let chainHeight =
           Number(
@@ -1515,12 +1994,15 @@
             0
           );
 
+
         state.chainHeight =
           chainHeight;
+
 
         await saveState();
 
         render();
+
 
         setStatus(
           "Scanning Genesis → current",
@@ -1530,13 +2012,16 @@
           "running"
         );
 
+
         while (
           !state.stopRequested
         ) {
 
           /*
-            If we have reached the current tip,
-            verify the tip before declaring current.
+          --------------------------------------------------------
+          Reached current tip?
+          Check the live node one more time.
+          --------------------------------------------------------
           */
 
           if (
@@ -1547,6 +2032,7 @@
             info =
               await getInfo();
 
+
             chainHeight =
               Number(
                 info.height ??
@@ -1554,12 +2040,15 @@
                 0
               );
 
+
             state.chainHeight =
               chainHeight;
+
 
             await saveState();
 
             render();
+
 
             if (
               state.verifiedThrough >=
@@ -1574,9 +2063,11 @@
                 "current"
               );
 
+
               break;
 
             }
+
 
             continue;
 
@@ -1584,7 +2075,9 @@
 
 
           /*
-            Periodically re-check the live tip.
+          --------------------------------------------------------
+          Periodic live-tip check.
+          --------------------------------------------------------
           */
 
           if (
@@ -1595,6 +2088,7 @@
             info =
               await getInfo();
 
+
             chainHeight =
               Number(
                 info.height ??
@@ -1602,11 +2096,14 @@
                 0
               );
 
+
             state.chainHeight =
               chainHeight;
 
+
             state.blocksSinceTipCheck =
               0;
+
 
             await saveState();
 
@@ -1615,27 +2112,41 @@
           }
 
 
+          /*
+          --------------------------------------------------------
+          Calculate next contiguous batch.
+          --------------------------------------------------------
+          */
+
           const start =
-            state.verifiedThrough + 1;
+            state.verifiedThrough +
+            1;
+
 
           const end =
             Math.min(
-              start + BATCH_SIZE - 1,
+              start +
+              BATCH_SIZE -
+              1,
+
               state.chainHeight
             );
 
+
           setStatus(
             `Scanning #${start} → #${end}`,
-            `Genesis verified through #${
+            `Verified through #${
               state.verifiedThrough
             }`,
             "running"
           );
 
+
           await scanBatch(
             start,
             end
           );
+
 
           if (
             state.stopRequested
@@ -1654,13 +2165,15 @@
           error
         );
 
+
         showError(
           error.message
         );
 
+
         setStatus(
           "Scan paused",
-          "The verified frontier was not advanced past the failed batch.",
+          "The failed batch was not marked as verified.",
           "error"
         );
 
@@ -1669,9 +2182,11 @@
         state.scanning =
           false;
 
+
         updateButtons();
 
         render();
+
 
         if (
           state.stopRequested
@@ -1692,6 +2207,12 @@
     }
 
 
+    /*
+    ============================================================
+    STOP
+    ============================================================
+    */
+
     function stopScan() {
 
       if (
@@ -1702,8 +2223,10 @@
 
       }
 
+
       state.stopRequested =
         true;
+
 
       setStatus(
         "Stopping...",
@@ -1711,10 +2234,17 @@
         "running"
       );
 
+
       updateButtons();
 
     }
 
+
+    /*
+    ============================================================
+    REBUILD
+    ============================================================
+    */
 
     async function rebuildFromGenesis() {
 
@@ -1726,10 +2256,12 @@
 
       }
 
+
       const confirmed =
         confirm(
-          "Rebuild the scanner from Genesis? This will erase the saved verification frontier and whisper database."
+          "Rebuild from Genesis? This will erase the saved scanner checkpoint and whisper database."
         );
+
 
       if (
         !confirmed
@@ -1739,18 +2271,24 @@
 
       }
 
+
       state.verifiedThrough =
         -1;
+
 
       state.chainHeight =
         -1;
 
+
       state.whispers.clear();
+
 
       state.blocksSinceTipCheck =
         0;
 
+
       hideError();
+
 
       try {
 
@@ -1758,13 +2296,17 @@
           "meta"
         );
 
+
         await dbClear(
           "whispers"
         );
 
+
         await saveState();
 
+
         render();
+
 
         setStatus(
           "Reset complete",
@@ -1784,12 +2326,18 @@
 
 
     /*
-      ============================================================
-      RENDERING
-      ============================================================
+    ============================================================
+    RENDER
+    ============================================================
     */
 
     function render() {
+
+      /*
+      ----------------------------------------------------------
+      Stats
+      ----------------------------------------------------------
+      */
 
       document.getElementById(
         "chainHeight"
@@ -1798,6 +2346,7 @@
           ? `#${state.chainHeight}`
           : "—";
 
+
       document.getElementById(
         "verifiedThrough"
       ).textContent =
@@ -1805,10 +2354,12 @@
           ? `#${state.verifiedThrough}`
           : "—";
 
+
       document.getElementById(
         "whisperCount"
       ).textContent =
         state.whispers.size;
+
 
       const remaining =
         state.chainHeight >= 0
@@ -1819,6 +2370,7 @@
             )
           : null;
 
+
       document.getElementById(
         "blocksRemaining"
       ).textContent =
@@ -1826,7 +2378,15 @@
           ? "—"
           : remaining;
 
+
+      /*
+      ----------------------------------------------------------
+      Progress
+      ----------------------------------------------------------
+      */
+
       let progress = 0;
+
 
       if (
         state.chainHeight >= 0 &&
@@ -1834,26 +2394,41 @@
       ) {
 
         progress =
+          (
+            (state.verifiedThrough + 1) /
+            (state.chainHeight + 1)
+          ) *
+          100;
+
+
+        progress =
           Math.min(
             100,
-            (
-              (state.verifiedThrough + 1) /
-              (state.chainHeight + 1)
-            ) *
-            100
+            Math.max(
+              0,
+              progress
+            )
           );
 
       }
+
 
       document.getElementById(
         "progressBar"
       ).style.width =
         `${progress}%`;
 
+
       renderFeed();
 
     }
 
+
+    /*
+    ============================================================
+    RENDER FEED
+    ============================================================
+    */
 
     function renderFeed() {
 
@@ -1862,6 +2437,13 @@
           "feed"
         );
 
+
+      const count =
+        document.getElementById(
+          "feedCount"
+        );
+
+
       const query =
         document.getElementById(
           "searchInput"
@@ -1869,49 +2451,81 @@
         .trim()
         .toLowerCase();
 
+
       const items =
         Array.from(
           state.whispers.values()
         )
-        .filter(item => {
+        .filter(
+          item => {
 
-          if (!query) {
+            if (!query) {
 
-            return true;
+              return true;
+
+            }
+
+
+            return [
+
+              item.memo,
+
+              item.sender,
+
+              item.recipient,
+
+              item.tx_hash,
+
+              String(
+                item.block
+              )
+
+            ]
+              .join(" ")
+              .toLowerCase()
+              .includes(
+                query
+              );
 
           }
+        )
+        .sort(
+          (a, b) => {
 
-          return [
-            item.memo,
-            item.sender,
-            item.recipient,
-            item.tx_hash,
-            String(item.block)
-          ]
-            .join(" ")
-            .toLowerCase()
-            .includes(query);
+            if (
+              b.block !==
+              a.block
+            ) {
 
-        })
-        .sort((a, b) => {
+              return (
+                b.block -
+                a.block
+              );
 
-          if (
-            b.block !==
-            a.block
-          ) {
+            }
 
-            return b.block -
-              a.block;
+
+            return String(
+              b.tx_hash
+            ).localeCompare(
+              String(
+                a.tx_hash
+              )
+            );
 
           }
+        );
 
-          return String(
-            b.tx_hash
-          ).localeCompare(
-            String(a.tx_hash)
-          );
 
-        });
+      count.textContent =
+        query
+          ? `${items.length} matching`
+          : `${items.length} whisper${
+              items.length === 1
+                ? ""
+                : "s"
+            }`;
+
 
       if (
         items.length === 0
@@ -1926,9 +2540,11 @@
             }
           </div>`;
 
+
         return;
 
       }
+
 
       feed.innerHTML =
         items
@@ -1940,6 +2556,12 @@
     }
 
 
+    /*
+    ============================================================
+    RENDER ONE WHISPER
+    ============================================================
+    */
+
     function renderWhisper(
       item
     ) {
@@ -1949,38 +2571,55 @@
           item.block
         );
 
+
       const tx =
-        escapeHtml(
-          item.tx_hash
+        String(
+          item.tx_hash || ""
         );
+
 
       const sender =
         String(
           item.sender || ""
         );
 
+
       const recipient =
         String(
           item.recipient || ""
         );
 
+
+      /*
+      ----------------------------------------------------------
+      Preserve readable system labels.
+      Only shorten actual long addresses.
+      ----------------------------------------------------------
+      */
+
       const senderDisplay =
         sender
-          ? shortHash(
-              sender,
-              10,
-              8
-            )
+          ? sender.length > 24
+            ? shortHash(
+                sender,
+                10,
+                8
+              )
+            : sender
           : "Unknown";
+
 
       const recipientDisplay =
         recipient
-          ? shortHash(
-              recipient,
-              10,
-              8
-            )
+          ? recipient.length > 24
+            ? shortHash(
+                recipient,
+                10,
+                8
+              )
+            : recipient
           : "Unknown";
+
 
       const txDisplay =
         shortHash(
@@ -1989,92 +2628,129 @@
           10
         );
 
+
+      const safeMemo =
+        escapeHtml(
+          item.memo
+        );
+
+
+      const safeTimestamp =
+        escapeHtml(
+          formatTimestamp(
+            item.timestamp
+          )
+        );
+
+
+      const safeSender =
+        escapeHtml(
+          sender
+        );
+
+
+      const safeRecipient =
+        escapeHtml(
+          recipient
+        );
+
+
       return `
+
         <article class="whisper">
 
-          <div class="whisper-head">
+          <!-- BLOCK + DATE/TIME -->
 
-            <div class="block">
+          <div class="whisper-top">
+
+            <div class="block-number">
               #${escapeHtml(block)}
             </div>
 
-            <div class="time">
-              ${escapeHtml(
-                formatTimestamp(
-                  item.timestamp
-                )
-              )}
+            <div class="timestamp">
+              ${safeTimestamp}
             </div>
 
           </div>
 
+
+          <!-- MEMO -->
+
           <div class="memo">
-            ${escapeHtml(
-              item.memo
-            )}
+            ${safeMemo}
           </div>
+
+
+          <!-- DETAILS -->
 
           <div class="details">
 
-            <div class="detail-label">
+
+            <!-- AMOUNT -->
+
+            <div class="label">
               Amount
             </div>
 
-            <div class="detail-value amount">
+            <div class="value amount">
               ${formatAmount(
                 item.amount
               )}
             </div>
 
 
-            <div class="detail-label">
+            <!-- TX -->
+
+            <div class="label">
               TX
             </div>
 
-            <div class="detail-value">
+            <div class="value mono">
 
               <a
-                class="hash-link"
-                href="${txExplorerUrl(
-                  tx
-                )}"
+                class="compact-link"
+                href="${txUrl(tx)}"
                 target="_blank"
                 rel="noopener noreferrer"
-                title="${tx}"
+                title="${escapeHtml(tx)}"
               >
-                <span class="short">
-                  ${txDisplay}
+
+                <span class="short-text">
+                  ${escapeHtml(
+                    txDisplay
+                  )}
                 </span>
 
                 <span class="external">
                   ↗
                 </span>
+
               </a>
 
             </div>
 
 
-            <div class="detail-label">
+            <!-- FROM -->
+
+            <div class="label">
               From
             </div>
 
-            <div class="detail-value">
+            <div class="value mono">
 
               ${
                 sender
                   ? `
+
                     <a
-                      class="address-link"
-                      href="${addressExplorerUrl(
-                        sender
-                      )}"
+                      class="compact-link"
+                      href="${addressUrl(sender)}"
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="${escapeHtml(
-                        sender
-                      )}"
+                      title="${safeSender}"
                     >
-                      <span class="short">
+
+                      <span class="short-text">
                         ${escapeHtml(
                           senderDisplay
                         )}
@@ -2083,7 +2759,9 @@
                       <span class="external">
                         ↗
                       </span>
+
                     </a>
+
                   `
                   : "Unknown"
               }
@@ -2091,27 +2769,27 @@
             </div>
 
 
-            <div class="detail-label">
+            <!-- TO -->
+
+            <div class="label">
               To
             </div>
 
-            <div class="detail-value">
+            <div class="value mono">
 
               ${
                 recipient
                   ? `
+
                     <a
-                      class="address-link"
-                      href="${addressExplorerUrl(
-                        recipient
-                      )}"
+                      class="compact-link"
+                      href="${addressUrl(recipient)}"
                       target="_blank"
                       rel="noopener noreferrer"
-                      title="${escapeHtml(
-                        recipient
-                      )}"
+                      title="${safeRecipient}"
                     >
-                      <span class="short">
+
+                      <span class="short-text">
                         ${escapeHtml(
                           recipientDisplay
                         )}
@@ -2120,25 +2798,29 @@
                       <span class="external">
                         ↗
                       </span>
+
                     </a>
+
                   `
                   : "Unknown"
               }
 
             </div>
 
+
           </div>
 
         </article>
+
       `;
 
     }
 
 
     /*
-      ============================================================
-      STATUS / BUTTONS
-      ============================================================
+    ============================================================
+    STATUS
+    ============================================================
     */
 
     function setStatus(
@@ -2148,22 +2830,26 @@
     ) {
 
       document.getElementById(
-        "statusText"
+        "statusTitle"
       ).textContent =
         title;
+
 
       document.getElementById(
         "statusDetail"
       ).textContent =
         detail;
 
+
       const pill =
         document.getElementById(
           "statusPill"
         );
 
+
       pill.className =
         "status-pill";
+
 
       if (
         mode === "running"
@@ -2208,20 +2894,29 @@
     }
 
 
+    /*
+    ============================================================
+    BUTTONS
+    ============================================================
+    */
+
     function updateButtons() {
 
       const running =
         state.scanning;
+
 
       document.getElementById(
         "startBtn"
       ).disabled =
         running;
 
+
       document.getElementById(
         "stopBtn"
       ).disabled =
         !running;
+
 
       document.getElementById(
         "rebuildBtn"
@@ -2230,6 +2925,12 @@
 
     }
 
+
+    /*
+    ============================================================
+    ERROR
+    ============================================================
+    */
 
     function showError(
       message
@@ -2240,8 +2941,10 @@
           "errorBox"
         );
 
+
       box.textContent =
         message;
+
 
       box.style.display =
         "block";
@@ -2256,8 +2959,10 @@
           "errorBox"
         );
 
+
       box.textContent =
         "";
+
 
       box.style.display =
         "none";
@@ -2266,9 +2971,9 @@
 
 
     /*
-      ============================================================
-      STARTUP
-      ============================================================
+    ============================================================
+    INITIALISE
+    ============================================================
     */
 
     async function initialise() {
@@ -2277,19 +2982,38 @@
 
         await openDatabase();
 
+
         await loadState();
+
 
         await loadWhispers();
 
+
         render();
 
-        setStatus(
-          "Ready",
+
+        if (
           state.verifiedThrough >= 0
-            ? `Saved checkpoint: verified through #${state.verifiedThrough}. Press Start Scan to continue.`
-            : "Press Start Scan to verify the NEV369 chain from Genesis.",
-          "idle"
-        );
+        ) {
+
+          setStatus(
+            "Ready",
+            `Saved checkpoint: verified through #${
+              state.verifiedThrough
+            }. Press Start Scan to continue.`,
+            "idle"
+          );
+
+        } else {
+
+          setStatus(
+            "Ready",
+            "Press Start Scan to verify the NEV369 chain from Genesis.",
+            "idle"
+          );
+
+        }
+
 
         updateButtons();
 
@@ -2300,9 +3024,11 @@
           error
         );
 
+
         showError(
           error.message
         );
+
 
         setStatus(
           "Initialisation failed",
@@ -2315,6 +3041,12 @@
     }
 
 
+    /*
+    ============================================================
+    SEARCH
+    ============================================================
+    */
+
     document
       .getElementById(
         "searchInput"
@@ -2325,31 +3057,42 @@
       );
 
 
+    /*
+    ============================================================
+    START
+    ============================================================
+    */
+
     initialise();
 
 
     /*
-      ============================================================
-      PERIODIC LIVE CHECK
-      ============================================================
+    ============================================================
+    AUTOMATIC LIVE CHECK
 
-      This does NOT start immediately.
+    The page starts idle.
 
-      If the page is left open and idle for 369 seconds,
-      it will resume scanning to pick up new blocks.
+    After 369 seconds of being left open,
+    it will resume the scanner to pick up new blocks.
+
+    It never starts immediately on page load.
+    ============================================================
     */
 
-    setInterval(() => {
+    setInterval(
+      () => {
 
-      if (
-        !state.scanning
-      ) {
+        if (
+          !state.scanning
+        ) {
 
-        startScan();
+          startScan();
 
-      }
+        }
 
-    }, AUTO_REFRESH_MS);
+      },
+      AUTO_REFRESH_MS
+    );
 
   </script>
 

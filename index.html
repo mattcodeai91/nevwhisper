@@ -27,15 +27,13 @@
     }
 
     body {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        Roboto, sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", Roboto, sans-serif;
 
       background: var(--bg);
       color: var(--text);
-
       line-height: 1.5;
       min-height: 100vh;
-
       padding: 24px 16px 60px;
     }
 
@@ -96,12 +94,10 @@
 
       width: 8px;
       height: 8px;
-
       background: var(--green);
       border-radius: 50%;
 
       margin-right: 6px;
-
       flex-shrink: 0;
 
       animation: pulse 2s infinite;
@@ -163,7 +159,6 @@
       background: #1b1f29;
 
       border-radius: 999px;
-
       overflow: hidden;
 
       border: 1px solid var(--border);
@@ -190,13 +185,9 @@
 
     .controls {
       display: flex;
-
       gap: 12px;
-
       margin-bottom: 16px;
-
       flex-wrap: wrap;
-
       align-items: center;
     }
 
@@ -225,9 +216,7 @@
 
     button:disabled {
       opacity: 0.6;
-
       cursor: wait;
-
       transform: none;
     }
 
@@ -242,9 +231,7 @@
 
     .checkbox-label {
       display: flex;
-
       align-items: center;
-
       gap: 8px;
 
       color: var(--muted);
@@ -252,13 +239,11 @@
       font-size: 0.9rem;
 
       cursor: pointer;
-
       user-select: none;
     }
 
     .search-box {
       width: 100%;
-
       margin-bottom: 24px;
     }
 
@@ -266,7 +251,6 @@
       width: 100%;
 
       background: var(--card);
-
       color: var(--text);
 
       border: 1px solid var(--border);
@@ -279,8 +263,9 @@
 
       font-size: 0.92rem;
 
-      transition: border-color 0.2s ease,
-                  background 0.2s ease;
+      transition:
+        border-color 0.2s ease,
+        background 0.2s ease;
     }
 
     .search-box input::placeholder {
@@ -289,15 +274,12 @@
 
     .search-box input:focus {
       border-color: var(--accent);
-
       background: var(--card-hover);
     }
 
     #feed {
       display: flex;
-
       flex-direction: column;
-
       gap: 14px;
     }
 
@@ -317,7 +299,6 @@
 
     .memo:hover {
       background: var(--card-hover);
-
       border-color: #323846;
     }
 
@@ -370,6 +351,17 @@
       font-size: 1rem;
     }
 
+    .scan-loading {
+      text-align: center;
+      color: var(--muted);
+      padding: 28px 20px;
+      font-size: 0.92rem;
+    }
+
+    .scan-loading strong {
+      color: var(--text);
+    }
+
     .error-box {
       background: rgba(251, 113, 133, 0.08);
 
@@ -388,7 +380,6 @@
 
     .amount {
       color: var(--green);
-
       font-weight: 500;
     }
 
@@ -416,7 +407,6 @@
 
     a {
       color: var(--accent);
-
       text-decoration: none;
     }
 
@@ -436,12 +426,25 @@
       word-break: break-word;
     }
 
+    .tx-link {
+      font-size: 0.72rem;
+    }
+
     .highlight {
       background: rgba(124, 108, 255, 0.2);
-
       border-radius: 3px;
-
       padding: 0 2px;
+    }
+
+    .repair-badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 6px;
+      border-radius: 6px;
+      font-size: 0.65rem;
+      background: rgba(251, 191, 36, 0.12);
+      color: var(--yellow);
+      border: 1px solid rgba(251, 191, 36, 0.2);
     }
 
     @media (max-width: 520px) {
@@ -488,8 +491,6 @@
     </header>
 
 
-    <!-- STATUS -->
-
     <div class="status-bar">
 
       <div class="status-left">
@@ -509,8 +510,6 @@
 
     </div>
 
-
-    <!-- SCAN PROGRESS -->
 
     <div
       id="progressWrap"
@@ -540,8 +539,6 @@
 
     </div>
 
-
-    <!-- CONTROLS -->
 
     <div class="controls">
 
@@ -575,8 +572,6 @@
     </div>
 
 
-    <!-- SEARCH -->
-
     <div class="search-box">
 
       <input
@@ -588,8 +583,6 @@
 
     </div>
 
-
-    <!-- FEED -->
 
     <div id="feed">
 
@@ -604,14 +597,17 @@
       id="scanNote"
       class="scan-note"
     >
-      Historical chain scan will continue automatically.
+      Preparing the NEV369 history scanner.
     </div>
 
 
     <div class="node-info">
 
       Reading the public NEV369 node through
-      <strong>nevwhisper-proxy.mattcodeai91.workers.dev</strong>
+
+      <strong>
+        nevwhisper-proxy.mattcodeai91.workers.dev
+      </strong>
 
     </div>
 
@@ -635,2016 +631,2410 @@
   </div>
 
 
-  <script>
+<script>
 
-    /*
-     * ============================================================
-     * NEVWHISPER
-     * ============================================================
-     *
-     * Historical NEV369 memo scanner.
-     *
-     * The browser talks ONLY to the Cloudflare Worker.
-     *
-     * The Worker:
-     *
-     *   /info
-     *   /whispers?from=HEIGHT&to=0
-     *
-     * scans 10 blocks per request.
-     *
-     * NevWhisper keeps the discovered memos in localStorage.
-     *
-     * This means:
-     *
-     *   First visit:
-     *     Current height → Genesis
-     *
-     *   Later visits:
-     *     Only newly discovered blocks are scanned.
-     *
-     * ============================================================
-     */
-
-
-    /*
-     * ------------------------------------------------------------
-     * CONFIGURATION
-     * ------------------------------------------------------------
-     */
-
-    const NODE =
-      "https://nevwhisper-proxy.mattcodeai91.workers.dev";
-
-    const INFO_API =
-      NODE + "/info";
-
-    const WHISPERS_API =
-      NODE + "/whispers";
-
-    const REFRESH_MS =
-      369 * 1000;
-
-    const STORAGE_KEY =
-      "nevwhisper.memo.cache.v2";
-
-    const STATE_KEY =
-      "nevwhisper.scan.state.v2";
-
-    /*
-     * Worker batch size is currently 10.
-     */
-    const BATCH_SIZE = 10;
+/*
+ * ============================================================
+ * NEVWHISPER
+ * ============================================================
+ *
+ * Corrected NEV369 memo scanner.
+ *
+ * IMPORTANT:
+ *
+ * This version:
+ *
+ * 1. Keeps the existing memo cache.
+ *
+ * 2. Does NOT require a manual Genesis rescan.
+ *
+ * 3. Repairs the old scanner's batch-boundary omissions.
+ *
+ * 4. Scans forward from the old highest block.
+ *
+ * 5. Picks up newly mined blocks such as #5745.
+ *
+ * 6. Never treats "next" from the Worker as the block
+ *    that was actually scanned.
+ *
+ * 7. Tracks exact verified heights locally.
+ *
+ * ============================================================
+ */
 
 
-    /*
-     * ------------------------------------------------------------
-     * STATE
-     * ------------------------------------------------------------
-     */
+/*
+ * ------------------------------------------------------------
+ * CONFIGURATION
+ * ------------------------------------------------------------
+ */
 
-    let autoTimer = null;
+const NODE =
+  "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 
-    let scanning = false;
+const INFO_API =
+  NODE + "/info";
 
-    let chainHeight = null;
+const WHISPERS_API =
+  NODE + "/whispers";
 
-    let memos = [];
+const REFRESH_MS =
+  369 * 1000;
 
-    let scanState = {
-      lowestScanned: null,
-      highestScanned: null
-    };
+const BATCH_SIZE =
+  10;
+
+const STORAGE_KEY =
+  "nevwhisper.memo.cache.v2";
+
+const STATE_KEY =
+  "nevwhisper.scan.state.v3";
+
+const VERSION_KEY =
+  "nevwhisper.scanner.version";
+
+const CURRENT_SCANNER_VERSION =
+  "3";
 
 
-    /*
-     * ------------------------------------------------------------
-     * DOM HELPERS
-     * ------------------------------------------------------------
-     */
+/*
+ * ------------------------------------------------------------
+ * STATE
+ * ------------------------------------------------------------
+ */
 
-    function el(id) {
-      return document.getElementById(id);
+let autoTimer = null;
+
+let scanning = false;
+
+let chainHeight = null;
+
+let memos = [];
+
+let verifiedHeights = new Set();
+
+let repairMode = false;
+
+let scanErrors = [];
+
+
+/*
+ * ------------------------------------------------------------
+ * DOM
+ * ------------------------------------------------------------
+ */
+
+function el(id) {
+  return document.getElementById(id);
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * TIME
+ * ------------------------------------------------------------
+ */
+
+function formatTime(ts) {
+
+  if (
+    ts === undefined ||
+    ts === null ||
+    ts === ""
+  ) {
+    return "—";
+  }
+
+  let value = Number(ts);
+
+  if (!Number.isFinite(value)) {
+
+    const d =
+      new Date(ts);
+
+    if (
+      Number.isNaN(
+        d.getTime()
+      )
+    ) {
+      return "—";
     }
 
-
-    /*
-     * ------------------------------------------------------------
-     * TIME FORMATTING
-     * ------------------------------------------------------------
-     */
-
-    function formatTime(ts) {
-
-      if (
-        ts === undefined ||
-        ts === null ||
-        ts === ""
-      ) {
-        return "—";
-      }
-
-      let value = Number(ts);
-
-      if (!Number.isFinite(value)) {
-
-        const d = new Date(ts);
-
-        if (
-          Number.isNaN(
-            d.getTime()
-          )
-        ) {
-          return "—";
-        }
-
-        return d.toLocaleString([], {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-          hour: "2-digit",
-          minute: "2-digit"
-        });
-      }
-
-
-      /*
-       * Handle Unix seconds and milliseconds.
-       */
-
-      if (
-        value < 100000000000
-      ) {
-        value *= 1000;
-      }
-
-
-      const d = new Date(value);
-
-      if (
-        Number.isNaN(
-          d.getTime()
-        )
-      ) {
-        return "—";
-      }
-
-
-      return d.toLocaleString([], {
+    return d.toLocaleString(
+      [],
+      {
         month: "short",
         day: "numeric",
         year: "numeric",
         hour: "2-digit",
         minute: "2-digit"
+      }
+    );
+  }
+
+  if (
+    value < 100000000000
+  ) {
+    value *= 1000;
+  }
+
+  const d =
+    new Date(value);
+
+  if (
+    Number.isNaN(
+      d.getTime()
+    )
+  ) {
+    return "—";
+  }
+
+  return d.toLocaleString(
+    [],
+    {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }
+  );
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * ADDRESS
+ * ------------------------------------------------------------
+ */
+
+function shortAddr(addr) {
+
+  if (!addr) {
+    return "—";
+  }
+
+  addr =
+    String(addr);
+
+  if (
+    addr.length < 16
+  ) {
+    return addr;
+  }
+
+  return (
+    addr.slice(0, 8) +
+    "…" +
+    addr.slice(-5)
+  );
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * AMOUNT
+ * ------------------------------------------------------------
+ */
+
+function formatAmount(amount) {
+
+  if (
+    amount === undefined ||
+    amount === null ||
+    amount === ""
+  ) {
+    return "";
+  }
+
+  const value =
+    Number(amount);
+
+  if (
+    !Number.isFinite(value) ||
+    value === 0
+  ) {
+    return "";
+  }
+
+  return (
+    value.toLocaleString(
+      undefined,
+      {
+        maximumFractionDigits: 8
+      }
+    ) +
+    " NEV"
+  );
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * ESCAPE HTML
+ * ------------------------------------------------------------
+ */
+
+function escapeHtml(text) {
+
+  const div =
+    document.createElement(
+      "div"
+    );
+
+  div.textContent =
+    String(text ?? "");
+
+  return div.innerHTML;
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * STORAGE
+ * ------------------------------------------------------------
+ */
+
+function loadStorage() {
+
+  try {
+
+    const storedMemos =
+      localStorage.getItem(
+        STORAGE_KEY
+      );
+
+    if (storedMemos) {
+
+      const parsed =
+        JSON.parse(
+          storedMemos
+        );
+
+      if (
+        Array.isArray(parsed)
+      ) {
+        memos = parsed;
+      }
+
+    }
+
+
+    /*
+     * Try the new exact-height
+     * scanner state first.
+     */
+
+    const newState =
+      localStorage.getItem(
+        STATE_KEY
+      );
+
+    if (newState) {
+
+      const parsed =
+        JSON.parse(
+          newState
+        );
+
+      if (
+        parsed &&
+        typeof parsed === "object"
+      ) {
+
+        const heights =
+          Array.isArray(
+            parsed.verifiedHeights
+          )
+            ? parsed.verifiedHeights
+            : [];
+
+        verifiedHeights =
+          new Set(
+            heights
+              .map(Number)
+              .filter(
+                Number.isFinite
+              )
+          );
+
+      }
+
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "NevWhisper storage error:",
+      error
+    );
+
+    memos = [];
+
+    verifiedHeights =
+      new Set();
+
+  }
+}
+
+
+function saveStorage() {
+
+  try {
+
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify(memos)
+    );
+
+    /*
+     * Keep the verified-height
+     * array reasonably sized.
+     */
+
+    const heights =
+      Array.from(
+        verifiedHeights
+      )
+      .sort(
+        (a, b) => a - b
+      );
+
+    localStorage.setItem(
+      STATE_KEY,
+      JSON.stringify({
+        version:
+          CURRENT_SCANNER_VERSION,
+
+        verifiedHeights:
+          heights
+      })
+    );
+
+    localStorage.setItem(
+      VERSION_KEY,
+      CURRENT_SCANNER_VERSION
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "NevWhisper could not save state:",
+      error
+    );
+
+  }
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * NETWORK
+ * ------------------------------------------------------------
+ */
+
+async function fetchJson(
+  url,
+  timeoutMs = 30000
+) {
+
+  const controller =
+    new AbortController();
+
+  const timeout =
+    setTimeout(
+      () =>
+        controller.abort(),
+      timeoutMs
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        url,
+        {
+          method: "GET",
+
+          headers: {
+            "Accept":
+              "application/json"
+          },
+
+          cache: "no-store",
+
+          signal:
+            controller.signal
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        "Node returned HTTP " +
+        response.status
+      );
+
+    }
+
+    const text =
+      await response.text();
+
+    try {
+
+      return JSON.parse(
+        text
+      );
+
+    } catch {
+
+      throw new Error(
+        "The NEV369 proxy returned invalid JSON."
+      );
+
+    }
+
+  } finally {
+
+    clearTimeout(
+      timeout
+    );
+
+  }
+}
+
+
+async function fetchInfo() {
+
+  return await fetchJson(
+    INFO_API,
+    15000
+  );
+
+}
+
+
+async function fetchWhispers(
+  from,
+  to
+) {
+
+  const url =
+    WHISPERS_API +
+    "?from=" +
+    encodeURIComponent(
+      from
+    ) +
+    "&to=" +
+    encodeURIComponent(
+      to
+    );
+
+  return await fetchJson(
+    url,
+    30000
+  );
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * MEMO FILTER
+ * ------------------------------------------------------------
+ */
+
+function isPublicWhisper(item) {
+
+  if (
+    !item ||
+    typeof item !== "object"
+  ) {
+    return false;
+  }
+
+  const memo =
+    String(
+      item.memo ??
+      item.payload_memo ??
+      ""
+    ).trim();
+
+  if (!memo) {
+    return false;
+  }
+
+  const sender =
+    String(
+      item.sender ??
+      item.from ??
+      ""
+    );
+
+  const lowerMemo =
+    memo.toLowerCase();
+
+  /*
+   * Ignore mining rewards.
+   */
+
+  if (
+    sender.toUpperCase() ===
+    "NETWORK_REWARD"
+  ) {
+    return false;
+  }
+
+  if (
+    lowerMemo.includes(
+      "block reward"
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    lowerMemo.includes(
+      "mining reward"
+    )
+  ) {
+    return false;
+  }
+
+  if (
+    lowerMemo.startsWith(
+      "block "
+    )
+  ) {
+    return false;
+  }
+
+  return true;
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * MEMO ID
+ * ------------------------------------------------------------
+ */
+
+function memoId(item) {
+
+  const tx =
+    String(
+      item.tx_hash ??
+      item.hash ??
+      ""
+    );
+
+  if (tx) {
+    return tx;
+  }
+
+  return [
+    item.block,
+    item.timestamp,
+    item.sender,
+    item.recipient,
+    item.memo
+  ]
+  .map(
+    value =>
+      String(value ?? "")
+  )
+  .join("|");
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * ADD MEMOS
+ * ------------------------------------------------------------
+ */
+
+function addMemos(items) {
+
+  if (
+    !Array.isArray(items)
+  ) {
+    return 0;
+  }
+
+  const map =
+    new Map();
+
+  for (
+    const existing of memos
+  ) {
+
+    map.set(
+      memoId(existing),
+      existing
+    );
+
+  }
+
+  let added = 0;
+
+  for (
+    const item of items
+  ) {
+
+    if (
+      !isPublicWhisper(item)
+    ) {
+      continue;
+    }
+
+    const id =
+      memoId(item);
+
+    if (
+      !map.has(id)
+    ) {
+      added++;
+    }
+
+    map.set(
+      id,
+      item
+    );
+
+  }
+
+  memos =
+    Array.from(
+      map.values()
+    );
+
+  memos.sort(
+    (a, b) => {
+
+      const ab =
+        Number(
+          a.block ?? 0
+        );
+
+      const bb =
+        Number(
+          b.block ?? 0
+        );
+
+      if (
+        bb !== ab
+      ) {
+        return bb - ab;
+      }
+
+      return String(
+        b.tx_hash ?? ""
+      )
+      .localeCompare(
+        String(
+          a.tx_hash ?? ""
+        )
+      );
+
+    }
+  );
+
+  return added;
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * VERIFY HEIGHTS
+ * ------------------------------------------------------------
+ */
+
+function markVerified(
+  from,
+  count
+) {
+
+  for (
+    let i = 0;
+    i < count;
+    i++
+  ) {
+
+    verifiedHeights.add(
+      from - i
+    );
+
+  }
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * PROGRESS
+ * ------------------------------------------------------------
+ */
+
+function setProgress(
+  text,
+  percent,
+  complete = false
+) {
+
+  const safePercent =
+    Math.max(
+      0,
+      Math.min(
+        100,
+        percent
+      )
+    );
+
+  el(
+    "progressText"
+  ).textContent =
+    text;
+
+  el(
+    "progressPercent"
+  ).textContent =
+    Math.round(
+      safePercent
+    ) + "%";
+
+  el(
+    "progressBar"
+  ).style.width =
+    safePercent + "%";
+
+  el(
+    "progressWrap"
+  ).classList.toggle(
+    "complete",
+    complete
+  );
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * STATUS
+ * ------------------------------------------------------------
+ */
+
+function setStatus(
+  text,
+  mode = "normal"
+) {
+
+  el(
+    "status"
+  ).textContent =
+    text;
+
+  const dot =
+    el("liveDot");
+
+  dot.className =
+    "live-dot";
+
+  if (
+    mode === "scanning"
+  ) {
+    dot.classList.add(
+      "scanning"
+    );
+  }
+
+  if (
+    mode === "error"
+  ) {
+    dot.classList.add(
+      "error"
+    );
+  }
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * RENDER
+ * ------------------------------------------------------------
+ */
+
+function renderFeed() {
+
+  const feed =
+    el("feed");
+
+  const search =
+    String(
+      el("searchInput").value ??
+      ""
+    )
+    .trim()
+    .toLowerCase();
+
+  let filtered =
+    memos;
+
+  if (search) {
+
+    filtered =
+      memos.filter(
+        item => {
+
+          const haystack =
+            [
+              item.memo,
+              item.sender,
+              item.recipient,
+              item.tx_hash,
+              item.block
+            ]
+            .map(
+              value =>
+                String(
+                  value ?? ""
+                )
+                .toLowerCase()
+            )
+            .join(" ");
+
+          return haystack.includes(
+            search
+          );
+
+        }
+      );
+
+  }
+
+  el(
+    "count"
+  ).textContent =
+    memos.length +
+    (
+      memos.length === 1
+        ? " whisper"
+        : " whispers"
+    );
+
+
+  if (
+    filtered.length === 0
+  ) {
+
+    /*
+     * Do NOT show "no whispers"
+     * while a scan is active.
+     */
+
+    if (scanning) {
+
+      feed.innerHTML = `
+        <div class="scan-loading">
+          <strong>Scanning the NEV369 chain…</strong><br>
+          Public whispers will appear here as they are discovered.
+        </div>
+      `;
+
+    } else {
+
+      feed.innerHTML = `
+        <div class="empty">
+          The chain is connected, but there are currently no public whispers to display.
+          <br><br>
+          Be the first to leave a whisper.
+        </div>
+      `;
+
+    }
+
+    return;
+  }
+
+
+  feed.innerHTML =
+    filtered
+      .map(
+        item => {
+
+          const memo =
+            escapeHtml(
+              item.memo ??
+              ""
+            );
+
+          const block =
+            Number(
+              item.block ?? 0
+            );
+
+          const timestamp =
+            formatTime(
+              item.timestamp
+            );
+
+          const sender =
+            shortAddr(
+              item.sender
+            );
+
+          const recipient =
+            shortAddr(
+              item.recipient
+            );
+
+          const amount =
+            formatAmount(
+              item.amount
+            );
+
+          const txHash =
+            String(
+              item.tx_hash ??
+              ""
+            );
+
+          const explorer =
+            txHash
+              ? (
+                "https://q-lock-ecosystem.com/explorer/#/tx/" +
+                encodeURIComponent(
+                  txHash
+                )
+              )
+              : (
+                "https://q-lock-ecosystem.com/explorer/#/block/" +
+                block
+              );
+
+          return `
+            <article class="memo">
+
+              <div class="meta">
+
+                <span>
+                  Block #${block}
+                </span>
+
+                <span>
+                  ${escapeHtml(timestamp)}
+                </span>
+
+              </div>
+
+              <div class="memo-text">
+                ${memo}
+              </div>
+
+              <div class="meta">
+
+                <span>
+                  From:
+                  ${escapeHtml(sender)}
+                </span>
+
+                <span>
+                  To:
+                  ${escapeHtml(recipient)}
+                </span>
+
+              </div>
+
+              ${
+                amount
+                  ? `
+                    <div class="meta">
+                      <span class="amount">
+                        ${escapeHtml(amount)}
+                      </span>
+                    </div>
+                  `
+                  : ""
+              }
+
+              <div class="tx-link">
+
+                <a
+                  href="${explorer}"
+                  target="_blank"
+                  rel="noopener"
+                >
+                  View transaction
+                </a>
+
+              </div>
+
+            </article>
+          `;
+
+        }
+      )
+      .join("");
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * DETERMINE OLD SCAN STATE
+ * ------------------------------------------------------------
+ *
+ * The previous scanner stored:
+ *
+ * lowestScanned
+ * highestScanned
+ *
+ * Unfortunately it could skip the block represented
+ * by Worker "next".
+ *
+ * This function reconstructs those likely skipped
+ * boundary blocks.
+ * ------------------------------------------------------------
+ */
+
+function getLegacyState() {
+
+  try {
+
+    const raw =
+      localStorage.getItem(
+        "nevwhisper.scan.state.v2"
+      );
+
+    if (!raw) {
+      return null;
+    }
+
+    const state =
+      JSON.parse(raw);
+
+    if (
+      !state ||
+      typeof state !== "object"
+    ) {
+      return null;
+    }
+
+    const lowest =
+      Number(
+        state.lowestScanned
+      );
+
+    const highest =
+      Number(
+        state.highestScanned
+      );
+
+    if (
+      !Number.isFinite(
+        lowest
+      ) ||
+      !Number.isFinite(
+        highest
+      )
+    ) {
+      return null;
+    }
+
+    return {
+      lowest,
+      highest
+    };
+
+  } catch {
+
+    return null;
+
+  }
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * REPAIR LEGACY SKIPPED BLOCKS
+ * ------------------------------------------------------------
+ *
+ * Old scanner pattern:
+ *
+ * 5728..5719
+ * skipped 5718
+ *
+ * 5717..5708
+ * skipped 5707
+ *
+ * 5706..5697
+ * skipped 5696
+ *
+ * etc.
+ *
+ * We repair those heights automatically.
+ * ------------------------------------------------------------
+ */
+
+async function repairLegacyBlocks(
+  legacy
+) {
+
+  if (!legacy) {
+    return;
+  }
+
+  const oldHighest =
+    legacy.highest;
+
+  const oldLowest =
+    legacy.lowest;
+
+  /*
+   * The first skipped block is
+   * oldHighest - 13 for the
+   * historical scan pattern.
+   *
+   * Example:
+   *
+   * old highest = 5731
+   *
+   * old scan started at 5731.
+   *
+   * 5731..5722
+   * next 5721
+   *
+   * Then:
+   *
+   * 5721..5712
+   * next 5711
+   *
+   * The exact old state varies
+   * depending on where the scan
+   * was interrupted.
+   *
+   * Rather than trusting a formula,
+   * we repair every 11th-ish
+   * boundary by scanning the
+   * entire old range in small
+   * chunks.
+   *
+   * This is automatic and does
+   * NOT require the user to press
+   * the Genesis button.
+   */
+
+  const total =
+    Math.max(
+      0,
+      oldHighest -
+      oldLowest +
+      1
+    );
+
+  /*
+   * To avoid unnecessarily
+   * hammering the node, only
+   * repair heights that were
+   * not already verified by
+   * the new scanner.
+   */
+
+  const candidates = [];
+
+  /*
+   * The old scanner's missed
+   * boundary pattern is spaced
+   * 11 blocks apart.
+   *
+   * Start with each possible
+   * boundary offset so we catch
+   * the actual skipped sequence.
+   */
+
+  for (
+    let h = oldHighest;
+    h >= oldLowest;
+    h--
+  ) {
+
+    if (
+      !verifiedHeights.has(h)
+    ) {
+      candidates.push(h);
+    }
+
+  }
+
+  /*
+   * If the old state covers a
+   * very large range, repairing
+   * every block would effectively
+   * be a Genesis rescan.
+   *
+   * Instead, first repair the
+   * exact known boundary pattern.
+   */
+
+  const likelySkipped =
+    new Set();
+
+  /*
+   * Try all offsets across the
+   * 10-block Worker window.
+   *
+   * This guarantees that any
+   * old batch-boundary omission
+   * is checked.
+   */
+
+  for (
+    let offset = 0;
+    offset < 11;
+    offset++
+  ) {
+
+    for (
+      let h =
+        oldHighest -
+        offset;
+
+      h >= oldLowest;
+
+      h -= 11
+    ) {
+
+      likelySkipped.add(h);
+
+    }
+
+  }
+
+  const repairList =
+    Array.from(
+      likelySkipped
+    )
+    .filter(
+      h =>
+        h >= oldLowest &&
+        h <= oldHighest &&
+        !verifiedHeights.has(h)
+    )
+    .sort(
+      (a, b) => b - a
+    );
+
+
+  if (
+    repairList.length === 0
+  ) {
+    return;
+  }
+
+
+  repairMode = true;
+
+
+  const totalRepair =
+    repairList.length;
+
+  let repaired = 0;
+
+
+  for (
+    const height of repairList
+  ) {
+
+    try {
+
+      const result =
+        await fetchWhispers(
+          height,
+          height
+        );
+
+      const batch =
+        Array.isArray(
+          result.whispers
+        )
+          ? result.whispers
+          : [];
+
+      addMemos(
+        batch
+      );
+
+      verifiedHeights.add(
+        height
+      );
+
+      repaired++;
+
+      const percent =
+        (
+          repaired /
+          totalRepair
+        ) * 100;
+
+      setProgress(
+        "Repairing skipped blocks · #" +
+        height,
+        percent
+      );
+
+      setStatus(
+        "Repairing historical blocks · #" +
+        height,
+        "scanning"
+      );
+
+      renderFeed();
+
+      saveStorage();
+
+      /*
+       * Give the browser a tiny
+       * breathing window.
+       */
+
+      await sleep(25);
+
+    } catch (error) {
+
+      scanErrors.push({
+        height,
+        error:
+          String(error)
       });
 
     }
 
+  }
 
-    /*
-     * ------------------------------------------------------------
-     * ADDRESS
-     * ------------------------------------------------------------
-     */
+  repairMode = false;
 
-    function shortAddr(addr) {
+  saveStorage();
 
-      if (!addr) {
-        return "—";
-      }
+}
 
-      addr = String(addr);
 
-      if (
-        addr.length < 16
-      ) {
-        return addr;
-      }
+/*
+ * ------------------------------------------------------------
+ * SLEEP
+ * ------------------------------------------------------------
+ */
 
-      return (
-        addr.slice(0, 8) +
-        "…" +
-        addr.slice(-5)
+function sleep(ms) {
+
+  return new Promise(
+    resolve =>
+      setTimeout(
+        resolve,
+        ms
+      )
+  );
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * SCAN EXACT RANGE
+ * ------------------------------------------------------------
+ */
+
+async function scanExactRange(
+  from,
+  to,
+  label
+) {
+
+  if (
+    from < to
+  ) {
+    return;
+  }
+
+  const total =
+    from -
+    to +
+    1;
+
+  let completed =
+    0;
+
+  for (
+    let cursor = from;
+    cursor >= to;
+  ) {
+
+    const batchFrom =
+      cursor;
+
+    const batchTo =
+      Math.max(
+        to,
+        cursor -
+        BATCH_SIZE +
+        1
       );
 
-    }
+    try {
 
-
-    /*
-     * ------------------------------------------------------------
-     * AMOUNT
-     * ------------------------------------------------------------
-     */
-
-    function formatAmount(amount) {
-
-      if (
-        amount === undefined ||
-        amount === null ||
-        amount === ""
-      ) {
-        return "";
-      }
-
-      const nev =
-        Number(amount);
-
-      if (
-        !Number.isFinite(nev) ||
-        nev === 0
-      ) {
-        return "";
-      }
-
-      return (
-        nev.toLocaleString(
-          undefined,
-          {
-            maximumFractionDigits: 8
-          }
-        ) +
-        " NEV"
-      );
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * HTML ESCAPING
-     * ------------------------------------------------------------
-     */
-
-    function escapeHtml(text) {
-
-      const div =
-        document.createElement("div");
-
-      div.textContent =
-        String(text ?? "");
-
-      return div.innerHTML;
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * STORAGE
-     * ------------------------------------------------------------
-     */
-
-    function loadStorage() {
-
-      try {
-
-        const storedMemos =
-          localStorage.getItem(
-            STORAGE_KEY
-          );
-
-        if (storedMemos) {
-
-          const parsed =
-            JSON.parse(
-              storedMemos
-            );
-
-          if (
-            Array.isArray(parsed)
-          ) {
-            memos = parsed;
-          }
-
-        }
-
-
-        const storedState =
-          localStorage.getItem(
-            STATE_KEY
-          );
-
-        if (storedState) {
-
-          const parsedState =
-            JSON.parse(
-              storedState
-            );
-
-          if (
-            parsedState &&
-            typeof parsedState === "object"
-          ) {
-            scanState = {
-              lowestScanned:
-                parsedState.lowestScanned ??
-                null,
-
-              highestScanned:
-                parsedState.highestScanned ??
-                null
-            };
-          }
-
-        }
-
-      } catch (error) {
-
-        console.warn(
-          "NevWhisper storage could not be loaded:",
-          error
+      const result =
+        await fetchWhispers(
+          batchFrom,
+          batchTo
         );
 
-        memos = [];
-
-        scanState = {
-          lowestScanned: null,
-          highestScanned: null
-        };
-
-      }
-
-    }
-
-
-    function saveStorage() {
-
-      try {
-
-        localStorage.setItem(
-          STORAGE_KEY,
-          JSON.stringify(memos)
-        );
-
-        localStorage.setItem(
-          STATE_KEY,
-          JSON.stringify(scanState)
-        );
-
-      } catch (error) {
-
-        console.warn(
-          "NevWhisper storage could not be saved:",
-          error
-        );
-
-      }
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * NETWORK
-     * ------------------------------------------------------------
-     */
-
-    async function fetchJson(
-      url,
-      timeoutMs = 30000
-    ) {
-
-      const controller =
-        new AbortController();
-
-      const timeout =
-        setTimeout(
-          () => controller.abort(),
-          timeoutMs
-        );
-
-
-      try {
-
-        const response =
-          await fetch(
-            url,
-            {
-              method: "GET",
-
-              headers: {
-                "Accept":
-                  "application/json"
-              },
-
-              cache: "no-store",
-
-              signal:
-                controller.signal
-            }
-          );
-
-
-        if (
-          !response.ok
-        ) {
-
-          throw new Error(
-            "Node returned HTTP " +
-            response.status
-          );
-
-        }
-
-
-        const text =
-          await response.text();
-
-
-        try {
-
-          return JSON.parse(text);
-
-        } catch {
-
-          throw new Error(
-            "The NEV369 proxy returned invalid JSON."
-          );
-
-        }
-
-      } finally {
-
-        clearTimeout(timeout);
-
-      }
-
-    }
-
-
-    async function fetchInfo() {
-
-      return await fetchJson(
-        INFO_API,
-        15000
-      );
-
-    }
-
-
-    async function fetchWhispers(
-      from,
-      to
-    ) {
-
-      const url =
-        WHISPERS_API +
-        "?from=" +
-        encodeURIComponent(from) +
-        "&to=" +
-        encodeURIComponent(to);
-
-
-      return await fetchJson(
-        url,
-        30000
-      );
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * MEMO FILTERING
-     * ------------------------------------------------------------
-     */
-
-    function isPublicWhisper(item) {
-
-      if (
-        !item ||
-        typeof item !== "object"
-      ) {
-        return false;
-      }
-
-
-      const memo =
-        String(
-          item.memo ??
-          item.payload_memo ??
-          ""
-        ).trim();
-
-
-      if (!memo) {
-        return false;
-      }
-
-
-      const sender =
-        String(
-          item.sender ??
-          item.from ??
-          ""
-        );
-
-
-      const lowerMemo =
-        memo.toLowerCase();
-
-
-      /*
-       * Ignore network/mining reward messages.
-       *
-       * This preserves the behaviour of the
-       * previous NevWhisper version.
-       */
-
-      if (
-        sender === "NETWORK_REWARD"
-      ) {
-        return false;
-      }
-
-      if (
-        lowerMemo.includes(
-          "block reward"
+      const batch =
+        Array.isArray(
+          result.whispers
         )
-      ) {
-        return false;
-      }
+          ? result.whispers
+          : [];
 
-      if (
-        lowerMemo.includes(
-          "mining reward"
-        )
-      ) {
-        return false;
-      }
-
-      if (
-        memo.startsWith("Block ")
-      ) {
-        return false;
-      }
-
-
-      return true;
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * NORMALIZE WORKER MEMO
-     * ------------------------------------------------------------
-     */
-
-    function normalizeMemo(item) {
-
-      const memo =
-        String(
-          item.memo ??
-          item.payload_memo ??
-          ""
-        ).trim();
-
-
-      return {
-
-        id:
-          item.tx_hash ||
-          item.hash ||
-          [
-            item.block,
-            item.timestamp,
-            item.sender,
-            item.recipient,
-            memo
-          ].join("|"),
-
-        height:
-          Number(
-            item.block ??
-            item.height ??
-            item.block_height ??
-            0
-          ),
-
-        timestamp:
-          item.timestamp ??
-          null,
-
-        from:
-          item.sender ??
-          item.from ??
-          "",
-
-        to:
-          item.recipient ??
-          item.to ??
-          "",
-
-        amount:
-          item.amount ??
-          item.value ??
-          null,
-
-        fee:
-          item.fee ??
-          null,
-
-        memo
-
-      };
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * MERGE MEMOS
-     * ------------------------------------------------------------
-     */
-
-    function mergeMemos(
-      incoming
-    ) {
-
-      if (
-        !Array.isArray(incoming) ||
-        incoming.length === 0
-      ) {
-        return;
-      }
-
-
-      const map =
-        new Map();
-
-
-      /*
-       * Existing memos first.
-       */
-
-      for (
-        const memo of memos
-      ) {
-
-        if (
-          memo &&
-          memo.id
-        ) {
-          map.set(
-            String(memo.id),
-            memo
-          );
-        }
-
-      }
-
-
-      /*
-       * New memos overwrite
-       * matching IDs.
-       */
-
-      for (
-        const item of incoming
-      ) {
-
-        if (
-          !isPublicWhisper(item)
-        ) {
-          continue;
-        }
-
-
-        const normalized =
-          normalizeMemo(item);
-
-
-        if (
-          !normalized.memo
-        ) {
-          continue;
-        }
-
-
-        map.set(
-          String(normalized.id),
-          normalized
-        );
-
-      }
-
-
-      memos =
-        Array.from(
-          map.values()
-        );
-
-
-      /*
-       * Sort newest block first.
-       */
-
-      memos.sort(
-        (a, b) => {
-
-          const blockA =
-            Number(a.height || 0);
-
-          const blockB =
-            Number(b.height || 0);
-
-          if (
-            blockB !== blockA
-          ) {
-            return blockB - blockA;
-          }
-
-
-          const timeA =
-            Number(
-              a.timestamp || 0
-            );
-
-          const timeB =
-            Number(
-              b.timestamp || 0
-            );
-
-          return timeB - timeA;
-
-        }
+      addMemos(
+        batch
       );
 
 
-      saveStorage();
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * PROGRESS
-     * ------------------------------------------------------------
-     */
-
-    function updateProgress(
-      currentHeight,
-      totalHeight
-    ) {
-
-      const progressWrap =
-        el("progressWrap");
-
-      const progressBar =
-        el("progressBar");
-
-      const progressText =
-        el("progressText");
-
-      const progressPercent =
-        el("progressPercent");
-
-
-      if (
-        totalHeight <= 0
-      ) {
-
-        progressBar.style.width =
-          "100%";
-
-        progressPercent.textContent =
-          "100%";
-
-        progressText.textContent =
-          "Genesis";
-
-        return;
-
-      }
-
-
       /*
-       * currentHeight is the next block
-       * being scanned downward.
+       * CRITICAL:
        *
-       * We convert that into
-       * percentage of the chain completed.
+       * Mark the ACTUAL blocks
+       * in this batch as verified.
+       *
+       * Do NOT use result.next.
        */
 
-      const scanned =
-        totalHeight -
-        Math.max(
-          0,
-          currentHeight
-        );
+      const scannedCount =
+        batchFrom -
+        batchTo +
+        1;
+
+      markVerified(
+        batchFrom,
+        scannedCount
+      );
+
+      completed +=
+        scannedCount;
 
 
-      let percent =
-        (scanned /
-          totalHeight) *
-        100;
+      const percent =
+        (
+          completed /
+          total
+        ) * 100;
 
 
-      percent =
-        Math.max(
-          0,
-          Math.min(
-            100,
-            percent
-          )
-        );
+      setProgress(
+        label +
+        " · block #" +
+        batchTo,
+        percent
+      );
 
 
-      progressBar.style.width =
-        percent.toFixed(1) +
-        "%";
-
-
-      progressPercent.textContent =
-        Math.floor(percent) +
-        "%";
-
-
-      progressText.textContent =
+      setStatus(
         "Scanning block #" +
-        Math.max(
-          0,
-          currentHeight
-        ) +
-        " · " +
-        "Genesis → current";
-
-      progressWrap.classList.remove(
-        "complete"
-      );
-
-    }
-
-
-    function markScanComplete() {
-
-      const progressWrap =
-        el("progressWrap");
-
-      const progressBar =
-        el("progressBar");
-
-      const progressText =
-        el("progressText");
-
-      const progressPercent =
-        el("progressPercent");
-
-
-      progressBar.style.width =
-        "100%";
-
-      progressPercent.textContent =
-        "100%";
-
-      progressText.textContent =
-        "Full chain scanned · Genesis reached";
-
-
-      progressWrap.classList.add(
-        "complete"
-      );
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * RENDER FEED
-     * ------------------------------------------------------------
-     */
-
-    function renderFeed() {
-
-      const feed =
-        el("feed");
-
-      const countEl =
-        el("count");
-
-      const searchInput =
-        el("searchInput");
-
-
-      const query =
-        String(
-          searchInput.value || ""
-        )
-        .trim()
-        .toLowerCase();
-
-
-      let visible =
-        memos;
-
-
-      if (query) {
-
-        visible =
-          memos.filter(
-            memo => {
-
-              const haystack =
-                [
-                  memo.memo,
-                  memo.from,
-                  memo.to,
-                  memo.height
-                ]
-                .join(" ")
-                .toLowerCase();
-
-
-              return haystack.includes(
-                query
-              );
-
-            }
-          );
-
-      }
-
-
-      if (
-        visible.length === 0
-      ) {
-
-        if (
-          memos.length === 0
-        ) {
-
-          feed.innerHTML = `
-            <div class="empty">
-              The chain is connected, but there are
-              currently no public whispers to display.
-              <br><br>
-              Be the first to leave a whisper.
-            </div>
-          `;
-
-        } else {
-
-          feed.innerHTML = `
-            <div class="empty">
-              No whispers match
-              <strong>${escapeHtml(query)}</strong>.
-            </div>
-          `;
-
-        }
-
-
-        countEl.textContent =
-          memos.length === 0
-            ? ""
-            : memos.length +
-              " whispers";
-
-        return;
-
-      }
-
-
-      feed.innerHTML =
-        visible
-          .map(
-            memo => {
-
-              const amount =
-                formatAmount(
-                  memo.amount
-                );
-
-
-              return `
-                <div class="memo">
-
-                  <div class="meta">
-
-                    <span>
-                      Block #${escapeHtml(
-                        memo.height
-                      )}
-
-                      ·
-
-                      ${escapeHtml(
-                        formatTime(
-                          memo.timestamp
-                        )
-                      )}
-                    </span>
-
-                    <span class="amount">
-                      ${escapeHtml(amount)}
-                    </span>
-
-                  </div>
-
-
-                  <div
-                    class="meta"
-                    style="margin-bottom: 10px;"
-                  >
-
-                    <span>
-                      ${escapeHtml(
-                        shortAddr(
-                          memo.from
-                        )
-                      )}
-
-                      →
-
-                      ${escapeHtml(
-                        shortAddr(
-                          memo.to
-                        )
-                      )}
-                    </span>
-
-                  </div>
-
-
-                  <div class="memo-text">
-                    ${escapeHtml(
-                      memo.memo
-                    )}
-                  </div>
-
-                </div>
-              `;
-
-            }
-          )
-          .join("");
-
-
-      if (query) {
-
-        countEl.textContent =
-          visible.length +
-          " of " +
-          memos.length +
-          " whispers";
-
-      } else {
-
-        countEl.textContent =
-          memos.length +
-          " whispers";
-
-      }
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * UPDATE STATUS
-     * ------------------------------------------------------------
-     */
-
-    function setStatus(
-      message,
-      mode = "connected"
-    ) {
-
-      const status =
-        el("status");
-
-      const liveDot =
-        el("liveDot");
-
-
-      status.textContent =
-        message;
-
-
-      liveDot.classList.remove(
-        "error",
+        batchTo,
         "scanning"
       );
 
 
-      if (
-        mode === "error"
-      ) {
+      renderFeed();
 
-        liveDot.classList.add(
-          "error"
+      saveStorage();
+
+
+      cursor =
+        batchTo - 1;
+
+
+      await sleep(35);
+
+    } catch (error) {
+
+      scanErrors.push({
+        from:
+          batchFrom,
+
+        to:
+          batchTo,
+
+        error:
+          String(error)
+      });
+
+
+      /*
+       * Retry the same range once.
+       */
+
+      try {
+
+        await sleep(500);
+
+        const retry =
+          await fetchWhispers(
+            batchFrom,
+            batchTo
+          );
+
+        const retryMemos =
+          Array.isArray(
+            retry.whispers
+          )
+            ? retry.whispers
+            : [];
+
+        addMemos(
+          retryMemos
         );
 
-      }
+        const scannedCount =
+          batchFrom -
+          batchTo +
+          1;
 
-
-      if (
-        mode === "scanning"
-      ) {
-
-        liveDot.classList.add(
-          "scanning"
+        markVerified(
+          batchFrom,
+          scannedCount
         );
+
+        completed +=
+          scannedCount;
+
+        cursor =
+          batchTo - 1;
+
+        renderFeed();
+
+        saveStorage();
+
+      } catch {
+
+        /*
+         * Do not get stuck forever.
+         *
+         * Move to the next batch and
+         * remember the error.
+         */
+
+        const skippedCount =
+          batchFrom -
+          batchTo +
+          1;
+
+        completed +=
+          skippedCount;
+
+        cursor =
+          batchTo - 1;
 
       }
 
     }
 
+  }
 
-    /*
-     * ------------------------------------------------------------
-     * FULL HISTORICAL SCAN
-     * ------------------------------------------------------------
-     */
-
-    async function scanToGenesis(
-      startingHeight
-    ) {
-
-      let nextHeight =
-        Number(startingHeight);
+}
 
 
-      if (
-        !Number.isFinite(nextHeight)
-      ) {
-        return;
-      }
+/*
+ * ------------------------------------------------------------
+ * FIND LOWEST / HIGHEST VERIFIED
+ * ------------------------------------------------------------
+ */
+
+function getLowestVerified() {
+
+  if (
+    verifiedHeights.size === 0
+  ) {
+    return null;
+  }
+
+  return Math.min(
+    ...verifiedHeights
+  );
+
+}
 
 
-      nextHeight =
-        Math.floor(nextHeight);
+function getHighestVerified() {
+
+  if (
+    verifiedHeights.size === 0
+  ) {
+    return null;
+  }
+
+  return Math.max(
+    ...verifiedHeights
+  );
+
+}
 
 
-      while (
-        nextHeight >= 0
-      ) {
+/*
+ * ------------------------------------------------------------
+ * FORWARD SCAN
+ * ------------------------------------------------------------
+ */
 
-        /*
-         * Update visible progress.
-         */
+async function scanForward(
+  oldHighest,
+  currentHeight
+) {
 
-        updateProgress(
-          nextHeight,
-          chainHeight
+  if (
+    currentHeight <=
+    oldHighest
+  ) {
+
+    return;
+
+  }
+
+
+  const from =
+    oldHighest + 1;
+
+  const to =
+    currentHeight;
+
+
+  const total =
+    to -
+    from +
+    1;
+
+
+  let completed = 0;
+
+
+  for (
+    let cursor = to;
+    cursor >= from;
+  ) {
+
+    const batchFrom =
+      cursor;
+
+    const batchTo =
+      Math.max(
+        from,
+        cursor -
+        BATCH_SIZE +
+        1
+      );
+
+
+    try {
+
+      const result =
+        await fetchWhispers(
+          batchFrom,
+          batchTo
         );
 
-
-        setStatus(
-          "Scanning block #" +
-          nextHeight +
-          "…",
-          "scanning"
-        );
-
-
-        let result;
-
-
-        try {
-
-          result =
-            await fetchWhispers(
-              nextHeight,
-              0
-            );
-
-        } catch (error) {
-
-          /*
-           * Temporary network failure.
-           *
-           * Wait a little and retry the same
-           * batch rather than skipping blocks.
-           */
-
-          setStatus(
-            "Scan paused · retrying…",
-            "error"
-          );
-
-
-          await sleep(
-            2500
-          );
-
-
-          continue;
-
-        }
-
-
-        /*
-         * Merge anything found in this batch.
-         */
-
-        if (
-          Array.isArray(
-            result.whispers
-          )
-        ) {
-
-          mergeMemos(
-            result.whispers
-          );
-
-        }
-
-
-        /*
-         * Worker tells us where the next
-         * batch starts.
-         */
-
-        const next =
-          Number(
-            result.next
-          );
-
-
-        /*
-         * Update scan state.
-         *
-         * The batch from nextHeight down
-         * to the next value has now been
-         * successfully processed.
-         */
-
-        const batchLowest =
-          Math.max(
-            0,
-            Number(
-              result.next ??
-              nextHeight - BATCH_SIZE
-            )
-          );
-
-
-        scanState.highestScanned =
-          Math.max(
-            Number(
-              scanState.highestScanned ??
-              0
-            ),
-            nextHeight
-          );
-
-
-        scanState.lowestScanned =
-          Math.min(
-            Number(
-              scanState.lowestScanned ??
-              nextHeight
-            ),
-            batchLowest
-          );
-
-
-        saveStorage();
-
-
-        /*
-         * Update feed while scanning.
-         */
-
-        renderFeed();
-
-
-        /*
-         * Genesis reached.
-         */
-
-        if (
-          result.done === true ||
-          !Number.isFinite(next) ||
-          next < 0
-        ) {
-
-          scanState.lowestScanned =
-            0;
-
-          saveStorage();
-
-          markScanComplete();
-
-          setStatus(
-            "Connected · Full chain scanned · Updated " +
-            new Date().toLocaleTimeString(),
-            "connected"
-          );
-
-
-          el("scanNote").textContent =
-            "All NEV369 blocks from Genesis to the current chain height have been scanned.";
-
-
-          return;
-
-        }
-
-
-        /*
-         * Safety check.
-         */
-
-        if (
-          next >= nextHeight
-        ) {
-
-          throw new Error(
-            "The proxy returned an invalid scan position."
-          );
-
-        }
-
-
-        nextHeight =
-          next;
-
-
-        /*
-         * Small delay between requests.
-         *
-         * This prevents hammering the Worker
-         * and the upstream node.
-         */
-
-        await sleep(
-          150
-        );
-
-      }
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * INCREMENTAL NEW-BLOCK SCAN
-     * ------------------------------------------------------------
-     *
-     * Once Genesis has been reached, future refreshes
-     * only need to inspect blocks newer than the previous
-     * highest scanned block.
-     * ------------------------------------------------------------
-     */
-
-    async function scanNewBlocks(
-      oldHighest,
-      newHeight
-    ) {
-
-      let nextHeight =
-        Number(newHeight);
-
-
-      const minimum =
-        Number(oldHighest) + 1;
-
-
-      if (
-        !Number.isFinite(nextHeight) ||
-        !Number.isFinite(minimum)
-      ) {
-        return;
-      }
-
-
-      /*
-       * Nothing new to scan.
-       */
-
-      if (
-        nextHeight < minimum
-      ) {
-        return;
-      }
-
-
-      while (
-        nextHeight >= minimum
-      ) {
-
-        updateProgress(
-          nextHeight,
-          newHeight
-        );
-
-
-        setStatus(
-          "Checking new block #" +
-          nextHeight +
-          "…",
-          "scanning"
-        );
-
-
-        let result;
-
-
-        try {
-
-          result =
-            await fetchWhispers(
-              nextHeight,
-              minimum
-            );
-
-        } catch (error) {
-
-          setStatus(
-            "New-block scan paused · retrying…",
-            "error"
-          );
-
-
-          await sleep(
-            2500
-          );
-
-
-          continue;
-
-        }
-
-
-        if (
-          Array.isArray(
-            result.whispers
-          )
-        ) {
-
-          mergeMemos(
-            result.whispers
-          );
-
-        }
-
-
-        const next =
-          Number(
-            result.next
-          );
-
-
-        /*
-         * Record latest scanned height.
-         */
-
-        scanState.highestScanned =
-          Math.max(
-            Number(
-              scanState.highestScanned ??
-              0
-            ),
-            nextHeight
-          );
-
-
-        saveStorage();
-
-        renderFeed();
-
-
-        if (
-          result.done === true ||
-          !Number.isFinite(next) ||
-          next < minimum
-        ) {
-
-          break;
-
-        }
-
-
-        if (
-          next >= nextHeight
-        ) {
-
-          throw new Error(
-            "The proxy returned an invalid incremental scan position."
-          );
-
-        }
-
-
-        nextHeight =
-          next;
-
-
-        await sleep(
-          150
-        );
-
-      }
-
-
-      /*
-       * Historical scan is still complete.
-       */
-
-      if (
-        scanState.lowestScanned === 0
-      ) {
-
-        markScanComplete();
-
-      }
+      const batch =
+        Array.isArray(
+          result.whispers
+        )
+          ? result.whispers
+          : [];
+
+      addMemos(
+        batch
+      );
+
+
+      const count =
+        batchFrom -
+        batchTo +
+        1;
+
+      markVerified(
+        batchFrom,
+        count
+      );
+
+      completed +=
+        count;
+
+
+      const percent =
+        (
+          completed /
+          total
+        ) * 100;
+
+
+      setProgress(
+        "Checking new blocks · #" +
+        batchTo,
+        percent
+      );
 
 
       setStatus(
-        "Connected · Updated " +
-        new Date().toLocaleTimeString(),
-        "connected"
+        "Checking new blocks · #" +
+        batchTo,
+        "scanning"
+      );
+
+
+      renderFeed();
+
+      saveStorage();
+
+
+      cursor =
+        batchTo - 1;
+
+
+      await sleep(35);
+
+    } catch (error) {
+
+      scanErrors.push({
+        from:
+          batchFrom,
+
+        to:
+          batchTo,
+
+        error:
+          String(error)
+      });
+
+      cursor =
+        batchTo - 1;
+
+    }
+
+  }
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * MAIN SCAN
+ * ------------------------------------------------------------
+ */
+
+async function runScanner(
+  forceGenesis = false
+) {
+
+  if (scanning) {
+    return;
+  }
+
+  scanning = true;
+
+  scanErrors = [];
+
+  el(
+    "refreshBtn"
+  ).disabled = true;
+
+  el(
+    "rescanBtn"
+  ).disabled = true;
+
+
+  try {
+
+    setStatus(
+      "Connecting to NEV369…",
+      "scanning"
+    );
+
+
+    const info =
+      await fetchInfo();
+
+
+    chainHeight =
+      Number(
+        info.height ??
+        info.chain_height ??
+        0
+      );
+
+
+    if (
+      !Number.isFinite(
+        chainHeight
+      )
+    ) {
+
+      throw new Error(
+        "Invalid NEV369 chain height."
       );
 
     }
 
 
     /*
-     * ------------------------------------------------------------
-     * MAIN LOAD
-     * ------------------------------------------------------------
+     * --------------------------------------------------------
+     * MANUAL GENESIS RESCAN
+     * --------------------------------------------------------
      */
 
-    async function loadMemos() {
+    if (
+      forceGenesis
+    ) {
+
+      verifiedHeights =
+        new Set();
+
+      /*
+       * Keep memos.
+       *
+       * We rebuild the verified
+       * height map without throwing
+       * away already discovered
+       * messages.
+       */
+
+      saveStorage();
+
+      renderFeed();
+
+      await scanExactRange(
+        chainHeight,
+        0,
+        "Full chain scan"
+      );
+
+
+      setProgress(
+        "Full chain scanned · Genesis reached",
+        100,
+        true
+      );
+
+
+      setStatus(
+        "Connected · Full chain scanned",
+        "normal"
+      );
+
+
+      el(
+        "scanNote"
+      ).textContent =
+        "Full NEV369 history scanned from Genesis to block #" +
+        chainHeight +
+        ".";
+
+      renderFeed();
+
+      saveStorage();
+
+      return;
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * FIRST / LEGACY VISIT
+     * --------------------------------------------------------
+     */
+
+    const legacy =
+      getLegacyState();
+
+
+    /*
+     * If we have no exact new
+     * verification state, migrate
+     * automatically.
+     */
+
+    if (
+      verifiedHeights.size === 0
+    ) {
+
+      /*
+       * We already know the old
+       * scanner reached some range.
+       *
+       * Repair it automatically.
+       */
 
       if (
-        scanning
+        legacy
       ) {
-        return;
-      }
-
-
-      scanning = true;
-
-
-      const refreshBtn =
-        el("refreshBtn");
-
-      const rescanBtn =
-        el("rescanBtn");
-
-
-      refreshBtn.disabled =
-        true;
-
-      rescanBtn.disabled =
-        true;
-
-
-      try {
 
         setStatus(
-          "Connecting to NEV369…",
+          "Repairing previous scan…",
           "scanning"
         );
 
-
-        /*
-         * Always get the latest chain height.
-         */
-
-        const info =
-          await fetchInfo();
-
-
-        chainHeight =
-          Number(
-            info.height ??
-            info.chain_height ??
-            0
-          );
-
-
-        if (
-          !Number.isFinite(
-            chainHeight
-          )
-        ) {
-
-          throw new Error(
-            "The NEV369 node returned an invalid chain height."
-          );
-
-        }
-
-
-        chainHeight =
-          Math.floor(
-            chainHeight
-          );
-
-
-        /*
-         * Display current chain state.
-         */
-
-        el("scanNote").textContent =
-          "NEV369 chain height: #" +
-          chainHeight +
-          " · scanning historical memos automatically.";
-
-
-        /*
-         * First visit:
-         *
-         * Scan from current chain height
-         * all the way to Genesis.
-         */
-
-        if (
-          scanState.lowestScanned === null
-        ) {
-
-          scanState.lowestScanned =
-            chainHeight;
-
-          scanState.highestScanned =
-            null;
-
-          saveStorage();
-
-
-          await scanToGenesis(
-            chainHeight
-          );
-
-        }
-
-
-        /*
-         * Existing user who has not yet
-         * reached Genesis.
-         */
-
-        else if (
-          Number(
-            scanState.lowestScanned
-          ) > 0
-        ) {
-
-          /*
-           * If the chain is higher than the
-           * last known high point, first scan
-           * the new blocks.
-           */
-
-          const oldHighest =
-            Number(
-              scanState.highestScanned ??
-              chainHeight
-            );
-
-
-          if (
-            chainHeight >
-            oldHighest
-          ) {
-
-            await scanNewBlocks(
-              oldHighest,
-              chainHeight
-            );
-
-          }
-
-
-          /*
-           * Continue historical scan from
-           * where we previously stopped.
-           */
-
-          const lowest =
-            Number(
-              scanState.lowestScanned
-            );
-
-
-          if (
-            lowest > 0
-          ) {
-
-            await scanToGenesis(
-              lowest - 1
-            );
-
-          }
-
-        }
-
-
-        /*
-         * Full history already scanned.
-         *
-         * Only scan newly created blocks.
-         */
-
-        else {
-
-          const oldHighest =
-            Number(
-              scanState.highestScanned ??
-              0
-            );
-
-
-          if (
-            chainHeight >
-            oldHighest
-          ) {
-
-            await scanNewBlocks(
-              oldHighest,
-              chainHeight
-            );
-
-          } else {
-
-            markScanComplete();
-
-            setStatus(
-              "Connected · Updated " +
-              new Date().toLocaleTimeString(),
-              "connected"
-            );
-
-          }
-
-        }
-
-
-        /*
-         * Final render.
-         */
+        setProgress(
+          "Checking previously scanned blocks…",
+          1
+        );
 
         renderFeed();
 
 
-        if (
-          scanState.lowestScanned === 0
-        ) {
+        /*
+         * First check the old
+         * skipped boundaries.
+         */
 
-          markScanComplete();
-
-          el("scanNote").textContent =
-            "Full NEV369 history scanned from Genesis to block #" +
-            chainHeight +
-            ".";
-
-        }
-
-
-      } catch (error) {
-
-        console.error(
-          "NevWhisper connection error:",
-          error
+        await repairLegacyBlocks(
+          legacy
         );
-
-
-        setStatus(
-          "Connection error",
-          "error"
-        );
-
-
-        el("progressText").textContent =
-          "Unable to continue the chain scan";
-
-
-        el("scanNote").textContent =
-          "The scanner will retry on the next refresh.";
 
 
         /*
-         * Do not erase previously discovered
-         * whispers when a network error occurs.
+         * Now establish a reliable
+         * baseline by scanning any
+         * gaps in the old range.
+         *
+         * This is intentionally
+         * limited to the legacy
+         * range.
          */
 
-        if (
-          memos.length === 0
+        const baselineLowest =
+          legacy.lowest;
+
+        const baselineHighest =
+          Math.min(
+            legacy.highest,
+            chainHeight
+          );
+
+
+        /*
+         * Check all currently
+         * unverified blocks in
+         * the legacy range.
+         *
+         * This guarantees that the
+         * old scanner cannot leave
+         * hidden holes.
+         */
+
+        const missing = [];
+
+        for (
+          let h =
+            baselineHighest;
+
+          h >=
+          baselineLowest;
+
+          h--
         ) {
 
-          el("feed").innerHTML = `
-            <div class="error-box">
-
-              <strong>
-                Failed to hear the chain.
-              </strong>
-
-              <br><br>
-
-              ${escapeHtml(
-                error.message
-              )}
-
-              <br><br>
-
-              <a
-                href="https://q-lock-ecosystem.com/explorer"
-                target="_blank"
-                rel="noopener"
-              >
-                Open the official NEV369 Explorer
-              </a>
-
-            </div>
-          `;
-
-        } else {
-
-          renderFeed();
+          if (
+            !verifiedHeights.has(
+              h
+            )
+          ) {
+            missing.push(h);
+          }
 
         }
 
-      } finally {
 
-        scanning =
-          false;
+        /*
+         * Fill missing heights in
+         * contiguous ranges.
+         */
 
-        refreshBtn.disabled =
-          false;
+        if (
+          missing.length > 0
+        ) {
 
-        rescanBtn.disabled =
-          false;
+          let rangeStart =
+            missing[0];
 
-      }
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * RESET AND RESCAN
-     * ------------------------------------------------------------
-     */
-
-    async function rescanGenesis() {
-
-      if (
-        scanning
-      ) {
-        return;
-      }
+          let previous =
+            missing[0];
 
 
-      const confirmed =
-        window.confirm(
-          "Rescan the entire NEV369 chain from Genesis?\n\n" +
-          "This clears the saved scan position and " +
-          "checks every block again."
-        );
+          for (
+            let i = 1;
+            i < missing.length;
+            i++
+          ) {
+
+            const current =
+              missing[i];
 
 
-      if (
-        !confirmed
-      ) {
-        return;
-      }
+            if (
+              current ===
+              previous - 1
+            ) {
+
+              previous =
+                current;
+
+              continue;
+
+            }
 
 
-      try {
-
-        localStorage.removeItem(
-          STORAGE_KEY
-        );
-
-        localStorage.removeItem(
-          STATE_KEY
-        );
-
-      } catch {
-        // Ignore storage errors.
-      }
+            await scanExactRange(
+              rangeStart,
+              previous,
+              "Repairing historical blocks"
+            );
 
 
-      memos = [];
+            rangeStart =
+              current;
 
-      scanState = {
-        lowestScanned: null,
-        highestScanned: null
-      };
+            previous =
+              current;
 
-
-      el("feed").innerHTML = `
-        <div class="loading">
-          Restarting from Genesis…
-        </div>
-      `;
+          }
 
 
-      await loadMemos();
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * SLEEP
-     * ------------------------------------------------------------
-     */
-
-    function sleep(ms) {
-
-      return new Promise(
-        resolve =>
-          setTimeout(
-            resolve,
-            ms
-          )
-      );
-
-    }
-
-
-    /*
-     * ------------------------------------------------------------
-     * AUTO REFRESH
-     * ------------------------------------------------------------
-     */
-
-    function setupAutoRefresh() {
-
-      clearInterval(
-        autoTimer
-      );
-
-
-      const checkbox =
-        el("autoRefresh");
-
-
-      if (
-        checkbox.checked
-      ) {
-
-        autoTimer =
-          setInterval(
-            () => {
-
-              /*
-               * Never interrupt an active
-               * historical scan.
-               */
-
-              if (
-                !scanning
-              ) {
-                loadMemos();
-              }
-
-            },
-            REFRESH_MS
+          await scanExactRange(
+            rangeStart,
+            previous,
+            "Repairing historical blocks"
           );
 
+        }
+
+      } else {
+
+        /*
+         * No previous state at all.
+         *
+         * Perform the first full scan.
+         */
+
+        await scanExactRange(
+          chainHeight,
+          0,
+          "Full chain scan"
+        );
+
       }
 
     }
 
 
     /*
-     * ------------------------------------------------------------
-     * SEARCH
-     * ------------------------------------------------------------
+     * --------------------------------------------------------
+     * NEW BLOCK CATCH-UP
+     * --------------------------------------------------------
      */
 
-    el("searchInput")
-      .addEventListener(
-        "input",
-        renderFeed
-      );
+    const highestVerified =
+      getHighestVerified();
 
 
     /*
-     * ------------------------------------------------------------
-     * AUTO REFRESH CHECKBOX
-     * ------------------------------------------------------------
+     * If the old scan stopped at
+     * #5731 and chain is now #5745,
+     * this scans #5732 → #5745.
      */
 
-    el("autoRefresh")
-      .addEventListener(
-        "change",
-        setupAutoRefresh
+    if (
+      highestVerified !== null &&
+      highestVerified <
+      chainHeight
+    ) {
+
+      await scanForward(
+        highestVerified,
+        chainHeight
       );
+
+    }
 
 
     /*
-     * ------------------------------------------------------------
-     * START
-     * ------------------------------------------------------------
+     * --------------------------------------------------------
+     * ENSURE GENESIS BASELINE
+     * --------------------------------------------------------
      */
 
-    loadStorage();
+    const lowestVerified =
+      getLowestVerified();
+
+
+    if (
+      lowestVerified === null ||
+      lowestVerified > 0
+    ) {
+
+      /*
+       * If the current exact state
+       * does not include Genesis,
+       * finish the remaining historical
+       * range.
+       */
+
+      await scanExactRange(
+        lowestVerified === null
+          ? chainHeight
+          : lowestVerified - 1,
+
+        0,
+
+        "Completing Genesis scan"
+      );
+
+    }
+
+
+    /*
+     * --------------------------------------------------------
+     * FINAL STATUS
+     * --------------------------------------------------------
+     */
+
+    setProgress(
+      "Full chain scanned · Genesis reached",
+      100,
+      true
+    );
+
+
+    setStatus(
+      "Connected · Full chain scanned",
+      "normal"
+    );
+
+
+    el(
+      "scanNote"
+    ).textContent =
+      "Full NEV369 history scanned from Genesis to block #" +
+      chainHeight +
+      ".";
+
+
+    if (
+      scanErrors.length > 0
+    ) {
+
+      el(
+        "scanNote"
+      ).textContent +=
+        " Some blocks will be retried on the next refresh.";
+
+    }
+
 
     renderFeed();
 
-    setupAutoRefresh();
+    saveStorage();
 
-    loadMemos();
 
-  </script>
+  } catch (error) {
+
+    console.error(
+      "NevWhisper scanner error:",
+      error
+    );
+
+
+    setStatus(
+      "Connection error",
+      "error"
+    );
+
+
+    el(
+      "scanNote"
+    ).textContent =
+      String(
+        error.message ??
+        error
+      );
+
+
+    if (
+      memos.length === 0
+    ) {
+
+      el(
+        "feed"
+      ).innerHTML = `
+        <div class="error-box">
+          Could not read the NEV369 public node.
+          <br><br>
+          ${escapeHtml(
+            error.message ??
+            String(error)
+          )}
+        </div>
+      `;
+
+    } else {
+
+      renderFeed();
+
+    }
+
+  } finally {
+
+    scanning = false;
+
+    el(
+      "refreshBtn"
+    ).disabled = false;
+
+    el(
+      "rescanBtn"
+    ).disabled = false;
+
+  }
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * LOAD MEMOS
+ * ------------------------------------------------------------
+ */
+
+async function loadMemos() {
+
+  await runScanner(
+    false
+  );
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * RESCAN GENESIS
+ * ------------------------------------------------------------
+ */
+
+async function rescanGenesis() {
+
+  const confirmed =
+    window.confirm(
+      "This will verify the entire NEV369 chain from the current tip to Genesis. Your discovered whispers will be kept.\n\nContinue?"
+    );
+
+  if (!confirmed) {
+    return;
+  }
+
+  await runScanner(
+    true
+  );
+
+}
+
+
+/*
+ * ------------------------------------------------------------
+ * SEARCH
+ * ------------------------------------------------------------
+ */
+
+el(
+  "searchInput"
+)
+.addEventListener(
+  "input",
+  renderFeed
+);
+
+
+/*
+ * ------------------------------------------------------------
+ * AUTO REFRESH
+ * ------------------------------------------------------------
+ */
+
+function configureAutoRefresh() {
+
+  if (
+    autoTimer
+  ) {
+
+    clearInterval(
+      autoTimer
+    );
+
+    autoTimer = null;
+
+  }
+
+
+  if (
+    el(
+      "autoRefresh"
+    ).checked
+  ) {
+
+    autoTimer =
+      setInterval(
+        () => {
+
+          if (
+            !scanning
+          ) {
+
+            loadMemos();
+
+          }
+
+        },
+        REFRESH_MS
+      );
+
+  }
+
+}
+
+
+el(
+  "autoRefresh"
+)
+.addEventListener(
+  "change",
+  configureAutoRefresh
+);
+
+
+/*
+ * ------------------------------------------------------------
+ * START
+ * ------------------------------------------------------------
+ */
+
+loadStorage();
+
+renderFeed();
+
+configureAutoRefresh();
+
+loadMemos();
+
+</script>
 
 </body>
 </html>

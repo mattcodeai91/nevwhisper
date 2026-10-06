@@ -1,621 +1,951 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NevWhisper — NEV369 Memo Chat</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<style>
+  <title>NevWhisper — NEV369 Memo Chat</title>
+
+  <style>
     :root {
-        --bg: #09090d;
-        --panel: #111118;
-        --panel-2: #171722;
-        --border: rgba(255,255,255,0.08);
-        --text: #f5f3ff;
-        --muted: #9692a8;
-        --purple: #8b5cf6;
-        --purple-2: #a78bfa;
-        --blue: #4f8cff;
-        --green: #43d17a;
-        --danger: #ff5c7a;
-        --shadow: 0 18px 50px rgba(0,0,0,0.35);
+      --bg: #09090d;
+      --bg2: #0e0e15;
+      --panel: #11111a;
+      --panel2: #151522;
+      --border: #26263a;
+      --border2: #30304a;
+
+      --text: #f2f2f7;
+      --muted: #9292a8;
+      --dim: #66667a;
+
+      --purple: #8b5cf6;
+      --purple2: #a78bfa;
+      --blue: #4f8cff;
+      --green: #32d583;
+      --yellow: #f5c451;
+      --red: #ff5c70;
+
+      --shadow: 0 20px 60px rgba(0,0,0,.35);
+      --radius: 18px;
     }
 
     * {
-        box-sizing: border-box;
+      box-sizing: border-box;
     }
 
     html {
-        background: var(--bg);
+      scroll-behavior: smooth;
     }
 
     body {
-        margin: 0;
-        min-height: 100vh;
-        font-family:
-            Inter,
-            ui-sans-serif,
-            system-ui,
-            -apple-system,
-            BlinkMacSystemFont,
-            "Segoe UI",
-            sans-serif;
-        background:
-            radial-gradient(circle at top right, rgba(91,54,180,0.14), transparent 30%),
-            radial-gradient(circle at top left, rgba(56,96,190,0.08), transparent 25%),
-            var(--bg);
-        color: var(--text);
+      margin: 0;
+      background:
+        radial-gradient(circle at 50% -10%, rgba(111, 70, 200, .16), transparent 35%),
+        linear-gradient(180deg, #09090d 0%, #07070a 100%);
+      color: var(--text);
+      font-family:
+        Inter,
+        ui-sans-serif,
+        system-ui,
+        -apple-system,
+        BlinkMacSystemFont,
+        "Segoe UI",
+        sans-serif;
+      min-height: 100vh;
     }
 
     a {
-        color: inherit;
-        text-decoration: none;
+      color: inherit;
+      text-decoration: none;
     }
 
-    .container {
-        width: min(1100px, calc(100% - 28px));
-        margin: 0 auto;
-        padding: 34px 0 60px;
+    button,
+    input {
+      font: inherit;
     }
+
+    .page {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 28px 0 60px;
+    }
+
+    /* HEADER */
 
     .header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        gap: 20px;
-        margin-bottom: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 24px;
     }
 
     .brand {
-        display: flex;
-        align-items: center;
-        gap: 14px;
+      display: flex;
+      align-items: center;
+      gap: 13px;
     }
 
-    .logo {
-        width: 48px;
-        height: 48px;
-        border-radius: 15px;
-        display: grid;
-        place-items: center;
-        font-size: 24px;
-        font-weight: 800;
-        background:
-            linear-gradient(145deg, rgba(139,92,246,0.28), rgba(79,140,255,0.12)),
-            #15121e;
-        border: 1px solid rgba(167,139,250,0.2);
-        box-shadow: 0 0 30px rgba(139,92,246,0.12);
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      background:
+        linear-gradient(145deg, rgba(139,92,246,.3), rgba(79,140,255,.16)),
+        #11111a;
+      border: 1px solid rgba(139,92,246,.35);
+      box-shadow:
+        0 0 35px rgba(139,92,246,.12),
+        inset 0 0 20px rgba(139,92,246,.06);
+      font-size: 21px;
+      font-weight: 800;
     }
 
-    h1 {
-        margin: 0;
-        font-size: clamp(25px, 4vw, 34px);
-        letter-spacing: -0.8px;
+    .brand-title {
+      font-size: 20px;
+      font-weight: 750;
+      letter-spacing: -.03em;
     }
 
-    .subtitle {
-        margin-top: 5px;
-        color: var(--muted);
-        font-size: 14px;
+    .brand-subtitle {
+      margin-top: 2px;
+      font-size: 12px;
+      color: var(--muted);
     }
 
-    .status {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        color: var(--muted);
-        font-size: 13px;
-        padding-top: 7px;
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 13px;
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      background: rgba(17,17,26,.75);
+      color: var(--muted);
+      font-size: 12px;
+      white-space: nowrap;
     }
 
     .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--green);
-        box-shadow: 0 0 12px rgba(67,209,122,0.65);
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px rgba(50,213,131,.8);
     }
 
     .status-dot.scanning {
-        animation: pulse 1.3s infinite;
+      background: var(--yellow);
+      box-shadow: 0 0 12px rgba(245,196,81,.8);
+      animation: pulse 1.1s infinite;
+    }
+
+    .status-dot.error {
+      background: var(--red);
+      box-shadow: 0 0 12px rgba(255,92,112,.8);
     }
 
     @keyframes pulse {
-        0%, 100% { opacity: 1; transform: scale(1); }
-        50% { opacity: 0.35; transform: scale(0.75); }
+      0%, 100% {
+        opacity: 1;
+      }
+      50% {
+        opacity: .35;
+      }
     }
+
+    /* HERO */
 
     .hero {
-        background:
-            linear-gradient(135deg, rgba(139,92,246,0.12), rgba(79,140,255,0.05)),
-            var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 24px;
-        padding: 24px;
-        box-shadow: var(--shadow);
-        margin-bottom: 16px;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 85% 15%, rgba(79,140,255,.1), transparent 30%),
+        radial-gradient(circle at 15% 0%, rgba(139,92,246,.14), transparent 35%),
+        linear-gradient(145deg, rgba(19,19,30,.98), rgba(12,12,18,.98));
+      box-shadow: var(--shadow);
+      padding: 30px;
+      margin-bottom: 18px;
     }
 
-    .hero-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 20px;
-        flex-wrap: wrap;
+    .hero::after {
+      content: "";
+      position: absolute;
+      width: 250px;
+      height: 250px;
+      right: -110px;
+      bottom: -130px;
+      border-radius: 50%;
+      background: rgba(139,92,246,.08);
+      filter: blur(30px);
+      pointer-events: none;
     }
 
     .hero-label {
-        color: var(--purple-2);
-        text-transform: uppercase;
-        letter-spacing: 1.5px;
-        font-size: 11px;
-        font-weight: 700;
-        margin-bottom: 8px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--purple2);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
     }
 
-    .countdown {
-        font-size: 27px;
-        font-weight: 800;
-        letter-spacing: -0.5px;
+    .hero h1 {
+      margin: 0;
+      font-size: clamp(30px, 5vw, 50px);
+      line-height: 1;
+      letter-spacing: -.055em;
     }
 
-    .countdown small {
-        color: var(--muted);
-        font-size: 12px;
-        font-weight: 500;
-        letter-spacing: 0;
+    .hero p {
+      max-width: 680px;
+      margin: 15px 0 0;
+      color: var(--muted);
+      line-height: 1.65;
+      font-size: 14px;
     }
 
-    .progress-wrap {
-        margin-top: 22px;
-    }
-
-    .progress-label {
-        display: flex;
-        justify-content: space-between;
-        gap: 15px;
-        color: var(--muted);
-        font-size: 12px;
-        margin-bottom: 8px;
-    }
-
-    .progress {
-        height: 7px;
-        background: rgba(255,255,255,0.06);
-        border-radius: 999px;
-        overflow: hidden;
-    }
-
-    .progress-bar {
-        height: 100%;
-        width: 0%;
-        border-radius: inherit;
-        background: linear-gradient(90deg, var(--purple), var(--blue));
-        box-shadow: 0 0 18px rgba(139,92,246,0.4);
-        transition: width 0.4s ease;
-    }
+    /* STATS */
 
     .stats {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 12px;
-        margin-bottom: 16px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 18px;
     }
 
     .stat {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 17px;
+      padding: 18px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: rgba(17,17,26,.85);
+      min-width: 0;
     }
 
     .stat-label {
-        color: var(--muted);
-        font-size: 11px;
-        text-transform: uppercase;
-        letter-spacing: 1px;
-        margin-bottom: 7px;
+      color: var(--muted);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 7px;
     }
 
     .stat-value {
-        font-size: 20px;
-        font-weight: 750;
+      font-size: 22px;
+      font-weight: 750;
+      letter-spacing: -.035em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .stat-small {
+      margin-top: 5px;
+      color: var(--dim);
+      font-size: 11px;
+    }
+
+    /* SEARCH */
+
+    .search-wrap {
+      position: relative;
+      margin-bottom: 18px;
     }
 
     .search {
-        width: 100%;
-        padding: 15px 17px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        outline: none;
-        background: rgba(255,255,255,0.035);
-        color: var(--text);
-        font-size: 14px;
-        margin-bottom: 18px;
+      width: 100%;
+      height: 50px;
+      padding: 0 17px 0 46px;
+      border-radius: 15px;
+      border: 1px solid var(--border);
+      outline: none;
+      color: var(--text);
+      background: rgba(17,17,26,.9);
+      transition: .2s ease;
     }
 
     .search:focus {
-        border-color: rgba(139,92,246,0.5);
-        box-shadow: 0 0 0 3px rgba(139,92,246,0.08);
+      border-color: rgba(139,92,246,.65);
+      box-shadow: 0 0 0 4px rgba(139,92,246,.08);
     }
 
     .search::placeholder {
-        color: #716d80;
+      color: var(--dim);
     }
 
-    .section-title {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin: 22px 2px 12px;
+    .search-icon {
+      position: absolute;
+      left: 17px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--dim);
+      pointer-events: none;
     }
 
-    .section-title h2 {
-        margin: 0;
-        font-size: 17px;
-        letter-spacing: -0.2px;
-    }
+    /* ARCHITECT */
 
-    .section-title span {
-        color: var(--muted);
-        font-size: 12px;
-    }
-
-    .architect {
-        background:
-            linear-gradient(145deg, rgba(139,92,246,0.13), rgba(79,140,255,0.04)),
-            var(--panel);
-        border: 1px solid rgba(139,92,246,0.24);
-        border-radius: 21px;
-        padding: 21px;
-        margin-bottom: 20px;
-        box-shadow: 0 12px 40px rgba(68,35,140,0.12);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .architect::after {
-        content: "";
-        position: absolute;
-        width: 180px;
-        height: 180px;
-        right: -90px;
-        top: -90px;
-        background: rgba(139,92,246,0.09);
-        filter: blur(35px);
-        border-radius: 50%;
-    }
-
-    .architect-head {
-        display: flex;
-        justify-content: space-between;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 14px;
+    .architect-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(139,92,246,.38);
+      border-radius: 20px;
+      background:
+        radial-gradient(circle at 90% 10%, rgba(139,92,246,.14), transparent 32%),
+        linear-gradient(145deg, rgba(25,20,40,.98), rgba(15,15,24,.98));
+      padding: 22px;
+      margin-bottom: 20px;
+      box-shadow:
+        0 18px 50px rgba(0,0,0,.25),
+        0 0 40px rgba(139,92,246,.06);
     }
 
     .pin {
-        font-size: 11px;
-        color: var(--purple-2);
-        background: rgba(139,92,246,0.1);
-        border: 1px solid rgba(139,92,246,0.2);
-        padding: 6px 9px;
-        border-radius: 999px;
-        white-space: nowrap;
+      position: absolute;
+      top: 17px;
+      right: 18px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--purple2);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .05em;
+      text-transform: uppercase;
     }
 
-    .architect-name {
-        font-weight: 750;
+    .architect-heading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 15px;
     }
 
-    .architect-time {
-        color: var(--muted);
-        font-size: 12px;
-        margin-top: 3px;
+    .architect-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: rgba(139,92,246,.13);
+      border: 1px solid rgba(139,92,246,.3);
+      font-size: 17px;
     }
 
-    .architect-memo {
-        font-size: 16px;
-        line-height: 1.6;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
+    .architect-title {
+      font-size: 14px;
+      font-weight: 750;
     }
 
-    .whisper-list {
-        display: grid;
-        gap: 10px;
+    .architect-meta {
+      color: var(--muted);
+      font-size: 11px;
+      margin-top: 3px;
+    }
+
+    .architect-message {
+      font-size: 16px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    /* ARCHIVE */
+
+    .section-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin: 25px 0 12px;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 750;
+      letter-spacing: -.02em;
+    }
+
+    .section-meta {
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .progress-shell {
+      height: 5px;
+      width: 100%;
+      background: #171722;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--purple), var(--blue));
+      transition: width .3s ease;
+    }
+
+    /* WHISPERS */
+
+    .archive {
+      display: grid;
+      gap: 11px;
     }
 
     .whisper {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 18px;
-        padding: 18px;
-        transition: transform 0.18s ease, border-color 0.18s ease;
+      border: 1px solid var(--border);
+      border-radius: 17px;
+      background: rgba(15,15,23,.9);
+      padding: 18px;
+      transition:
+        border-color .2s ease,
+        transform .2s ease,
+        background .2s ease;
     }
 
     .whisper:hover {
-        transform: translateY(-1px);
-        border-color: rgba(139,92,246,0.24);
+      transform: translateY(-1px);
+      border-color: var(--border2);
+      background: rgba(18,18,28,.98);
     }
 
     .whisper.new {
-        animation: newWhisper 1.6s ease;
+      animation: newWhisper 2.2s ease;
+      border-color: rgba(139,92,246,.7);
     }
 
     @keyframes newWhisper {
-        0% {
-            box-shadow: 0 0 0 0 rgba(139,92,246,0.5);
-            border-color: rgba(139,92,246,0.65);
-        }
-        100% {
-            box-shadow: 0 0 0 18px rgba(139,92,246,0);
-            border-color: var(--border);
-        }
+      0% {
+        box-shadow: 0 0 0 0 rgba(139,92,246,.5);
+      }
+      100% {
+        box-shadow: 0 0 0 20px rgba(139,92,246,0);
+      }
     }
 
     .whisper-top {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 11px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 11px;
     }
 
-    .block {
-        font-size: 12px;
-        font-weight: 750;
-        color: var(--purple-2);
+    .whisper-left {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      min-width: 0;
     }
 
-    .time {
-        color: var(--muted);
-        font-size: 11px;
+    .whisper-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 8px;
+      border-radius: 7px;
+      background: rgba(139,92,246,.1);
+      color: var(--purple2);
+      border: 1px solid rgba(139,92,246,.2);
+      font-size: 10px;
+      font-weight: 750;
+      text-transform: uppercase;
+      letter-spacing: .06em;
     }
 
-    .memo {
-        font-size: 15px;
-        line-height: 1.55;
-        white-space: pre-wrap;
-        overflow-wrap: anywhere;
-        margin-bottom: 15px;
+    .block-link {
+      color: var(--blue);
+      font-size: 12px;
+      font-weight: 700;
     }
 
-    .details {
-        display: grid;
-        grid-template-columns: 90px 1fr;
-        gap: 6px 12px;
-        font-size: 11px;
+    .block-link:hover {
+      text-decoration: underline;
     }
 
-    .details .label {
-        color: var(--muted);
+    .whisper-time {
+      color: var(--dim);
+      font-size: 11px;
+      white-space: nowrap;
     }
 
-    .details .value {
-        color: #c9c4d8;
-        min-width: 0;
-        overflow-wrap: anywhere;
+    .whisper-message {
+      font-size: 14px;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
     }
 
-    .details a {
-        color: var(--blue);
+    .whisper-details {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 9px;
+      margin-top: 15px;
     }
+
+    .detail {
+      min-width: 0;
+      padding: 9px 11px;
+      border-radius: 10px;
+      background: rgba(255,255,255,.025);
+      border: 1px solid rgba(255,255,255,.045);
+    }
+
+    .detail-label {
+      color: var(--dim);
+      font-size: 9px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 4px;
+    }
+
+    .detail-value {
+      color: var(--muted);
+      font-size: 10px;
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .tx-link {
+      color: var(--purple2);
+    }
+
+    .tx-link:hover {
+      text-decoration: underline;
+    }
+
+    /* EMPTY */
 
     .empty {
-        padding: 35px 20px;
-        text-align: center;
-        color: var(--muted);
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: 18px;
+      padding: 45px 20px;
+      text-align: center;
+      border: 1px dashed var(--border2);
+      border-radius: 17px;
+      color: var(--muted);
+      background: rgba(17,17,26,.45);
     }
 
-    .scanner-details {
-        margin-top: 22px;
-        background: rgba(255,255,255,0.025);
-        border: 1px solid var(--border);
-        border-radius: 17px;
-        padding: 14px 16px;
+    .empty strong {
+      display: block;
+      color: var(--text);
+      margin-bottom: 6px;
     }
 
-    .scanner-details summary {
-        cursor: pointer;
-        color: var(--muted);
-        font-size: 12px;
+    /* TECHNICAL */
+
+    details {
+      margin-top: 20px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: rgba(12,12,18,.8);
+      overflow: hidden;
     }
 
-    .scanner-content {
-        margin-top: 12px;
-        color: var(--muted);
-        font-size: 12px;
-        line-height: 1.7;
+    summary {
+      cursor: pointer;
+      padding: 15px 17px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      user-select: none;
     }
 
-    .footer {
-        margin-top: 35px;
-        text-align: center;
-        color: #656172;
-        font-size: 11px;
+    .technical {
+      padding: 0 17px 17px;
+      display: grid;
+      gap: 8px;
     }
 
-    @media (max-width: 720px) {
-        .container {
-            width: min(100% - 18px, 1100px);
-            padding-top: 20px;
-        }
-
-        .header {
-            margin-bottom: 20px;
-        }
-
-        .stats {
-            grid-template-columns: repeat(2, 1fr);
-        }
-
-        .hero {
-            padding: 19px;
-            border-radius: 20px;
-        }
-
-        .architect,
-        .whisper {
-            border-radius: 17px;
-        }
+    .tech-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      color: var(--muted);
+      font-size: 11px;
+      padding: 7px 0;
+      border-bottom: 1px solid rgba(255,255,255,.035);
     }
 
-    @media (max-width: 430px) {
-        .stats {
-            gap: 8px;
-        }
-
-        .stat {
-            padding: 14px;
-        }
-
-        .stat-value {
-            font-size: 17px;
-        }
-
-        .details {
-            grid-template-columns: 72px 1fr;
-        }
+    .tech-row:last-child {
+      border-bottom: 0;
     }
-</style>
+
+    .tech-value {
+      color: var(--text);
+      font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        Monaco,
+        Consolas,
+        monospace;
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+
+    /* FOOTER */
+
+    footer {
+      text-align: center;
+      color: var(--dim);
+      font-size: 10px;
+      margin-top: 28px;
+      line-height: 1.7;
+    }
+
+    /* MOBILE */
+
+    @media (max-width: 800px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .header {
+        align-items: flex-start;
+      }
+
+      .status-pill {
+        font-size: 10px;
+        padding: 8px 10px;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .page {
+        width: min(100% - 20px, 1180px);
+        padding-top: 15px;
+      }
+
+      .header {
+        flex-direction: column;
+        gap: 12px;
+      }
+
+      .hero {
+        padding: 23px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+      }
+
+      .stat {
+        padding: 14px;
+      }
+
+      .stat-value {
+        font-size: 18px;
+      }
+
+      .whisper-details {
+        grid-template-columns: 1fr;
+      }
+
+      .whisper-top {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 7px;
+      }
+
+      .whisper-time {
+        white-space: normal;
+      }
+
+      .pin {
+        position: static;
+        margin-bottom: 12px;
+      }
+    }
+  </style>
 </head>
 
 <body>
 
-<div class="container">
+<div class="page">
 
-    <header class="header">
-        <div class="brand">
-            <div class="logo">N</div>
-            <div>
-                <h1>NevWhisper</h1>
-                <div class="subtitle">NEV369 Memo Chat</div>
-            </div>
-        </div>
+  <header class="header">
+    <div class="brand">
+      <div class="brand-mark">N</div>
 
-        <div class="status">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">Connecting…</span>
-        </div>
-    </header>
+      <div>
+        <div class="brand-title">NevWhisper</div>
+        <div class="brand-subtitle">NEV369 Memo Chat</div>
+      </div>
+    </div>
 
-    <section class="hero">
-        <div class="hero-top">
-            <div>
-                <div class="hero-label">NEV369 Archive</div>
-                <div class="countdown">
-                    <span id="countdown">369</span>
-                    <small>seconds until next scan</small>
-                </div>
-            </div>
-        </div>
+    <div class="status-pill">
+      <span id="statusDot" class="status-dot"></span>
+      <span id="statusText">Connecting to NEV369…</span>
+    </div>
+  </header>
 
-        <div class="progress-wrap">
-            <div class="progress-label">
-                <span id="progressText">Preparing archive…</span>
-                <span id="progressPercent">0%</span>
-            </div>
 
-            <div class="progress">
-                <div class="progress-bar" id="progressBar"></div>
-            </div>
-        </div>
-    </section>
+  <section class="hero">
+    <div class="hero-label">
+      ◈ NEV369 ARCHIVE
+    </div>
 
-    <section class="stats">
-        <div class="stat">
-            <div class="stat-label">Chain Height</div>
-            <div class="stat-value" id="chainHeight">—</div>
-        </div>
+    <h1>Whispers across the chain.</h1>
 
-        <div class="stat">
-            <div class="stat-label">Verified Through</div>
-            <div class="stat-value" id="verifiedThrough">—</div>
-        </div>
+    <p>
+      A live, independently scanned archive of memo messages recorded on
+      the NEV369 blockchain — from Genesis through the current chain tip.
+    </p>
+  </section>
 
-        <div class="stat">
-            <div class="stat-label">Whispers</div>
-            <div class="stat-value" id="whisperCount">0</div>
-        </div>
 
-        <div class="stat">
-            <div class="stat-label">Blocks Remaining</div>
-            <div class="stat-value" id="blocksRemaining">—</div>
-        </div>
-    </section>
+  <section class="stats">
+
+    <div class="stat">
+      <div class="stat-label">Whispers</div>
+      <div class="stat-value" id="whisperCount">0</div>
+      <div class="stat-small">Indexed messages</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Chain Height</div>
+      <div class="stat-value" id="chainHeight">—</div>
+      <div class="stat-small">Live NEV369 tip</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Verified</div>
+      <div class="stat-value" id="verifiedHeight">—</div>
+      <div class="stat-small">Blocks archived</div>
+    </div>
+
+    <div class="stat">
+      <div class="stat-label">Scanner</div>
+      <div class="stat-value" id="scannerState">Starting</div>
+      <div class="stat-small" id="scannerSubstate">Watching chain height</div>
+    </div>
+
+  </section>
+
+
+  <div class="search-wrap">
+    <span class="search-icon">⌕</span>
 
     <input
-        id="search"
-        class="search"
-        type="search"
-        placeholder="Search memo, block, TX, sender or recipient…"
-        autocomplete="off"
+      id="searchInput"
+      class="search"
+      type="search"
+      placeholder="Search memos, blocks, transactions, senders or recipients…"
+      autocomplete="off"
     >
+  </div>
 
-    <div id="architectSection"></div>
 
-    <div class="section-title">
-        <h2>Whisper Archive</h2>
-        <span id="archiveLabel">5 messages preserved</span>
+  <section id="architectSection" class="architect-card" style="display:none;">
+
+    <div class="pin">
+      📌 PINNED
     </div>
 
-    <div id="whisperList" class="whisper-list"></div>
+    <div class="architect-heading">
+      <div class="architect-icon">✦</div>
 
-    <details class="scanner-details">
-        <summary>Scanner details</summary>
-
-        <div class="scanner-content">
-            <div>Status: <span id="scannerStatus">Starting…</span></div>
-            <div>Database: nevwhisper-genesis-v1</div>
-            <div>Scan batch: 10 blocks</div>
-            <div>Automatic scan interval: 369 seconds</div>
-            <div>Genesis verification: continuous</div>
+      <div>
+        <div class="architect-title">The Architect</div>
+        <div class="architect-meta" id="architectMeta">
+          Latest Architect message
         </div>
-    </details>
-
-    <div class="footer">
-        NEV369 • CanonicalMessage v1 • GodShield
+      </div>
     </div>
+
+    <div id="architectMessage" class="architect-message"></div>
+
+  </section>
+
+
+  <div class="section-head">
+    <div class="section-title">Whisper Archive</div>
+    <div id="archiveMeta" class="section-meta">
+      Genesis → Live
+    </div>
+  </div>
+
+  <div class="progress-shell">
+    <div id="progressBar" class="progress-bar"></div>
+  </div>
+
+  <main id="archive" class="archive"></main>
+
+
+  <details>
+    <summary>Scanner technical details</summary>
+
+    <div class="technical">
+
+      <div class="tech-row">
+        <span>Database</span>
+        <span class="tech-value">nevwhisper-genesis-v1</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Whisper store</span>
+        <span class="tech-value">whispers / tx_hash</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Meta store</span>
+        <span class="tech-value">out-of-line keys</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Scan direction</span>
+        <span class="tech-value">Genesis → Live</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Batch size</span>
+        <span class="tech-value">10 blocks</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Height polling</span>
+        <span class="tech-value">15 seconds</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Automatic rescan</span>
+        <span class="tech-value">Only when height increases</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Reward filtering</span>
+        <span class="tech-value">NETWORK_REWARD</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Upstream</span>
+        <span class="tech-value">
+          q-lock-ecosystem.com/node
+        </span>
+      </div>
+
+      <div class="tech-row">
+        <span>Proxy</span>
+        <span class="tech-value">
+          nevwhisper-proxy.mattcodeai91.workers.dev
+        </span>
+      </div>
+
+      <div class="tech-row">
+        <span>Last height check</span>
+        <span id="lastCheck" class="tech-value">—</span>
+      </div>
+
+      <div class="tech-row">
+        <span>Last successful scan</span>
+        <span id="lastScan" class="tech-value">—</span>
+      </div>
+
+    </div>
+  </details>
+
+
+  <footer>
+    NevWhisper · NEV369<br>
+    Archive state is stored locally in your browser and verified against the live chain.
+  </footer>
 
 </div>
 
+
 <script>
+"use strict";
+
+/*
+  ============================================================
+  NEVWHISPER — NEV369 LIVE ARCHIVE SCANNER
+  ============================================================
+
+  IMPORTANT DATABASE SCHEMA
+
+  Database:
+    nevwhisper-genesis-v1
+
+  Stores:
+    meta
+      keyPath: null
+      out-of-line keys
+
+    whispers
+      keyPath: tx_hash
+
+  Existing whispers are NEVER deleted.
+
+  The scanner:
+    1. Reads existing IndexedDB state.
+    2. Checks the live chain height every 15 seconds.
+    3. If height has increased, scans only new blocks.
+    4. Saves each discovered whisper immediately.
+    5. Advances verifiedThrough only after a complete batch succeeds.
+*/
+
+
 /* ============================================================
-   NEVWHISPER — PERSISTENT SCANNER
-   IMPORTANT:
-   - Existing IndexedDB is preserved.
-   - whispers are individual records keyed by tx_hash.
-   - Do NOT create an "all" record.
+   CONFIG
    ============================================================ */
 
-const API =
-    "https://nevwhisper-proxy.mattcodeai91.workers.dev";
+const PROXY = "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 
 const DB_NAME = "nevwhisper-genesis-v1";
 const DB_VERSION = 1;
 
 const BATCH_SIZE = 10;
-const TIP_CHECK_INTERVAL = 100;
+
+const HEIGHT_CHECK_MS = 15000;
+
 const MAX_RETRIES = 4;
 const RETRY_DELAY = 1500;
-const AUTO_REFRESH_MS = 369000;
+
+const BLOCK_EXPLORER =
+  "https://q-lock-ecosystem.com/node/block/";
+
+const TX_EXPLORER =
+  "https://q-lock-ecosystem.com/explorer/#/tx/";
+
+
+/* ============================================================
+   STATE
+   ============================================================ */
 
 const state = {
-    verifiedThrough: -1,
-    chainHeight: -1,
-    whispers: new Map(),
-    scanning: false,
-    stopRequested: false,
-    blocksSinceTipCheck: 0,
-    nextScanAt: Date.now() + AUTO_REFRESH_MS,
-    newWhispers: new Set()
-};
+  verifiedThrough: -1,
+  chainHeight: -1,
 
-let db = null;
+  whispers: new Map(),
+
+  scanning: false,
+  stopRequested: false,
+
+  lastCheck: null,
+  lastScan: null,
+
+  architectAddress: null,
+
+  newHashes: new Set()
+};
 
 
 /* ============================================================
@@ -624,307 +954,1045 @@ let db = null;
 
 const $ = id => document.getElementById(id);
 
+const archiveEl = $("archive");
+const searchInput = $("searchInput");
+
+const whisperCountEl = $("whisperCount");
+const chainHeightEl = $("chainHeight");
+const verifiedHeightEl = $("verifiedHeight");
+
+const scannerStateEl = $("scannerState");
+const scannerSubstateEl = $("scannerSubstate");
+
+const statusTextEl = $("statusText");
+const statusDotEl = $("statusDot");
+
+const progressBarEl = $("progressBar");
+const archiveMetaEl = $("archiveMeta");
+
+const architectSectionEl = $("architectSection");
+const architectMessageEl = $("architectMessage");
+const architectMetaEl = $("architectMeta");
+
+const lastCheckEl = $("lastCheck");
+const lastScanEl = $("lastScan");
+
+
+/* ============================================================
+   STATUS UI
+   ============================================================ */
+
+function setStatus(text, mode = "live") {
+  statusTextEl.textContent = text;
+
+  statusDotEl.className = "status-dot";
+
+  if (mode === "scanning") {
+    statusDotEl.classList.add("scanning");
+  }
+
+  if (mode === "error") {
+    statusDotEl.classList.add("error");
+  }
+}
+
+
+function setScannerState(main, sub = "") {
+  scannerStateEl.textContent = main;
+  scannerSubstateEl.textContent = sub;
+}
+
+
+/* ============================================================
+   FETCH WITH RETRIES
+   ============================================================ */
+
+async function fetchJSON(url, options = {}) {
+
+  let lastError = null;
+
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+
+    try {
+
+      const response = await fetch(url, {
+        cache: "no-store",
+        ...options
+      });
+
+      if (response.ok) {
+        return await response.json();
+      }
+
+      lastError = new Error(
+        `HTTP ${response.status} from ${url}`
+      );
+
+    } catch (error) {
+
+      lastError = error;
+    }
+
+    if (attempt < MAX_RETRIES) {
+
+      const delay =
+        RETRY_DELAY * Math.pow(2, attempt);
+
+      await sleep(delay);
+    }
+  }
+
+  throw lastError || new Error("Request failed");
+}
+
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 
 /* ============================================================
    INDEXEDDB
    ============================================================ */
 
+let dbPromise = null;
+
+
 function openDatabase() {
-    return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        request.onerror = () => reject(request.error);
+  if (dbPromise) {
+    return dbPromise;
+  }
 
-        request.onupgradeneeded = event => {
-            const database = event.target.result;
+  dbPromise = new Promise((resolve, reject) => {
 
-            /*
-             * Only create stores if they don't already exist.
-             * NEVER replace the existing schema.
-             */
-
-            if (!database.objectStoreNames.contains("meta")) {
-                database.createObjectStore("meta", {
-                    keyPath: "key"
-                });
-            }
-
-            if (!database.objectStoreNames.contains("whispers")) {
-                database.createObjectStore("whispers", {
-                    keyPath: "tx_hash"
-                });
-            }
-        };
-
-        request.onsuccess = () => {
-            db = request.result;
-            resolve(db);
-        };
-    });
-}
-
-
-function dbGet(storeName, key) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, "readonly");
-        const store = tx.objectStore(storeName);
-        const request = store.get(key);
-
-        request.onsuccess = () => resolve(request.result);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-
-function dbGetAll(storeName) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, "readonly");
-        const store = tx.objectStore(storeName);
-        const request = store.getAll();
-
-        request.onsuccess = () => resolve(request.result || []);
-        request.onerror = () => reject(request.error);
-    });
-}
-
-
-function dbPut(storeName, value) {
-    return new Promise((resolve, reject) => {
-        const tx = db.transaction(storeName, "readwrite");
-        const store = tx.objectStore(storeName);
-
-        const request = store.put(value);
-
-        request.onsuccess = () => resolve();
-        request.onerror = () => reject(request.error);
-    });
-}
-
-
-/* ============================================================
-   LOAD EXISTING DATABASE
-   ============================================================ */
-
-async function loadDatabase() {
-    /*
-     * THIS IS THE IMPORTANT FIX.
-     *
-     * The previous UI tried:
-     *
-     *     whispers.get("all")
-     *
-     * That was wrong.
-     *
-     * Existing whispers are individual records:
-     *
-     *     tx_hash -> whisper
-     *
-     * Therefore we load them all.
-     */
-
-    const savedVerified = await dbGet("meta", "verifiedThrough");
-    const savedHeight = await dbGet("meta", "chainHeight");
-
-    if (savedVerified && Number.isFinite(Number(savedVerified.value))) {
-        state.verifiedThrough = Number(savedVerified.value);
-    }
-
-    if (savedHeight && Number.isFinite(Number(savedHeight.value))) {
-        state.chainHeight = Number(savedHeight.value);
-    }
-
-    const records = await dbGetAll("whispers");
-
-    state.whispers.clear();
-
-    for (const whisper of records) {
-        if (!whisper || !whisper.tx_hash) {
-            continue;
-        }
-
-        state.whispers.set(
-            whisper.tx_hash,
-            whisper
-        );
-    }
-
-    render();
-
-    updateStatus(
-        state.whispers.size
-            ? "Archive loaded"
-            : "Archive ready"
+    const request = indexedDB.open(
+      DB_NAME,
+      DB_VERSION
     );
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+
+    request.onsuccess = () => {
+      const db = request.result;
+
+      db.onerror = event => {
+        console.error(
+          "IndexedDB error:",
+          event.target?.error
+        );
+      };
+
+      resolve(db);
+    };
+
+    request.onupgradeneeded = event => {
+
+      const db = event.target.result;
+
+      /*
+        Do NOT change the existing database structure.
+
+        This section only creates stores if they genuinely
+        do not already exist.
+      */
+
+      if (!db.objectStoreNames.contains("meta")) {
+
+        db.createObjectStore("meta");
+      }
+
+      if (!db.objectStoreNames.contains("whispers")) {
+
+        db.createObjectStore(
+          "whispers",
+          {
+            keyPath: "tx_hash"
+          }
+        );
+      }
+    };
+  });
+
+  return dbPromise;
 }
 
 
 /* ============================================================
-   SAVE SCANNER STATE
+   META HELPERS
+
+   IMPORTANT:
+   The existing meta store has:
+
+     keyPath: null
+
+   Therefore values are stored using:
+
+     store.put(value, key)
+
+   NOT:
+
+     store.put({key, value})
    ============================================================ */
 
-async function saveMeta() {
-    await dbPut("meta", {
-        key: "verifiedThrough",
-        value: state.verifiedThrough
-    });
+async function metaGet(key) {
 
-    await dbPut("meta", {
-        key: "chainHeight",
-        value: state.chainHeight
-    });
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction(
+      "meta",
+      "readonly"
+    );
+
+    const store = tx.objectStore("meta");
+
+    const request = store.get(key);
+
+    request.onsuccess = () => {
+      resolve(request.result);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+
+async function metaSet(key, value) {
+
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction(
+      "meta",
+      "readwrite"
+    );
+
+    const store = tx.objectStore("meta");
+
+    /*
+      Out-of-line key.
+    */
+    store.put(value, key);
+
+    tx.oncomplete = () => {
+      resolve();
+    };
+
+    tx.onerror = () => {
+      reject(tx.error);
+    };
+  });
 }
 
 
 /* ============================================================
-   WHISPER STORAGE
+   WHISPER DB HELPERS
    ============================================================ */
+
+async function getAllWhispers() {
+
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction(
+      "whispers",
+      "readonly"
+    );
+
+    const store = tx.objectStore("whispers");
+
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      resolve(request.result || []);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
 
 async function saveWhisper(whisper) {
-    if (!whisper || !whisper.tx_hash) {
-        return;
-    }
+
+  if (!whisper || !whisper.tx_hash) {
+    return;
+  }
+
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction(
+      "whispers",
+      "readwrite"
+    );
+
+    const store = tx.objectStore("whispers");
 
     /*
-     * Store each whisper individually.
-     * This preserves multiple whispers in the same block.
-     */
+      Existing schema:
+        keyPath = tx_hash
 
-    await dbPut("whispers", whisper);
+      Therefore this is exactly the correct write.
+    */
+    store.put(whisper);
 
-    state.whispers.set(
-        whisper.tx_hash,
-        whisper
-    );
-}
+    tx.oncomplete = () => {
+      resolve();
+    };
 
-
-async function saveWhispers(whispers) {
-    if (!Array.isArray(whispers)) {
-        return;
-    }
-
-    for (const whisper of whispers) {
-        await saveWhisper(whisper);
-    }
+    tx.onerror = () => {
+      reject(tx.error);
+    };
+  });
 }
 
 
 /* ============================================================
-   FETCH
+   LOAD SAVED STATE
    ============================================================ */
 
-async function fetchJSON(path, attempt = 0) {
-    try {
-        const response = await fetch(
-            API.replace(/\/$/, "") + path,
-            {
-                cache: "no-store"
-            }
+async function loadSavedState() {
+
+  const whispers = await getAllWhispers();
+
+  state.whispers.clear();
+
+  for (const whisper of whispers) {
+
+    if (
+      whisper &&
+      whisper.tx_hash
+    ) {
+      state.whispers.set(
+        String(whisper.tx_hash),
+        whisper
+      );
+    }
+  }
+
+
+  /*
+    Existing meta schema uses out-of-line keys.
+
+    The original scanner stores numeric progress values
+    under these named keys.
+
+    We first attempt the exact keys.
+  */
+
+  let verified = await metaGet(
+    "verifiedThrough"
+  );
+
+  let chain = await metaGet(
+    "chainHeight"
+  );
+
+
+  /*
+    Safety fallback.
+
+    If the database contains the two existing numeric
+    values but the keys cannot be read using the names,
+    inspect all values and infer:
+
+      highest = chainHeight
+      lowest  = verifiedThrough
+
+    This matches the currently observed database state:
+
+      [5939, 5935]
+  */
+
+  if (
+    !Number.isFinite(Number(verified)) ||
+    !Number.isFinite(Number(chain))
+  ) {
+
+    const metaValues = await getAllMetaValues();
+
+    const numericValues =
+      metaValues
+        .map(Number)
+        .filter(Number.isFinite);
+
+    if (numericValues.length >= 2) {
+
+      const sorted =
+        [...numericValues].sort(
+          (a, b) => a - b
         );
 
-        const text = await response.text();
+      verified = sorted[0];
+      chain = sorted[sorted.length - 1];
+    }
+  }
 
-        let data;
 
-        try {
-            data = JSON.parse(text);
-        } catch {
-            data = text;
-        }
+  if (Number.isFinite(Number(verified))) {
+    state.verifiedThrough =
+      Number(verified);
+  }
 
-        if (!response.ok) {
-            throw new Error(
-                `${response.status} — ${
-                    data && data.error
-                        ? data.error
-                        : response.statusText
-                }`
+  if (Number.isFinite(Number(chain))) {
+    state.chainHeight =
+      Number(chain);
+  }
+
+
+  /*
+    If no verified frontier exists but whispers exist,
+    we still preserve all whispers.
+
+    The live scanner can then establish a proper frontier
+    from the stored state.
+  */
+
+  if (state.verifiedThrough < -1) {
+    state.verifiedThrough = -1;
+  }
+
+  renderAll();
+}
+
+
+async function getAllMetaValues() {
+
+  const db = await openDatabase();
+
+  return new Promise((resolve, reject) => {
+
+    const tx = db.transaction(
+      "meta",
+      "readonly"
+    );
+
+    const store = tx.objectStore("meta");
+
+    const request = store.getAll();
+
+    request.onsuccess = () => {
+      resolve(request.result || []);
+    };
+
+    request.onerror = () => {
+      reject(request.error);
+    };
+  });
+}
+
+
+/* ============================================================
+   SAVE SCANNER FRONTIER
+   ============================================================ */
+
+async function saveProgress() {
+
+  await metaSet(
+    "verifiedThrough",
+    state.verifiedThrough
+  );
+
+  await metaSet(
+    "chainHeight",
+    state.chainHeight
+  );
+}
+
+
+/* ============================================================
+   LIVE NODE INFO
+   ============================================================ */
+
+async function getLiveInfo() {
+
+  return fetchJSON(
+    `${PROXY}/info`
+  );
+}
+
+
+/* ============================================================
+   CHAIN HEIGHT CHECK
+   ============================================================ */
+
+async function checkChainHeight() {
+
+  if (state.scanning) {
+    return;
+  }
+
+  try {
+
+    const info = await getLiveInfo();
+
+    const height = Number(
+      info.height ??
+      info.chain_height
+    );
+
+    if (!Number.isFinite(height)) {
+      throw new Error(
+        "Node returned an invalid chain height"
+      );
+    }
+
+
+    state.lastCheck = new Date();
+
+    lastCheckEl.textContent =
+      state.lastCheck.toLocaleTimeString();
+
+
+    const previousHeight =
+      state.chainHeight;
+
+
+    /*
+      Never move the saved frontier backwards.
+    */
+
+    if (height > state.chainHeight) {
+
+      state.chainHeight = height;
+
+      await metaSet(
+        "chainHeight",
+        state.chainHeight
+      );
+
+      renderStats();
+
+
+      /*
+        THIS IS THE KEY NEW BEHAVIOR.
+
+        If the live chain has moved upward,
+        immediately scan the new blocks.
+      */
+
+      if (
+        state.verifiedThrough < height
+      ) {
+
+        setStatus(
+          `New blocks detected — #${height}`,
+          "scanning"
+        );
+
+        await scanToHeight(height);
+      }
+
+      return;
+    }
+
+
+    /*
+      If we had no saved chain height but the chain
+      is already known, establish it.
+    */
+
+    if (state.chainHeight === -1) {
+
+      state.chainHeight = height;
+
+      await metaSet(
+        "chainHeight",
+        height
+      );
+    }
+
+
+    if (
+      state.verifiedThrough >= height
+    ) {
+
+      setStatus(
+        `Chain current — #${height}`
+      );
+
+      setScannerState(
+        "Current",
+        "Watching for new blocks"
+      );
+
+    } else {
+
+      /*
+        This also handles an interrupted scan.
+      */
+
+      await scanToHeight(height);
+    }
+
+
+    /*
+      Avoid an unused-variable warning in some browsers.
+    */
+    void previousHeight;
+
+  } catch (error) {
+
+    console.error(
+      "Height check failed:",
+      error
+    );
+
+    setStatus(
+      "Node check failed — retrying",
+      "error"
+    );
+
+    setScannerState(
+      "Retrying",
+      "Unable to read live chain height"
+    );
+  }
+}
+
+
+/* ============================================================
+   SCAN
+   ============================================================ */
+
+async function scanToHeight(targetHeight) {
+
+  if (state.scanning) {
+    return;
+  }
+
+  if (
+    !Number.isFinite(Number(targetHeight))
+  ) {
+    return;
+  }
+
+  targetHeight = Number(targetHeight);
+
+
+  /*
+    Never scan backwards.
+  */
+
+  if (
+    targetHeight <= state.verifiedThrough
+  ) {
+
+    setStatus(
+      `Chain current — #${state.verifiedThrough}`
+    );
+
+    setScannerState(
+      "Current",
+      "Watching for new blocks"
+    );
+
+    return;
+  }
+
+
+  state.scanning = true;
+  state.stopRequested = false;
+
+  setStatus(
+    "Scanning new blocks",
+    "scanning"
+  );
+
+
+  try {
+
+    let startHeight =
+      state.verifiedThrough + 1;
+
+
+    while (
+      startHeight <= targetHeight &&
+      !state.stopRequested
+    ) {
+
+      /*
+        Re-check the live tip before each batch.
+
+        This means if the chain grows while we're scanning,
+        the scanner can incorporate the newer blocks too.
+      */
+
+      let liveTarget = targetHeight;
+
+      try {
+
+        const info =
+          await getLiveInfo();
+
+        const liveHeight = Number(
+          info.height ??
+          info.chain_height
+        );
+
+        if (
+          Number.isFinite(liveHeight) &&
+          liveHeight > liveTarget
+        ) {
+
+          liveTarget = liveHeight;
+
+          state.chainHeight =
+            Math.max(
+              state.chainHeight,
+              liveHeight
             );
+
+          await metaSet(
+            "chainHeight",
+            state.chainHeight
+          );
+
+          renderStats();
         }
 
-        return data;
+      } catch (error) {
+
+        console.warn(
+          "Tip refresh during scan failed:",
+          error
+        );
+      }
+
+
+      const endHeight =
+        Math.min(
+          startHeight + BATCH_SIZE - 1,
+          liveTarget
+        );
+
+
+      setScannerState(
+        "Scanning",
+        `Blocks #${startHeight} → #${endHeight}`
+      );
+
+
+      const result =
+        await scanBatch(
+          startHeight,
+          endHeight
+        );
+
+
+      /*
+        Only advance the verified frontier after the
+        ENTIRE batch succeeded.
+      */
+
+      if (!result.success) {
+
+        throw new Error(
+          `Batch #${startHeight}–#${endHeight} failed`
+        );
+      }
+
+
+      state.verifiedThrough =
+        endHeight;
+
+
+      await metaSet(
+        "verifiedThrough",
+        state.verifiedThrough
+      );
+
+
+      state.lastScan = new Date();
+
+      lastScanEl.textContent =
+        state.lastScan.toLocaleTimeString();
+
+
+      renderAll();
+
+
+      startHeight =
+        state.verifiedThrough + 1;
+
+
+      /*
+        The chain may have moved while this batch was
+        processing. Keep going until we're actually caught up.
+      */
+
+      if (
+        state.chainHeight > targetHeight
+      ) {
+
+        targetHeight =
+          state.chainHeight;
+      }
+    }
+
+
+    /*
+      Final live tip check.
+
+      This is important because the chain can move during
+      the final batch.
+    */
+
+    let finalHeight =
+      state.chainHeight;
+
+    try {
+
+      const info =
+        await getLiveInfo();
+
+      const liveHeight = Number(
+        info.height ??
+        info.chain_height
+      );
+
+      if (
+        Number.isFinite(liveHeight)
+      ) {
+
+        finalHeight =
+          Math.max(
+            finalHeight,
+            liveHeight
+          );
+
+        state.chainHeight =
+          finalHeight;
+
+        await metaSet(
+          "chainHeight",
+          finalHeight
+        );
+      }
 
     } catch (error) {
 
-        if (attempt >= MAX_RETRIES) {
-            throw error;
-        }
-
-        await sleep(
-            RETRY_DELAY * Math.pow(2, attempt)
-        );
-
-        return fetchJSON(
-            path,
-            attempt + 1
-        );
+      console.warn(
+        "Final height check failed:",
+        error
+      );
     }
-}
 
 
-function sleep(ms) {
-    return new Promise(
-        resolve => setTimeout(resolve, ms)
+    if (
+      state.verifiedThrough >=
+      state.chainHeight
+    ) {
+
+      setStatus(
+        `Chain current — #${state.chainHeight}`
+      );
+
+      setScannerState(
+        "Current",
+        "Watching for new blocks"
+      );
+
+    } else {
+
+      setStatus(
+        `New blocks waiting — #${state.chainHeight}`,
+        "scanning"
+      );
+
+      setScannerState(
+        "Catch-up required",
+        `${state.chainHeight - state.verifiedThrough} block(s) remaining`
+      );
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Scanner error:",
+      error
     );
+
+    setStatus(
+      "Scanner paused — will retry",
+      "error"
+    );
+
+    setScannerState(
+      "Retrying",
+      error.message || "Scan failed"
+    );
+
+  } finally {
+
+    state.scanning = false;
+
+    renderAll();
+  }
 }
 
 
 /* ============================================================
-   TIP
+   SCAN BATCH
    ============================================================ */
 
-async function getTip() {
-    const info = await fetchJSON("/info");
+async function scanBatch(
+  startHeight,
+  endHeight
+) {
 
-    const height =
-        Number(
-            info.height ??
-            info.chain_height
+  const url =
+    `${PROXY}/whispers?from=${endHeight}&to=${startHeight}`;
+
+
+  try {
+
+    const response =
+      await fetchJSON(url);
+
+
+    /*
+      Worker returns an object containing the memo-bearing
+      transactions. Support several possible response
+      shapes so the frontend remains tolerant.
+    */
+
+    const whispers =
+      extractWhispers(response);
+
+
+    /*
+      Save every whisper individually.
+
+      This is important because whispers are keyed by tx_hash.
+    */
+
+    for (const whisper of whispers) {
+
+      if (!whisper || !whisper.tx_hash) {
+        continue;
+      }
+
+
+      const normalized =
+        normalizeWhisper(
+          whisper
         );
 
-    if (!Number.isFinite(height)) {
-        throw new Error("Invalid chain height");
+
+      if (!normalized) {
+        continue;
+      }
+
+
+      const hash =
+        String(normalized.tx_hash);
+
+
+      const alreadyExists =
+        state.whispers.has(hash);
+
+
+      await saveWhisper(
+        normalized
+      );
+
+
+      state.whispers.set(
+        hash,
+        normalized
+      );
+
+
+      if (!alreadyExists) {
+
+        state.newHashes.add(hash);
+
+        /*
+          Remove the new marker after a short period.
+        */
+
+        setTimeout(() => {
+
+          state.newHashes.delete(hash);
+
+          renderArchive();
+
+        }, 4000);
+      }
     }
 
-    state.chainHeight = height;
 
-    await dbPut("meta", {
-        key: "chainHeight",
-        value: height
-    });
+    return {
+      success: true,
+      whispers
+    };
 
-    return height;
+
+  } catch (error) {
+
+    console.error(
+      `Batch ${startHeight}-${endHeight} failed:`,
+      error
+    );
+
+    return {
+      success: false,
+      whispers: []
+    };
+  }
 }
 
 
 /* ============================================================
-   MEMO FILTER
+   RESPONSE NORMALIZATION
    ============================================================ */
 
-function isRewardWhisper(whisper) {
-    const sender =
-        String(
-            whisper.from ??
-            whisper.sender ??
-            ""
-        ).toUpperCase();
+function extractWhispers(data) {
 
-    const memo =
-        String(
-            whisper.memo ??
-            whisper.payload_memo ??
-            ""
-        );
+  if (Array.isArray(data)) {
+    return data;
+  }
 
-    if (sender === "NETWORK_REWARD") {
-        return true;
-    }
+  if (!data || typeof data !== "object") {
+    return [];
+  }
 
-    if (/^Block\s+\d+\s+reward$/i.test(memo)) {
-        return true;
-    }
 
-    return false;
+  if (Array.isArray(data.whispers)) {
+    return data.whispers;
+  }
+
+  if (Array.isArray(data.transactions)) {
+    return data.transactions;
+  }
+
+  if (Array.isArray(data.memos)) {
+    return data.memos;
+  }
+
+  if (Array.isArray(data.results)) {
+    return data.results;
+  }
+
+  if (Array.isArray(data.data)) {
+    return data.data;
+  }
+
+
+  return [];
 }
 
 
@@ -933,339 +2001,96 @@ function isRewardWhisper(whisper) {
    ============================================================ */
 
 function normalizeWhisper(item) {
-    if (!item) {
-        return null;
+
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+
+  const memo =
+    item.memo ??
+    item.message ??
+    item.data ??
+    "";
+
+
+  const sender =
+    item.sender ??
+    item.from ??
+    "";
+
+
+  const recipient =
+    item.recipient ??
+    item.to ??
+    "";
+
+
+  const tx_hash =
+    item.tx_hash ??
+    item.txHash ??
+    item.hash ??
+    "";
+
+
+  const block =
+    item.block ??
+    item.height ??
+    item.block_height ??
+    item.blockHeight;
+
+
+  const timestamp =
+    item.timestamp ??
+    item.time ??
+    item.created_at ??
+    item.createdAt;
+
+
+  if (!tx_hash) {
+    return null;
+  }
+
+
+  /*
+    Reward transactions are not whispers.
+
+    We filter them here as an extra safety layer.
+  */
+
+  if (
+    String(sender)
+      .trim()
+      .toUpperCase() ===
+    "NETWORK_REWARD"
+  ) {
+
+    if (
+      /^Block\s+\d+\s+reward$/i.test(
+        String(memo).trim()
+      )
+    ) {
+      return null;
     }
+  }
 
-    const memo =
-        item.memo ??
-        item.payload_memo ??
-        item.message ??
-        "";
 
-    const txHash =
-        item.tx_hash ??
-        item.txHash ??
-        item.hash ??
-        item.transaction_hash;
+  return {
+    ...item,
 
-    if (!txHash) {
-        return null;
-    }
+    memo: String(memo),
+    sender: String(sender),
+    recipient: String(recipient),
+    tx_hash: String(tx_hash),
 
-    const block =
-        Number(
-            item.block ??
-            item.block_height ??
-            item.height ??
-            0
-        );
+    block:
+      block === undefined ||
+      block === null
+        ? null
+        : Number(block),
 
-    const from =
-        item.from ??
-        item.sender ??
-        "";
-
-    const to =
-        item.to ??
-        item.recipient ??
-        "";
-
-    const amount =
-        item.amount ??
-        item.value ??
-        0;
-
-    const timestamp =
-        item.timestamp ??
-        item.time ??
-        item.created_at ??
-        null;
-
-    return {
-        ...item,
-        tx_hash: String(txHash),
-        block: Number.isFinite(block) ? block : 0,
-        memo: String(memo),
-        from: String(from),
-        to: String(to),
-        amount,
-        timestamp
-    };
-}
-
-
-/* ============================================================
-   SCAN BATCH
-   ============================================================ */
-
-async function scanBatch(startHeight, endHeight) {
-
-    updateStatus(
-        `Scanning #${startHeight} → #${endHeight}`
-    );
-
-    const result = await fetchJSON(
-        `/whispers?from=${endHeight}&to=${startHeight}`
-    );
-
-    let items = [];
-
-    if (Array.isArray(result)) {
-        items = result;
-    } else if (Array.isArray(result.whispers)) {
-        items = result.whispers;
-    } else if (Array.isArray(result.results)) {
-        items = result.results;
-    } else if (Array.isArray(result.data)) {
-        items = result.data;
-    }
-
-    const normalized = [];
-
-    for (const item of items) {
-        const whisper = normalizeWhisper(item);
-
-        if (!whisper) {
-            continue;
-        }
-
-        if (isRewardWhisper(whisper)) {
-            continue;
-        }
-
-        normalized.push(whisper);
-    }
-
-    const previousCount = state.whispers.size;
-
-    await saveWhispers(normalized);
-
-    if (state.whispers.size > previousCount) {
-        for (
-            const whisper of normalized
-        ) {
-            if (!state.newWhispers.has(whisper.tx_hash)) {
-                state.newWhispers.add(
-                    whisper.tx_hash
-                );
-            }
-        }
-    }
-
-    /*
-     * Only advance the verification frontier
-     * after the entire batch succeeded.
-     */
-
-    state.verifiedThrough = endHeight;
-
-    state.blocksSinceTipCheck +=
-        endHeight - startHeight + 1;
-
-    await dbPut("meta", {
-        key: "verifiedThrough",
-        value: state.verifiedThrough
-    });
-
-    await dbPut("meta", {
-        key: "chainHeight",
-        value: state.chainHeight
-    });
-
-    render();
-}
-
-
-/* ============================================================
-   MAIN SCANNER
-   ============================================================ */
-
-async function scanArchive() {
-
-    if (state.scanning) {
-        return;
-    }
-
-    state.scanning = true;
-    state.stopRequested = false;
-
-    updateScanningUI(true);
-
-    try {
-
-        const tip = await getTip();
-
-        /*
-         * Resume EXACTLY after the last verified block.
-         */
-
-        let next =
-            Math.max(
-                0,
-                state.verifiedThrough + 1
-            );
-
-        /*
-         * If already caught up, still verify the tip.
-         */
-
-        if (next > tip) {
-
-            const secondTip =
-                await getTip();
-
-            if (next > secondTip) {
-                updateStatus("Chain current");
-                state.nextScanAt =
-                    Date.now() + AUTO_REFRESH_MS;
-                return;
-            }
-
-            next =
-                Math.max(
-                    0,
-                    state.verifiedThrough + 1
-                );
-        }
-
-        while (
-            next <= state.chainHeight &&
-            !state.stopRequested
-        ) {
-
-            /*
-             * Refresh the live tip periodically.
-             * This allows new blocks to be picked up
-             * without disturbing historical progress.
-             */
-
-            if (
-                state.blocksSinceTipCheck >=
-                TIP_CHECK_INTERVAL
-            ) {
-                await getTip();
-                state.blocksSinceTipCheck = 0;
-            }
-
-            const end =
-                Math.min(
-                    next + BATCH_SIZE - 1,
-                    state.chainHeight
-                );
-
-            await scanBatch(
-                next,
-                end
-            );
-
-            next = end + 1;
-
-            render();
-        }
-
-        /*
-         * Final live-tip check.
-         */
-
-        const finalTip =
-            await getTip();
-
-        if (
-            state.verifiedThrough >=
-            finalTip
-        ) {
-            updateStatus("Chain current");
-        } else {
-            updateStatus(
-                "New blocks detected"
-            );
-        }
-
-        state.nextScanAt =
-            Date.now() + AUTO_REFRESH_MS;
-
-    } catch (error) {
-
-        console.error(
-            "NevWhisper scanner error:",
-            error
-        );
-
-        updateStatus(
-            "Scan paused — retrying automatically"
-        );
-
-    } finally {
-
-        state.scanning = false;
-
-        updateScanningUI(false);
-
-        render();
-    }
-}
-
-
-/* ============================================================
-   AUTOMATIC 369 SECOND TIMER
-   ============================================================ */
-
-function startAutoScanner() {
-
-    state.nextScanAt =
-        Date.now() + AUTO_REFRESH_MS;
-
-    setInterval(() => {
-
-        const remaining =
-            Math.max(
-                0,
-                state.nextScanAt - Date.now()
-            );
-
-        const seconds =
-            Math.ceil(
-                remaining / 1000
-            );
-
-        $("countdown").textContent =
-            seconds;
-
-        if (
-            remaining <= 0 &&
-            !state.scanning
-        ) {
-            state.nextScanAt =
-                Date.now() + AUTO_REFRESH_MS;
-
-            scanArchive();
-        }
-
-    }, 1000);
-}
-
-
-/* ============================================================
-   UI
-   ============================================================ */
-
-function updateStatus(text) {
-    $("statusText").textContent = text;
-    $("scannerStatus").textContent = text;
-}
-
-
-function updateScanningUI(scanning) {
-
-    const dot =
-        $("statusDot");
-
-    if (scanning) {
-        dot.classList.add("scanning");
-    } else {
-        dot.classList.remove("scanning");
-    }
+    timestamp
+  };
 }
 
 
@@ -1275,118 +2100,68 @@ function updateScanningUI(scanning) {
 
 function formatTimestamp(value) {
 
-    if (
-        value === null ||
-        value === undefined ||
-        value === ""
-    ) {
-        return "Unknown time";
-    }
+  if (
+    value === null ||
+    value === undefined ||
+    value === ""
+  ) {
+    return "Unknown time";
+  }
 
-    const n = Number(value);
 
-    if (!Number.isFinite(n)) {
+  const n = Number(value);
 
-        const d =
-            new Date(value);
 
-        return Number.isNaN(
-            d.getTime()
-        )
-            ? "Unknown time"
-            : d.toLocaleString();
-    }
-
-    let milliseconds;
-
-    if (n < 1e12) {
-        milliseconds = n * 1000;
-    } else if (n < 1e15) {
-        milliseconds = n;
-    } else if (n < 1e18) {
-        milliseconds = n / 1000;
-    } else {
-        milliseconds = n / 1000000;
-    }
+  if (!Number.isFinite(n)) {
 
     const d =
-        new Date(milliseconds);
+      new Date(value);
 
     return Number.isNaN(
-        d.getTime()
+      d.getTime()
     )
-        ? "Unknown time"
-        : d.toLocaleString();
-}
+      ? "Unknown time"
+      : d.toLocaleString();
+  }
 
 
-/* ============================================================
-   AMOUNT
-   ============================================================ */
-
-function formatAmount(value) {
-
-    const n = Number(value);
-
-    if (!Number.isFinite(n)) {
-        return String(value ?? "0");
-    }
-
-    /*
-     * NEV369 has 8 decimals.
-     */
-
-    const nev =
-        n / 100000000;
-
-    return nev.toLocaleString(
-        undefined,
-        {
-            maximumFractionDigits: 8
-        }
-    ) + " NEV";
-}
+  let milliseconds;
 
 
-/* ============================================================
-   SHORT HASH
-   ============================================================ */
+  /*
+    NEV node timestamps may be Unix seconds.
+  */
 
-function shortHash(value) {
+  if (n < 1e12) {
 
-    const s = String(value ?? "");
+    milliseconds =
+      n * 1000;
 
-    if (s.length <= 18) {
-        return s;
-    }
+  } else if (n < 1e15) {
 
-    return (
-        s.slice(0, 10) +
-        "…" +
-        s.slice(-8)
-    );
-}
+    milliseconds = n;
 
+  } else if (n < 1e18) {
 
-/* ============================================================
-   EXPLORER LINKS
-   ============================================================ */
+    milliseconds =
+      n / 1000;
 
-function txLink(hash) {
+  } else {
 
-    return (
-        "https://q-lock-ecosystem.com/explorer/#/tx/" +
-        encodeURIComponent(hash)
-    );
-}
+    milliseconds =
+      n / 1000000;
+  }
 
 
-function blockLink(block) {
+  const d =
+    new Date(milliseconds);
 
-    return (
-        "https://q-lock-ecosystem.com/node/block/" +
-        encodeURIComponent(block)
-    );
+
+  return Number.isNaN(
+    d.getTime()
+  )
+    ? "Unknown time"
+    : d.toLocaleString();
 }
 
 
@@ -1394,403 +2169,123 @@ function blockLink(block) {
    ARCHITECT DETECTION
    ============================================================ */
 
-function isArchitect(whisper) {
+function determineArchitectAddress() {
 
-    const from =
-        String(
-            whisper.from ??
-            whisper.sender ??
-            ""
-        ).toUpperCase();
+  /*
+    Genesis Architect transaction is identified by its memo.
 
-    const memo =
-        String(
-            whisper.memo ??
-            whisper.payload_memo ??
-            ""
-        ).toLowerCase();
+    Its recipient becomes the Architect address for future
+    Architect messages.
+  */
 
-    if (from === "GENESIS") {
-        return true;
-    }
+  const genesisArchitect =
+    [...state.whispers.values()]
+      .find(whisper => {
 
-    if (
-        memo.includes("architect")
-    ) {
-        return true;
-    }
+        return (
+          String(whisper.sender)
+            .toUpperCase() ===
+          "GENESIS" &&
+          /architect/i.test(
+            String(whisper.memo)
+          ) &&
+          !/nevaeh vault/i.test(
+            String(whisper.memo)
+          )
+        );
+      });
 
+
+  if (
+    genesisArchitect &&
+    genesisArchitect.recipient
+  ) {
+
+    state.architectAddress =
+      String(
+        genesisArchitect.recipient
+      ).toLowerCase();
+  }
+}
+
+
+function isArchitectWhisper(whisper) {
+
+  if (!whisper) {
     return false;
+  }
+
+
+  const sender =
+    String(
+      whisper.sender || ""
+    ).toLowerCase();
+
+
+  /*
+    Genesis Architect memo.
+  */
+
+  if (
+    sender === "genesis" &&
+    /architect/i.test(
+      String(whisper.memo || "")
+    ) &&
+    !/nevaeh vault/i.test(
+      String(whisper.memo || "")
+    )
+  ) {
+    return true;
+  }
+
+
+  /*
+    Future Architect messages are identified by the
+    Architect recipient address established above.
+  */
+
+  if (
+    state.architectAddress &&
+    sender === state.architectAddress
+  ) {
+    return true;
+  }
+
+
+  return false;
 }
 
 
 /* ============================================================
-   RENDER ARCHITECT PIN
+   SEARCH
    ============================================================ */
 
-function renderArchitect() {
-
-    const architects =
-        [...state.whispers.values()]
-            .filter(isArchitect)
-            .sort(
-                (a, b) =>
-                    Number(b.block || 0) -
-                    Number(a.block || 0)
-            );
-
-    if (!architects.length) {
-        $("architectSection").innerHTML = "";
-        return;
-    }
-
-    const latest =
-        architects[0];
-
-    const memo =
-        String(
-            latest.memo ??
-            latest.payload_memo ??
-            ""
-        );
-
-    $("architectSection").innerHTML = `
-        <div class="section-title">
-            <h2>The Architect</h2>
-            <span>Latest message</span>
-        </div>
-
-        <div class="architect">
-
-            <div class="architect-head">
-
-                <div>
-                    <div class="architect-name">
-                        The Architect
-                    </div>
-
-                    <div class="architect-time">
-                        Block #${latest.block}
-                        •
-                        ${escapeHTML(
-                            formatTimestamp(
-                                latest.timestamp
-                            )
-                        )}
-                    </div>
-                </div>
-
-                <div class="pin">
-                    📌 Pinned
-                </div>
-
-            </div>
-
-            <div class="architect-memo">
-                ${escapeHTML(memo)}
-            </div>
-
-        </div>
-    `;
-}
-
-
-/* ============================================================
-   RENDER ARCHIVE
-   ============================================================ */
-
-function renderWhispers() {
-
-    const query =
-        $("search").value
-            .trim()
-            .toLowerCase();
-
-    let whispers =
-        [...state.whispers.values()]
-            .sort(
-                (a, b) =>
-                    Number(b.block || 0) -
-                    Number(a.block || 0)
-            );
-
-    if (query) {
-
-        whispers =
-            whispers.filter(
-                whisper => {
-
-                    const haystack = [
-                        whisper.memo,
-                        whisper.payload_memo,
-                        whisper.tx_hash,
-                        whisper.from,
-                        whisper.to,
-                        whisper.sender,
-                        whisper.recipient,
-                        whisper.block
-                    ]
-                        .filter(
-                            value =>
-                                value !==
-                                undefined &&
-                                value !== null
-                        )
-                        .join(" ")
-                        .toLowerCase();
-
-                    return haystack.includes(
-                        query
-                    );
-                }
-            );
-    }
-
-    $("whisperCount").textContent =
-        state.whispers.size;
-
-    $("archiveLabel").textContent =
-        `${state.whispers.size} ${
-            state.whispers.size === 1
-                ? "message"
-                : "messages"
-        } preserved`;
-
-    if (!whispers.length) {
-
-        $("whisperList").innerHTML = `
-            <div class="empty">
-                ${
-                    query
-                        ? "No whispers match your search."
-                        : "No whispers indexed yet."
-                }
-            </div>
-        `;
-
-        return;
-    }
-
-    $("whisperList").innerHTML =
-        whispers.map(
-            whisper => {
-
-                const memo =
-                    String(
-                        whisper.memo ??
-                        whisper.payload_memo ??
-                        ""
-                    );
-
-                const tx =
-                    String(
-                        whisper.tx_hash ??
-                        ""
-                    );
-
-                const from =
-                    String(
-                        whisper.from ??
-                        whisper.sender ??
-                        ""
-                    );
-
-                const to =
-                    String(
-                        whisper.to ??
-                        whisper.recipient ??
-                        ""
-                    );
-
-                const isNew =
-                    state.newWhispers.has(
-                        tx
-                    );
-
-                return `
-                    <article
-                        class="whisper ${
-                            isNew
-                                ? "new"
-                                : ""
-                        }"
-                    >
-
-                        <div class="whisper-top">
-
-                            <a
-                                class="block"
-                                href="${blockLink(
-                                    whisper.block
-                                )}"
-                                target="_blank"
-                                rel="noopener"
-                            >
-                                #${whisper.block}
-                            </a>
-
-                            <span class="time">
-                                ${escapeHTML(
-                                    formatTimestamp(
-                                        whisper.timestamp
-                                    )
-                                )}
-                            </span>
-
-                        </div>
-
-                        <div class="memo">
-                            ${escapeHTML(memo)}
-                        </div>
-
-                        <div class="details">
-
-                            <div class="label">
-                                Amount
-                            </div>
-
-                            <div class="value">
-                                ${escapeHTML(
-                                    formatAmount(
-                                        whisper.amount
-                                    )
-                                )}
-                            </div>
-
-                            <div class="label">
-                                TX
-                            </div>
-
-                            <div class="value">
-                                <a
-                                    href="${txLink(tx)}"
-                                    target="_blank"
-                                    rel="noopener"
-                                >
-                                    ${escapeHTML(
-                                        shortHash(tx)
-                                    )} ↗
-                                </a>
-                            </div>
-
-                            <div class="label">
-                                From
-                            </div>
-
-                            <div class="value">
-                                ${escapeHTML(
-                                    from
-                                )}
-                            </div>
-
-                            <div class="label">
-                                To
-                            </div>
-
-                            <div class="value">
-                                ${escapeHTML(
-                                    to
-                                )}
-                            </div>
-
-                        </div>
-
-                    </article>
-                `;
-            }
-        )
-        .join("");
-
-    /*
-     * New-message animation is only needed once.
-     */
-
-    setTimeout(() => {
-        state.newWhispers.clear();
-    }, 1800);
-}
-
-
-/* ============================================================
-   PROGRESS
-   ============================================================ */
-
-function renderProgress() {
-
-    const height =
-        Number(state.chainHeight);
-
-    const verified =
-        Number(state.verifiedThrough);
-
-    if (
-        !Number.isFinite(height) ||
-        height < 0
-    ) {
-        return;
-    }
-
-    const safeVerified =
-        Math.max(
-            -1,
-            Math.min(
-                verified,
-                height
-            )
-        );
-
-    const completed =
-        safeVerified + 1;
-
-    const total =
-        height + 1;
-
-    const percent =
-        total > 0
-            ? Math.min(
-                100,
-                (completed / total) * 100
-            )
-            : 0;
-
-    const remaining =
-        Math.max(
-            0,
-            height - safeVerified
-        );
-
-    $("chainHeight").textContent =
-        "#" + height;
-
-    $("verifiedThrough").textContent =
-        safeVerified >= 0
-            ? "#" + safeVerified
-            : "—";
-
-    $("blocksRemaining").textContent =
-        remaining.toLocaleString();
-
-    $("progressPercent").textContent =
-        percent.toFixed(1) + "%";
-
-    $("progressBar").style.width =
-        percent + "%";
-
-    $("progressText").textContent =
-        safeVerified >= height
-            ? "Genesis → Live • Fully verified"
-            : `Genesis → #${safeVerified} verified`;
-}
-
-
-/* ============================================================
-   MAIN RENDER
-   ============================================================ */
-
-function render() {
-    renderProgress();
-    renderArchitect();
-    renderWhispers();
+function matchesSearch(
+  whisper,
+  query
+) {
+
+  if (!query) {
+    return true;
+  }
+
+
+  const haystack = [
+    whisper.memo,
+    whisper.block,
+    whisper.tx_hash,
+    whisper.sender,
+    whisper.recipient,
+    whisper.timestamp
+  ]
+    .map(value => String(value ?? ""))
+    .join(" ")
+    .toLowerCase();
+
+
+  return haystack.includes(
+    query.toLowerCase()
+  );
 }
 
 
@@ -1800,84 +2295,540 @@ function render() {
 
 function escapeHTML(value) {
 
-    return String(
-        value ?? ""
-    )
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll('"', "&quot;")
-        .replaceAll("'", "&#039;");
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 
 /* ============================================================
-   SEARCH
+   SHORT HASH
    ============================================================ */
 
-$("search").addEventListener(
-    "input",
-    () => renderWhispers()
+function shortHash(value) {
+
+  const str =
+    String(value ?? "");
+
+  if (str.length <= 20) {
+    return str;
+  }
+
+  return (
+    str.slice(0, 10) +
+    "…" +
+    str.slice(-10)
+  );
+}
+
+
+/* ============================================================
+   BLOCK LINK
+   ============================================================ */
+
+function blockLink(block) {
+
+  if (
+    block === null ||
+    block === undefined ||
+    !Number.isFinite(Number(block))
+  ) {
+    return "Unknown block";
+  }
+
+
+  const height =
+    Number(block);
+
+
+  return `
+    <a
+      class="block-link"
+      href="${BLOCK_EXPLORER}${height}"
+      target="_blank"
+      rel="noopener noreferrer"
+    >
+      Block #${height}
+    </a>
+  `;
+}
+
+
+/* ============================================================
+   ARCHITECT PIN
+   ============================================================ */
+
+function renderArchitect() {
+
+  determineArchitectAddress();
+
+
+  const architectMessages =
+    [...state.whispers.values()]
+      .filter(isArchitectWhisper)
+      .sort(
+        (a, b) =>
+          Number(b.block ?? -1) -
+          Number(a.block ?? -1)
+      );
+
+
+  if (!architectMessages.length) {
+
+    architectSectionEl.style.display =
+      "none";
+
+    return;
+  }
+
+
+  const latest =
+    architectMessages[0];
+
+
+  architectSectionEl.style.display =
+    "block";
+
+
+  architectMessageEl.textContent =
+    latest.memo || "(empty memo)";
+
+
+  architectMetaEl.innerHTML = `
+    ${blockLink(latest.block)}
+    · ${escapeHTML(
+      formatTimestamp(latest.timestamp)
+    )}
+  `;
+}
+
+
+/* ============================================================
+   RENDER STATS
+   ============================================================ */
+
+function renderStats() {
+
+  whisperCountEl.textContent =
+    state.whispers.size;
+
+
+  chainHeightEl.textContent =
+    state.chainHeight >= 0
+      ? `#${state.chainHeight}`
+      : "—";
+
+
+  verifiedHeightEl.textContent =
+    state.verifiedThrough >= 0
+      ? `#${state.verifiedThrough}`
+      : "—";
+
+
+  if (
+    state.chainHeight >= 0 &&
+    state.verifiedThrough >= 0
+  ) {
+
+    const percent =
+      state.chainHeight === 0
+        ? 100
+        : Math.min(
+            100,
+            Math.max(
+              0,
+              (
+                state.verifiedThrough /
+                state.chainHeight
+              ) * 100
+            )
+          );
+
+
+    progressBarEl.style.width =
+      `${percent}%`;
+
+
+    archiveMetaEl.textContent =
+      `Genesis → ${
+        state.verifiedThrough >= state.chainHeight
+          ? "Live"
+          : `#${state.verifiedThrough}`
+      }`;
+
+  } else {
+
+    progressBarEl.style.width =
+      "0%";
+
+    archiveMetaEl.textContent =
+      "Genesis → Live";
+  }
+}
+
+
+/* ============================================================
+   RENDER ARCHIVE
+   ============================================================ */
+
+function renderArchive() {
+
+  const query =
+    searchInput.value
+      .trim()
+      .toLowerCase();
+
+
+  const whispers =
+    [...state.whispers.values()]
+      .filter(
+        whisper =>
+          matchesSearch(
+            whisper,
+            query
+          )
+      )
+      .sort(
+        (a, b) =>
+          Number(b.block ?? -1) -
+          Number(a.block ?? -1)
+      );
+
+
+  if (!whispers.length) {
+
+    archiveEl.innerHTML = `
+      <div class="empty">
+        <strong>No whispers found</strong>
+        ${
+          query
+            ? "Try a different search."
+            : "The archive is waiting for memo-bearing transactions."
+        }
+      </div>
+    `;
+
+    return;
+  }
+
+
+  archiveEl.innerHTML =
+    whispers
+      .map(renderWhisper)
+      .join("");
+}
+
+
+/* ============================================================
+   RENDER WHISPER
+   ============================================================ */
+
+function renderWhisper(whisper) {
+
+  const hash =
+    String(
+      whisper.tx_hash || ""
+    );
+
+
+  const isNew =
+    state.newHashes.has(hash);
+
+
+  const memo =
+    whisper.memo ||
+    "(empty memo)";
+
+
+  const sender =
+    whisper.sender ||
+    "Unknown";
+
+
+  const recipient =
+    whisper.recipient ||
+    "Unknown";
+
+
+  const txUrl =
+    `${TX_EXPLORER}${encodeURIComponent(hash)}`;
+
+
+  return `
+    <article
+      class="whisper ${isNew ? "new" : ""}"
+    >
+
+      <div class="whisper-top">
+
+        <div class="whisper-left">
+
+          <span class="whisper-badge">
+            Whisper
+          </span>
+
+          ${blockLink(whisper.block)}
+
+          ${
+            isNew
+              ? `<span class="whisper-badge">New</span>`
+              : ""
+          }
+
+        </div>
+
+        <div class="whisper-time">
+          ${escapeHTML(
+            formatTimestamp(
+              whisper.timestamp
+            )
+          )}
+        </div>
+
+      </div>
+
+
+      <div class="whisper-message">
+        ${escapeHTML(memo)}
+      </div>
+
+
+      <div class="whisper-details">
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Sender
+          </div>
+
+          <div
+            class="detail-value"
+            title="${escapeHTML(sender)}"
+          >
+            ${escapeHTML(
+              shortHash(sender)
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Recipient
+          </div>
+
+          <div
+            class="detail-value"
+            title="${escapeHTML(recipient)}"
+          >
+            ${escapeHTML(
+              shortHash(recipient)
+            )}
+          </div>
+
+        </div>
+
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Transaction
+          </div>
+
+          <div class="detail-value">
+
+            <a
+              class="tx-link"
+              href="${txUrl}"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="${escapeHTML(hash)}"
+            >
+              ${escapeHTML(
+                shortHash(hash)
+              )}
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <div class="detail">
+
+          <div class="detail-label">
+            Block
+          </div>
+
+          <div class="detail-value">
+            ${
+              whisper.block ??
+              "Unknown"
+            }
+          </div>
+
+        </div>
+
+      </div>
+
+    </article>
+  `;
+}
+
+
+/* ============================================================
+   RENDER EVERYTHING
+   ============================================================ */
+
+function renderAll() {
+
+  renderStats();
+
+  renderArchitect();
+
+  renderArchive();
+}
+
+
+/* ============================================================
+   SEARCH EVENT
+   ============================================================ */
+
+searchInput.addEventListener(
+  "input",
+  () => {
+    renderArchive();
+  }
 );
 
 
 /* ============================================================
-   STARTUP
+   HEIGHT WATCHER
    ============================================================ */
 
-async function start() {
+let heightWatcher = null;
 
-    try {
 
-        await openDatabase();
+function startHeightWatcher() {
 
-        /*
-         * FIRST:
-         * Load the existing completed archive.
-         *
-         * This is what restores your 5 whispers.
-         */
+  /*
+    No 369-second countdown.
 
-        await loadDatabase();
+    The page simply watches the chain height every 15 seconds.
+  */
 
-        /*
-         * Then check the live chain.
-         */
+  if (heightWatcher) {
+    clearInterval(heightWatcher);
+  }
 
-        await getTip();
 
-        render();
+  heightWatcher =
+    setInterval(
+      async () => {
 
-        /*
-         * Continue scanning from the saved
-         * verification frontier.
-         *
-         * If you're already fully caught up,
-         * this simply confirms the current tip.
-         */
+        if (!state.scanning) {
+          await checkChainHeight();
+        }
 
-        await scanArchive();
-
-        /*
-         * Keep the 369-second automatic cycle.
-         */
-
-        startAutoScanner();
-
-    } catch (error) {
-
-        console.error(
-            "NevWhisper startup error:",
-            error
-        );
-
-        updateStatus(
-            "Unable to connect"
-        );
-    }
+      },
+      HEIGHT_CHECK_MS
+    );
 }
 
-start();
+
+/* ============================================================
+   INITIALIZATION
+   ============================================================ */
+
+async function initialize() {
+
+  try {
+
+    setStatus(
+      "Loading local archive"
+    );
+
+    setScannerState(
+      "Loading",
+      "Reading IndexedDB"
+    );
+
+
+    /*
+      Load the six existing whispers first.
+    */
+
+    await loadSavedState();
+
+
+    renderAll();
+
+
+    /*
+      Initial live height check.
+
+      If the saved frontier is behind the live tip,
+      this immediately catches up.
+    */
+
+    setStatus(
+      "Checking NEV369"
+    );
+
+    setScannerState(
+      "Checking",
+      "Reading live chain height"
+    );
+
+
+    await checkChainHeight();
+
+
+    /*
+      From this point onward the page watches for height
+      increases every 15 seconds.
+    */
+
+    startHeightWatcher();
+
+
+    setStatus(
+      state.verifiedThrough >= state.chainHeight
+        ? `Chain current — #${state.chainHeight}`
+        : "Watching chain"
+    );
+
+
+  } catch (error) {
+
+    console.error(
+      "Initialization failed:",
+      error
+    );
+
+    setStatus(
+      "Initialization failed",
+      "error"
+    );
+
+    setScannerState(
+      "Error",
+      error.message || "Unable to start scanner"
+    );
+  }
+}
+
+
+/* ============================================================
+   START
+   ============================================================ */
+
+initialize();
 
 </script>
 

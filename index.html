@@ -1865,6 +1865,10 @@ function extractWhispers(
   payload
 ) {
 
+  /*
+    Standard /whispers responses.
+  */
+
   if (
     Array.isArray(payload)
   ) {
@@ -1896,6 +1900,145 @@ function extractWhispers(
     ) {
       return candidate;
     }
+  }
+
+  /*
+    A block/scan response may contain transactions
+    several levels down. Walk the response and collect
+    transaction-like objects carrying a memo.
+
+    The inherited block height lets normalizeWhisper()
+    work even when the transaction itself does not
+    repeat the block number.
+  */
+
+  const found = [];
+
+  function walk(
+    value,
+    inheritedBlock = null
+  ) {
+
+    if (
+      Array.isArray(value)
+    ) {
+
+      for (
+        const item of value
+      ) {
+        walk(
+          item,
+          inheritedBlock
+        );
+      }
+
+      return;
+    }
+
+    if (
+      !value ||
+      typeof value !== "object"
+    ) {
+      return;
+    }
+
+    const localBlock =
+      firstValue(
+        value,
+        [
+          "block",
+          "height",
+          "block_height",
+          "blockHeight"
+        ]
+      );
+
+    const block =
+      Number(localBlock);
+
+    const currentBlock =
+      Number.isFinite(block)
+        ? block
+        : inheritedBlock;
+
+    const memo =
+      firstValue(
+        value,
+        [
+          "memo",
+          "payload_memo",
+          "message",
+          "text"
+        ]
+      );
+
+    const txHash =
+      firstValue(
+        value,
+        [
+          "tx_hash",
+          "tx",
+          "txid",
+          "transaction_hash",
+          "transaction",
+          "hash"
+        ]
+      );
+
+    if (
+      memo !== null &&
+      memo !== undefined &&
+      String(memo).trim() !== "" &&
+      txHash !== null &&
+      txHash !== undefined &&
+      String(txHash).trim() !== ""
+    ) {
+
+      found.push({
+        ...value,
+        block:
+          Number.isFinite(currentBlock)
+            ? currentBlock
+            : value.block
+      });
+    }
+
+    for (
+      const key of Object.keys(value)
+    ) {
+
+      if (
+        key === "memo" ||
+        key === "payload_memo" ||
+        key === "message" ||
+        key === "text"
+      ) {
+        continue;
+      }
+
+      const child =
+        value[key];
+
+      if (
+        child &&
+        typeof child === "object"
+      ) {
+        walk(
+          child,
+          Number.isFinite(currentBlock)
+            ? currentBlock
+            : inheritedBlock
+        );
+      }
+    }
+  }
+
+  walk(payload);
+
+  if (
+    found.length > 0
+  ) {
+    return found;
   }
 
   if (
@@ -2345,9 +2488,17 @@ async function backfillRecentBlocks() {
   const refresh =
     Date.now();
 
+  /*
+    Use the node's scan endpoint for the rolling
+    recovery window. Unlike the memo index, scan
+    reads the underlying block data, so a memo that
+    appeared after the original index pass can still
+    be recovered.
+  */
+
   const payload =
     await getJson(
-      `/whispers?from=${endHeight}&to=${startHeight}&_=${refresh}`
+      `/scan?from=${endHeight}&to=${startHeight}&_=${refresh}`
     );
 
   const found =

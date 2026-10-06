@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>NevWhisper — NEV369 Memo Chat</title>
+
   <style>
     :root {
       --bg: #0b0d12;
@@ -17,10 +18,15 @@
       --red: #fb7185;
     }
 
-    * { box-sizing: border-box; margin: 0; padding: 0; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
 
     body {
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
       line-height: 1.5;
@@ -28,7 +34,10 @@
       padding: 24px 16px 60px;
     }
 
-    .container { max-width: 720px; margin: 0 auto; }
+    .container {
+      max-width: 720px;
+      margin: 0 auto;
+    }
 
     header {
       text-align: center;
@@ -47,7 +56,10 @@
       -webkit-text-fill-color: transparent;
     }
 
-    .subtitle { color: var(--muted); font-size: 0.95rem; }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
 
     .status-bar {
       display: flex;
@@ -59,7 +71,10 @@
       gap: 12px;
     }
 
-    .status-left { display: flex; align-items: center; }
+    .status-left {
+      display: flex;
+      align-items: center;
+    }
 
     .live-dot {
       display: inline-block;
@@ -102,8 +117,16 @@
       transition: all 0.2s ease;
     }
 
-    button:hover { transform: translateY(-1px); filter: brightness(1.1); }
-    button:disabled { opacity: 0.6; cursor: wait; transform: none; }
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.1);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+      transform: none;
+    }
 
     .checkbox-label {
       display: flex;
@@ -115,7 +138,11 @@
       user-select: none;
     }
 
-    #feed { display: flex; flex-direction: column; gap: 14px; }
+    #feed {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
 
     .memo {
       background: var(--card);
@@ -132,8 +159,15 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
 
     .meta {
@@ -153,7 +187,8 @@
       white-space: pre-wrap;
     }
 
-    .empty, .loading {
+    .empty,
+    .loading {
       text-align: center;
       color: var(--muted);
       padding: 50px 20px;
@@ -167,9 +202,13 @@
       border-radius: 12px;
       padding: 18px;
       text-align: center;
+      word-break: break-word;
     }
 
-    .amount { color: var(--green); font-weight: 500; }
+    .amount {
+      color: var(--green);
+      font-weight: 500;
+    }
 
     footer {
       text-align: center;
@@ -178,22 +217,33 @@
       color: var(--muted);
     }
 
-    a { color: var(--accent); text-decoration: none; }
-    a:hover { text-decoration: underline; }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
 
     .node-info {
       margin-top: 10px;
       font-size: 0.72rem;
       color: #687084;
       text-align: center;
+      word-break: break-word;
     }
   </style>
 </head>
+
 <body>
   <div class="container">
+
     <header>
       <h1>NevWhisper</h1>
-      <div class="subtitle">Quiet messages from the NEV369 chain · Refreshes every 369 seconds</div>
+      <div class="subtitle">
+        Quiet messages from the NEV369 chain · Refreshes every 369 seconds
+      </div>
     </header>
 
     <div class="status-bar">
@@ -201,11 +251,15 @@
         <span id="liveDot" class="live-dot"></span>
         <span id="status">Connecting...</span>
       </div>
+
       <div id="count"></div>
     </div>
 
     <div class="controls">
-      <button id="refreshBtn" onclick="loadMemos()">Refresh Now</button>
+      <button id="refreshBtn" onclick="loadMemos()">
+        Refresh Now
+      </button>
+
       <label class="checkbox-label">
         <input type="checkbox" id="autoRefresh" checked>
         Auto-refresh (369s)
@@ -213,41 +267,82 @@
     </div>
 
     <div id="feed">
-      <div class="loading">Listening for whispers on the chain...</div>
+      <div class="loading">
+        Listening for whispers on the chain...
+      </div>
     </div>
 
     <div class="node-info">
-      Reading the public NEV369 node at q-lock-ecosystem.com
+      Reading the public NEV369 node at q-lock-ecosystem.com/node
     </div>
 
     <footer>
       Public memos from the
-      <a href="https://q-lock-ecosystem.com" target="_blank" rel="noopener">NEV369</a>
+      <a
+        href="https://q-lock-ecosystem.com"
+        target="_blank"
+        rel="noopener"
+      >
+        NEV369
+      </a>
       network · Fully on-chain & open
     </footer>
+
   </div>
 
   <script>
-    // The public NEV369 node is hosted at the site root.
-    // The old version incorrectly used /node/chain.
-    const NODE = "https://q-lock-ecosystem.com";
+    /*
+     * NevWhisper
+     *
+     * The official Q-Lock Explorer exposes NEV369 chain data
+     * through the configured /node endpoint.
+     *
+     * We request /node/explorer and recursively search the
+     * returned object for blocks and payload_memo fields.
+     */
+
+    const NODE = "https://q-lock-ecosystem.com/node";
+    const EXPLORER_API = NODE + "/explorer";
+
     const REFRESH_MS = 369 * 1000;
+
     let autoTimer = null;
 
-    // Try the current explorer API first, then older/public node shapes.
-    const API_CANDIDATES = [
-      "/api/blocks?limit=100",
-      "/api/chain?limit=100",
-      "/chain?limit=100",
-      "/explorer",
-      "/api/explorer"
-    ];
-
     function formatTime(ts) {
-      if (!ts) return "—";
-      // NEV369 timestamps are Unix seconds.
-      const d = new Date(Number(ts) * 1000);
-      if (Number.isNaN(d.getTime())) return "—";
+      if (ts === undefined || ts === null || ts === "") {
+        return "—";
+      }
+
+      let value = Number(ts);
+
+      if (!Number.isFinite(value)) {
+        const d = new Date(ts);
+
+        if (Number.isNaN(d.getTime())) {
+          return "—";
+        }
+
+        return d.toLocaleString([], {
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit"
+        });
+      }
+
+      /*
+       * Handle both Unix seconds and milliseconds.
+       */
+      if (value < 100000000000) {
+        value *= 1000;
+      }
+
+      const d = new Date(value);
+
+      if (Number.isNaN(d.getTime())) {
+        return "—";
+      }
+
       return d.toLocaleString([], {
         month: "short",
         day: "numeric",
@@ -257,18 +352,37 @@
     }
 
     function shortAddr(addr) {
-      if (!addr) return "—";
+      if (!addr) {
+        return "—";
+      }
+
       addr = String(addr);
-      if (addr.length < 16) return addr;
+
+      if (addr.length < 16) {
+        return addr;
+      }
+
       return addr.slice(0, 8) + "…" + addr.slice(-5);
     }
 
     function formatAmount(amount) {
-      if (amount === undefined || amount === null || amount === "") return "";
+      if (
+        amount === undefined ||
+        amount === null ||
+        amount === ""
+      ) {
+        return "";
+      }
+
       const nev = Number(amount);
-      if (!Number.isFinite(nev) || nev === 0) return "";
-      // The current NEV369 node represents amounts in NEV, not satoshis.
-      return nev.toLocaleString(undefined, { maximumFractionDigits: 8 }) + " NEV";
+
+      if (!Number.isFinite(nev) || nev === 0) {
+        return "";
+      }
+
+      return nev.toLocaleString(undefined, {
+        maximumFractionDigits: 8
+      }) + " NEV";
     }
 
     function escapeHtml(text) {
@@ -277,85 +391,163 @@
       return div.innerHTML;
     }
 
-    function extractBlocks(data) {
-      if (Array.isArray(data)) return data;
-      if (!data || typeof data !== "object") return [];
-
-      const candidates = [
-        data.blocks,
-        data.chain,
-        data.data?.blocks,
-        data.result?.blocks,
-        data.result?.chain
-      ];
-
-      for (const candidate of candidates) {
-        if (Array.isArray(candidate)) return candidate;
+    /*
+     * Recursively find every object containing payload_memo.
+     *
+     * This makes the frontend tolerant of the current Explorer's
+     * response structure without assuming a specific nesting level.
+     */
+    function findMemoTransactions(value, results = []) {
+      if (!value || typeof value !== "object") {
+        return results;
       }
 
-      return [];
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          findMemoTransactions(item, results);
+        }
+
+        return results;
+      }
+
+      if (
+        Object.prototype.hasOwnProperty.call(value, "payload_memo") &&
+        value.payload_memo !== null &&
+        value.payload_memo !== undefined &&
+        String(value.payload_memo).trim() !== ""
+      ) {
+        results.push(value);
+      }
+
+      for (const key of Object.keys(value)) {
+        const child = value[key];
+
+        if (
+          child &&
+          typeof child === "object"
+        ) {
+          findMemoTransactions(child, results);
+        }
+      }
+
+      return results;
     }
 
-    function normalizeBlock(block) {
-      return {
-        height: block.index ?? block.height ?? block.block_height ?? block.number,
-        timestamp: block.timestamp ?? block.time ?? block.created_at,
-        transactions:
-          block.transactions ??
-          block.txs ??
-          block.data?.transactions ??
-          []
-      };
+    /*
+     * Find the block height associated with a transaction by
+     * walking the chain recursively.
+     */
+    function collectChainBlocks(value, blocks = []) {
+      if (!value || typeof value !== "object") {
+        return blocks;
+      }
+
+      if (Array.isArray(value)) {
+        for (const item of value) {
+          collectChainBlocks(item, blocks);
+        }
+
+        return blocks;
+      }
+
+      const hasTransactions =
+        Array.isArray(value.transactions) ||
+        Array.isArray(value.txs);
+
+      const hasHeight =
+        value.height !== undefined ||
+        value.index !== undefined ||
+        value.block_height !== undefined ||
+        value.number !== undefined;
+
+      if (hasTransactions && hasHeight) {
+        blocks.push(value);
+      }
+
+      for (const key of Object.keys(value)) {
+        const child = value[key];
+
+        if (
+          child &&
+          typeof child === "object"
+        ) {
+          collectChainBlocks(child, blocks);
+        }
+      }
+
+      return blocks;
     }
 
-    async function fetchJsonCandidate(path) {
+    function extractBlockHeight(tx, allBlocks) {
+      if (tx.block_height !== undefined) {
+        return tx.block_height;
+      }
+
+      if (tx.height !== undefined) {
+        return tx.height;
+      }
+
+      if (tx.block !== undefined) {
+        if (
+          typeof tx.block === "object" &&
+          tx.block !== null
+        ) {
+          return (
+            tx.block.height ??
+            tx.block.index ??
+            tx.block.number ??
+            "—"
+          );
+        }
+
+        return tx.block;
+      }
+
+      return "—";
+    }
+
+    async function fetchExplorer() {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
+
+      const timeout = setTimeout(
+        () => controller.abort(),
+        15000
+      );
 
       try {
-        const res = await fetch(NODE + path, {
+        const response = await fetch(EXPLORER_API, {
           method: "GET",
-          headers: { "Accept": "application/json" },
+          headers: {
+            "Accept": "application/json,text/plain,*/*"
+          },
           cache: "no-store",
           signal: controller.signal
         });
 
-        if (!res.ok) {
-          throw new Error(`${path} returned HTTP ${res.status}`);
+        if (!response.ok) {
+          throw new Error(
+            "Node returned HTTP " + response.status
+          );
         }
 
-        const contentType = res.headers.get("content-type") || "";
-        if (!contentType.includes("json")) {
-          throw new Error(`${path} returned non-JSON data`);
+        const text = await response.text();
+
+        /*
+         * Some deployments return JSON with an unusual content type.
+         * Therefore we parse the body ourselves instead of requiring
+         * application/json.
+         */
+        try {
+          return JSON.parse(text);
+        } catch {
+          throw new Error(
+            "The node returned script/text instead of JSON."
+          );
         }
 
-        return await res.json();
       } finally {
         clearTimeout(timeout);
       }
-    }
-
-    async function getChainData() {
-      const errors = [];
-
-      for (const path of API_CANDIDATES) {
-        try {
-          const data = await fetchJsonCandidate(path);
-          const blocks = extractBlocks(data);
-
-          if (blocks.length > 0) {
-            return { data, blocks, endpoint: path };
-          }
-        } catch (err) {
-          errors.push(err.message);
-        }
-      }
-
-      throw new Error(
-        "Could not read the NEV369 public node. " +
-        "Tried: " + API_CANDIDATES.join(", ") +
-        ". " + errors.join(" | ")
-      );
     }
 
     async function loadMemos() {
@@ -370,86 +562,187 @@
       refreshBtn.disabled = true;
 
       try {
-        const result = await getChainData();
-        const blocks = result.blocks.map(normalizeBlock);
+        const data = await fetchExplorer();
+
+        const transactions =
+          findMemoTransactions(data);
+
+        const blocks =
+          collectChainBlocks(data);
+
         const memos = [];
 
-        for (const block of blocks) {
-          for (const tx of block.transactions) {
-            const memo = String(
-              tx.payload_memo ??
-              tx.memo ??
-              tx.data?.payload_memo ??
-              ""
-            ).trim();
+        for (const tx of transactions) {
+          const memo = String(
+            tx.payload_memo ?? ""
+          ).trim();
 
-            if (!memo) continue;
+          if (!memo) {
+            continue;
+          }
 
-            // Mining reward transactions aren't useful as whispers.
-            const sender = String(tx.sender ?? tx.from ?? "");
-            const isReward =
-              sender === "NETWORK_REWARD" ||
-              memo.toLowerCase().includes("block reward") ||
-              memo.toLowerCase().includes("mining reward") ||
-              memo.startsWith("Block ");
+          const sender =
+            tx.sender ??
+            tx.from ??
+            "";
 
-            if (isReward) continue;
+          const recipient =
+            tx.recipient ??
+            tx.to ??
+            "";
 
-            memos.push({
-              height: block.height,
-              timestamp: tx.timestamp ?? block.timestamp,
-              from: tx.sender ?? tx.from,
-              to: tx.recipient ?? tx.to,
-              amount: tx.amount,
-              memo
-            });
+          const isReward =
+            String(sender) === "NETWORK_REWARD" ||
+            memo.toLowerCase().includes("block reward") ||
+            memo.toLowerCase().includes("mining reward") ||
+            memo.startsWith("Block ");
+
+          if (isReward) {
+            continue;
+          }
+
+          memos.push({
+            height: extractBlockHeight(tx, blocks),
+
+            timestamp:
+              tx.timestamp ??
+              tx.time ??
+              tx.created_at ??
+              null,
+
+            from: sender,
+            to: recipient,
+
+            amount:
+              tx.amount ??
+              tx.value ??
+              null,
+
+            memo
+          });
+        }
+
+        /*
+         * Remove duplicate transactions in case the recursive
+         * parser encountered the same object through multiple paths.
+         */
+        const unique = [];
+        const seen = new Set();
+
+        for (const memo of memos) {
+          const key = JSON.stringify([
+            memo.height,
+            memo.timestamp,
+            memo.from,
+            memo.to,
+            memo.memo
+          ]);
+
+          if (!seen.has(key)) {
+            seen.add(key);
+            unique.push(memo);
           }
         }
 
-        memos.sort((a, b) => Number(b.timestamp || 0) - Number(a.timestamp || 0));
+        unique.sort(
+          (a, b) =>
+            Number(b.timestamp || 0) -
+            Number(a.timestamp || 0)
+        );
 
-        if (memos.length === 0) {
+        if (unique.length === 0) {
           feed.innerHTML = `
             <div class="empty">
-              The chain is quiet right now.<br><br>
+              The chain is connected, but there are
+              currently no public whispers to display.
+              <br><br>
               Be the first to leave a whisper.
-            </div>`;
+            </div>
+          `;
+
           countEl.textContent = "";
         } else {
-          feed.innerHTML = memos.map(m => `
-            <div class="memo">
-              <div class="meta">
-                <span>Block #${escapeHtml(m.height)} · ${formatTime(m.timestamp)}</span>
-                <span class="amount">${escapeHtml(formatAmount(m.amount))}</span>
-              </div>
-              <div class="meta" style="margin-bottom: 10px;">
-                <span>${escapeHtml(shortAddr(m.from))} → ${escapeHtml(shortAddr(m.to))}</span>
-              </div>
-              <div class="memo-text">${escapeHtml(m.memo)}</div>
-            </div>
-          `).join("");
+          feed.innerHTML = unique
+            .map(m => `
+              <div class="memo">
 
-          countEl.textContent = `${memos.length} whispers`;
+                <div class="meta">
+                  <span>
+                    Block #${escapeHtml(m.height)}
+                    · ${formatTime(m.timestamp)}
+                  </span>
+
+                  <span class="amount">
+                    ${escapeHtml(formatAmount(m.amount))}
+                  </span>
+                </div>
+
+                <div
+                  class="meta"
+                  style="margin-bottom: 10px;"
+                >
+                  <span>
+                    ${escapeHtml(shortAddr(m.from))}
+                    →
+                    ${escapeHtml(shortAddr(m.to))}
+                  </span>
+                </div>
+
+                <div class="memo-text">
+                  ${escapeHtml(m.memo)}
+                </div>
+
+              </div>
+            `)
+            .join("");
+
+          countEl.textContent =
+            unique.length + " whispers";
         }
 
-        status.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+        status.textContent =
+          "Connected · Updated " +
+          new Date().toLocaleTimeString();
+
         liveDot.classList.remove("error");
-      } catch (err) {
-        console.error("NevWhisper node error:", err);
+
+      } catch (error) {
+        console.error(
+          "NevWhisper connection error:",
+          error
+        );
 
         feed.innerHTML = `
           <div class="error-box">
-            <strong>Failed to hear the chain.</strong><br><br>
-            ${escapeHtml(err.message)}
+
+            <strong>
+              Failed to hear the chain.
+            </strong>
+
             <br><br>
-            <a href="https://q-lock-ecosystem.com/explorer/" target="_blank" rel="noopener">
+
+            ${escapeHtml(error.message)}
+
+            <br><br>
+
+            <a
+              href="https://q-lock-ecosystem.com/explorer"
+              target="_blank"
+              rel="noopener"
+            >
               Open the official NEV369 Explorer
             </a>
-          </div>`;
 
-        status.textContent = "Connection error";
+          </div>
+        `;
+
+        status.textContent =
+          "Connection error";
+
         countEl.textContent = "";
+
         liveDot.classList.add("error");
+
       } finally {
         refreshBtn.disabled = false;
       }
@@ -458,12 +751,22 @@
     function setupAutoRefresh() {
       clearInterval(autoTimer);
 
-      if (document.getElementById("autoRefresh").checked) {
-        autoTimer = setInterval(loadMemos, REFRESH_MS);
+      if (
+        document.getElementById("autoRefresh").checked
+      ) {
+        autoTimer = setInterval(
+          loadMemos,
+          REFRESH_MS
+        );
       }
     }
 
-    document.getElementById("autoRefresh").addEventListener("change", setupAutoRefresh);
+    document
+      .getElementById("autoRefresh")
+      .addEventListener(
+        "change",
+        setupAutoRefresh
+      );
 
     loadMemos();
     setupAutoRefresh();

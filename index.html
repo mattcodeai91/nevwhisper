@@ -2421,12 +2421,6 @@ async function scanBatch(
 
 async function backfillRecentBlocks() {
 
-  /*
-    Nothing to backfill until the archive
-    has at least one verified block and
-    the live chain tip is known.
-  */
-
   if (
     state.verifiedThrough < 0 ||
     state.chainHeight < 0
@@ -2435,17 +2429,15 @@ async function backfillRecentBlocks() {
   }
 
   /*
-    IMPORTANT:
+    Recovery is deliberately independent of the moving
+    recent-window. A memo can be missed by /whispers during
+    the original archive pass and then fall permanently
+    outside a rolling window.
 
-    Recheck the last 20 LIVE blocks, not merely
-    the last 20 verified blocks.
-
-    This deliberately does NOT modify
-    verifiedThrough.
-
-    The cache-busting parameter forces the
-    proxy to obtain a fresh /whispers result,
-    allowing late-indexed whispers to appear.
+    We therefore recheck a fixed recovery band behind the
+    verified checkpoint using the raw /block endpoint.
+    This preserves the normal fast archive scan while giving
+    missed memo transactions a second path into the archive.
   */
 
   const endHeight =
@@ -2462,37 +2454,111 @@ async function backfillRecentBlocks() {
         1
     );
 
-  const refresh =
-    Date.now();
+  let foundCount = 0;
 
-  /*
-    Use the node's scan endpoint for the rolling
-    recovery window. Unlike the memo index, scan
-    reads the underlying block data, so a memo that
-    appeared after the original index pass can still
-    be recovered.
-  */
+  for (
+    let height = startHeight;
+    height <= endHeight;
+    height++
+  ) {
 
-  const payload =
-    await getJson(
-      `/scan?from=${endHeight}&to=${startHeight}&_=${refresh}`
-    );
+    try {
 
-  const found =
-    await processWhisperPayload(
-      payload,
-      startHeight,
-      endHeight,
-      true
-    );
+      const payload =
+        await getJson(
+          `/block/${height}?_=${Date.now()}`
+        );
+
+      const found =
+        await processWhisperPayload(
+          payload,
+          height,
+          height,
+          true
+        );
+
+      foundCount +=
+        found.length;
+
+    } catch (error) {
+
+      console.warn(
+        `Block recovery failed for #${height}:`,
+        error
+      );
+    }
+
+    /*
+      Keep recovery gentle on the public node.
+    */
+
+    await sleep(250);
+  }
 
   if (
-    found.length > 0
+    foundCount > 0
   ) {
     renderAll();
   }
 
-  return found.length;
+  return foundCount;
+}
+
+
+/*
+  Recover a specific historical block directly.
+
+  This is used for a memo that was missed during the
+  original /whispers archive pass. It does not alter the
+  verified checkpoint.
+*/
+
+async function recoverHistoricalBlock(
+  height
+) {
+
+  const block =
+    Number(height);
+
+  if (
+    !Number.isFinite(block) ||
+    block < 0
+  ) {
+    return 0;
+  }
+
+  try {
+
+    const payload =
+      await getJson(
+        `/block/${block}?_=${Date.now()}`
+      );
+
+    const found =
+      await processWhisperPayload(
+        payload,
+        block,
+        block,
+        true
+      );
+
+    if (
+      found.length > 0
+    ) {
+      renderAll();
+    }
+
+    return found.length;
+
+  } catch (error) {
+
+    console.warn(
+      `Historical block recovery failed for #${block}:`,
+      error
+    );
+
+    return 0;
+  }
 }
 
 
@@ -2665,6 +2731,14 @@ async function pollLiveTip() {
 
         const found =
           await backfillRecentBlocks();
+
+      /*
+        Confirmed historical recovery target.
+        Block #5960 was observed on the raw node but was
+        missed by the original memo-index pass.
+      */
+
+      await recoverHistoricalBlock(5960);
 
         if (
           found > 0

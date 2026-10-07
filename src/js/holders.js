@@ -3,10 +3,14 @@
  * This module is intentionally read-only: scanning and publishing remain CI responsibilities.
  */
 const REPORT = "https://raw.githubusercontent.com/mattcodeai91/nevwhisper/holder-scan-data/top-holders.json";
+const NODE_INFO = "https://q-lock-ecosystem.com/node/info";
 const EXPLORER = "https://q-lock-ecosystem.com/explorer/";
 
 const els = {
   status: document.getElementById("holderStatus"),
+  statusLabel: document.getElementById("holderStatusLabel"),
+  statusDetail: document.getElementById("holderStatusDetail"),
+  countdown: document.getElementById("holderCountdown"),
   updated: document.getElementById("holderUpdated"),
   summary: document.getElementById("holderSummary"),
   list: document.getElementById("holderList"),
@@ -37,7 +41,17 @@ function addressUrl(address) {
   return EXPLORER + "#/address/" + encodeURIComponent(address);
 }
 
-function render(report) {
+function setHolderStatus(kind, label, detail) {
+  if (els.statusLabel) els.statusLabel.textContent = label;
+  if (els.statusDetail) els.statusDetail.textContent = detail;
+  if (els.status) {
+    els.status.className = "holder-status " + kind;
+    els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>' + escapeHtml(label) + '</span>';
+  }
+  if (els.countdown) els.countdown.textContent = "Live sync every 15 seconds";
+}
+
+function render(report, liveHeight = null) {
   const diagnostics = report.diagnostics || {};
   const maxSupply = diagnostics.maxSupplyNEV || "369369369";
   const top = Array.isArray(report.top10) ? report.top10 : [];
@@ -65,7 +79,17 @@ function render(report) {
   }).join("") : '<div class="empty">No positive holders in the persisted report.</div>';
 
   if (els.note) els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
-  if (els.status) { els.status.className = "holder-status live"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Live · Scanned through #' + formatNumber(report.chainHeight) + "</span>"; }
+  const scanned = Number(report.chainHeight);
+  const live = Number(liveHeight);
+  if (Number.isFinite(live) && Number.isFinite(scanned)) {
+    if (scanned >= live) {
+      setHolderStatus("live", "Chain current", "Verified through #" + formatNumber(scanned));
+    } else {
+      setHolderStatus("syncing", "Chain catching up", "Verified through #" + formatNumber(scanned) + " · Live #" + formatNumber(live));
+    }
+  } else {
+    setHolderStatus("syncing", "Syncing", "Live chain height unavailable");
+  }
 
   els.list.querySelectorAll("[data-copy-address]").forEach(button => {
     button.addEventListener("click", async () => {
@@ -85,18 +109,28 @@ function render(report) {
 
 async function load() {
   try {
-    const response = await fetch(REPORT + "?t=" + Date.now(), { cache: "no-store" });
-    if (!response.ok) throw new Error("HTTP " + response.status);
-    const report = await response.json();
-    render(report);
+    setHolderStatus("syncing", "Syncing", "Checking latest holder scan…");
+    const [reportResponse, infoResponse] = await Promise.all([
+      fetch(REPORT + "?t=" + Date.now(), { cache: "no-store" }),
+      fetch(NODE_INFO + "?t=" + Date.now(), { cache: "no-store" })
+    ]);
+    if (!reportResponse.ok) throw new Error("Report HTTP " + reportResponse.status);
+    if (!infoResponse.ok) throw new Error("Node info HTTP " + infoResponse.status);
+    const report = await reportResponse.json();
+    const info = await infoResponse.json();
+    const liveHeight = Number(info.chain_height ?? info.height);
+    render(report, liveHeight);
   } catch (error) {
     console.error("Holder report load failed:", error);
-    if (els.status) { els.status.className = "holder-status failed"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Failed · Retrying…</span>'; }
+    setHolderStatus("failed", "Failed", "Unable to verify holder scan against the live chain");
   }
 }
 
 export function initHoldersView() {
-  if (els.status) { els.status.className = "holder-status syncing"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Syncing…</span>'; }
+  setHolderStatus("syncing", "Syncing", "Checking latest holder scan…");
   load();
-  setInterval(() => { if (els.status) { els.status.className = "holder-status syncing"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Syncing…</span>'; } load(); }, 15000);
+  setInterval(() => {
+    setHolderStatus("syncing", "Syncing", "Checking latest holder scan…");
+    load();
+  }, 15000);
 }

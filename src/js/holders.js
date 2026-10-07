@@ -7,6 +7,10 @@ const NODE = "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 const NODE_INFO = NODE + "/info";
 const EXPLORER = "https://q-lock-ecosystem.com/explorer/";
 const REQUEST_DELAY_MS = 900;
+const HISTORICAL_REQUEST_DELAY_MS = 100;
+const HISTORICAL_RENDER_EVERY_BLOCKS = 5;
+const HISTORICAL_SAVE_EVERY_BLOCKS = 50;
+const HISTORICAL_CACHE_KEY = "nevwhisper-holder-rebuild-v2";
 const REWARD_ACCOUNTING_VERSION = 2;
 const BLOCK_REWARD_BASE_UNITS = 36900000000n;
 
@@ -14,6 +18,9 @@ let liveBalances = null;
 let liveScanHeight = -1;
 let liveReportHeight = -1;
 let liveScanRunning = false;
+
+let historicalBalances = null;
+let historicalScanHeight = -1;
 
 const els = {
   status: document.getElementById("holderStatus"),
@@ -146,6 +153,213 @@ function setHolderStatus(kind, label, detail) {
   }
 }
 
+function bindCopyButtons() {
+  if (!els.list) return;
+
+}
+
+function holderRowsHtml(top, maxSupply, emptyMessage) {
+  if (!top.length) {
+    return '<div class="empty">' + escapeHtml(emptyMessage) + '</div>';
+  }
+
+  return top.map(holder => {
+    const address = String(holder.address || "");
+    const tx = escapeHtml(address);
+
+    return '<article class="holder-row">' +
+      '<div class="holder-rank">#' + escapeHtml(holder.rank) + '</div>' +
+      '<div><div class="holder-address" title="' + tx + '">' +
+      escapeHtml(shorten(address)) + '</div>' +
+      '<div class="holder-actions">' +
+      '<a class="holder-action" href="' + escapeHtml(addressUrl(address)) +
+      '" target="_blank" rel="noopener noreferrer">VIEW ↗</a>' +
+      '<button class="holder-action" type="button" data-copy-address="' +
+      tx + '">COPY</button>' +
+      '</div></div>' +
+      '<div class="holder-balance"><div class="holder-amount">' +
+      escapeHtml(holder.balanceNEV) + ' NEV</div>' +
+      '<div class="holder-share">' +
+      escapeHtml(percentage(holder.balanceNEV, maxSupply)) +
+      ' of max supply</div></div>' +
+      '</article>';
+  }).join("");
+}
+
+function saveHistoricalCheckpoint() {
+  if (!(historicalBalances instanceof Map) || historicalScanHeight < 0) return;
+
+  try {
+    const payload = {
+      version: REWARD_ACCOUNTING_VERSION,
+      height: historicalScanHeight,
+      balances: Object.fromEntries(
+        Array.from(historicalBalances.entries()).map(([address, balance]) => [
+          address,
+          balance.toString()
+        ])
+      )
+    };
+
+    localStorage.setItem(HISTORICAL_CACHE_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn("Could not persist holder rebuild checkpoint:", error);
+  }
+}
+
+function restoreHistoricalCheckpoint(liveHeight) {
+  if (historicalBalances instanceof Map) return;
+
+  try {
+    const raw = localStorage.getItem(HISTORICAL_CACHE_KEY);
+    if (!raw) return;
+
+    const saved = JSON.parse(raw);
+    const height = Number(saved?.height);
+
+    if (
+      Number(saved?.version) !== REWARD_ACCOUNTING_VERSION ||
+      !Number.isInteger(height) ||
+      height < 0 ||
+      (Number.isInteger(liveHeight) && height > liveHeight) ||
+      !saved?.balances ||
+      typeof saved.balances !== "object"
+    ) {
+      localStorage.removeItem(HISTORICAL_CACHE_KEY);
+      return;
+    }
+
+    historicalBalances = new Map(
+      Object.entries(saved.balances).map(([address, value]) => [
+        address,
+        BigInt(value)
+      ])
+    );
+    historicalScanHeight = height;
+  } catch (error) {
+    console.warn("Could not restore holder rebuild checkpoint:", error);
+    localStorage.removeItem(HISTORICAL_CACHE_KEY);
+  }
+}
+
+function renderHistoricalProgress(liveHeight) {
+  const live = Number(liveHeight);
+  const positive = Array.from(historicalBalances || new Map())
+    .filter(([, balance]) => balance > 0n)
+    .sort((a, b) => b[1] > a[1] ? 1 : b[1] < a[1] ? -1 : 0);
+
+  const totalPositive = positive.reduce((sum, [, balance]) => sum + balance, 0n);
+  const top = positive.slice(0, 10).map(([address, balance], index) => ({
+    rank: index + 1,
+    address,
+    balanceBaseUnits: balance.toString(),
+    balanceNEV: formatNev(balance)
+  }));
+
+  if (els.updated) {
+    els.updated.textContent =
+      "Live rebuild #" + formatNumber(Math.max(0, historicalScanHeight)) +
+      (Number.isFinite(live) ? " / #" + formatNumber(live) : "");
+  }
+
+  if (els.summary) {
+    els.summary.innerHTML = [
+      ["Chain scanned", historicalScanHeight >= 0 ? "#" + formatNumber(historicalScanHeight) : "#0"],
+      ["Holders", formatNumber(positive.length)],
+      ["Circulating Supply", formatNev(totalPositive) + " NEV"]
+    ].map(([label, value]) =>
+      '<div class="holder-card"><div class="holder-label">' +
+      escapeHtml(label) + '</div><div class="holder-value">' +
+      escapeHtml(value) + '</div></div>'
+    ).join("");
+  }
+
+  if (els.list) {
+    els.list.innerHTML = holderRowsHtml(
+      top,
+      "369369369",
+      "Scanning genesis blocks… holder addresses will appear here as rewards are verified."
+    );
+    bindCopyButtons();
+  }
+
+  if (els.note) {
+    els.note.textContent =
+      "Live holder rebuild from Genesis #0. Balances above are recalculated from verified blocks and update continuously while the scan runs.";
+  }
+
+  const nextBlock = Math.max(0, historicalScanHeight + 1);
+  setHolderStatus(
+    historicalScanHeight >= live && Number.isFinite(live) ? "live" : "syncing",
+    historicalScanHeight >= live && Number.isFinite(live)
+      ? "Chain current"
+      : "Historical rebuild",
+    historicalScanHeight >= live && Number.isFinite(live)
+      ? "Verified through #" + formatNumber(historicalScanHeight)
+      : "Scanning block #" + formatNumber(nextBlock) +
+        (Number.isFinite(live) ? " of #" + formatNumber(live) : "")
+  );
+}
+
+async function scanHistoricalBalances(liveHeight) {
+  const live = Number(liveHeight);
+  if (!Number.isInteger(live) || live < 0) {
+    throw new Error("Live chain height unavailable for historical holder rebuild");
+  }
+
+  restoreHistoricalCheckpoint(live);
+
+  if (!(historicalBalances instanceof Map)) {
+    historicalBalances = new Map();
+    historicalScanHeight = -1;
+  }
+
+  renderHistoricalProgress(live);
+
+  for (let height = historicalScanHeight + 1; height <= live; height++) {
+    const response = await fetch(
+      NODE + "/block/" + height + "?t=" + Date.now(),
+      { cache: "no-store", headers: { accept: "application/json" } }
+    );
+
+    if (!response.ok) {
+      throw new Error("Historical block #" + height + " HTTP " + response.status);
+    }
+
+    const block = await response.json();
+    const transactions = Array.isArray(block?.transactions)
+      ? block.transactions
+      : [];
+
+    for (const transaction of transactions) {
+      applyTransaction(historicalBalances, transaction, block);
+    }
+
+    historicalScanHeight = height;
+
+    if (
+      height === 0 ||
+      height === live ||
+      height % HISTORICAL_RENDER_EVERY_BLOCKS === 0
+    ) {
+      renderHistoricalProgress(live);
+    }
+
+    if (
+      height === live ||
+      height % HISTORICAL_SAVE_EVERY_BLOCKS === 0
+    ) {
+      saveHistoricalCheckpoint();
+    }
+
+    if (height < live) {
+      await sleep(HISTORICAL_REQUEST_DELAY_MS);
+    }
+  }
+
+  renderHistoricalProgress(live);
+}
+
 function hasValidRewardAccounting(report) {
   const diagnostics = report?.diagnostics || {};
   const version = Number(diagnostics.rewardAccountingVersion || 0);
@@ -164,45 +378,16 @@ function hasValidRewardAccounting(report) {
   }
 }
 
-function renderHistoricalRebuild(report, liveHeight) {
-  const reportHeight = Number(report?.chainHeight);
-  const live = Number(liveHeight);
-
-  if (els.updated) {
-    els.updated.textContent = report?.generatedAt
-      ? "Last legacy snapshot " + new Date(report.generatedAt).toLocaleString()
-      : "Historical rebuild in progress";
+async function renderHistoricalRebuild(report, liveHeight) {
+  if (els.updated && report?.generatedAt && historicalScanHeight < 0) {
+    els.updated.textContent =
+      "Starting live rebuild · legacy snapshot " +
+      new Date(report.generatedAt).toLocaleString();
   }
 
-  if (els.summary) {
-    els.summary.innerHTML = [
-      ["Chain scanned", Number.isFinite(reportHeight) ? "#" + formatNumber(reportHeight) : "—"],
-      ["Holders", "Rebuilding"],
-      ["Circulating Supply", "Rebuilding"]
-    ].map(([label, value]) =>
-      '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) +
-      '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>'
-    ).join("");
-  }
-
-  if (els.list) {
-    els.list.innerHTML =
-      '<div class="empty">Rebuilding holder balances from genesis block #0 with the 369 NEV protocol reward. Legacy totals are hidden until the full historical snapshot is valid.</div>';
-  }
-
-  if (els.note) {
-    els.note.textContent =
-      "Historical holder index rebuild: Genesis #0 → live chain. The previous snapshot used incorrect NETWORK_REWARD amounts and is not being shown.";
-  }
-
-  setHolderStatus(
-    "syncing",
-    "Historical rebuild",
-    Number.isFinite(live)
-      ? "Rebuilding Genesis #0 → live #" + formatNumber(live)
-      : "Rebuilding Genesis #0 → live chain"
-  );
+  await scanHistoricalBalances(liveHeight);
 }
+
 
 function render(report, liveHeight = null) {
   const diagnostics = report.diagnostics || {};
@@ -246,20 +431,12 @@ function render(report, liveHeight = null) {
     ["Circulating Supply", (diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
   ].map(([label, value]) => '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) + '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>').join("");
 
-  els.list.innerHTML = top.length ? top.map(holder => {
-    const address = String(holder.address || "");
-    const tx = escapeHtml(address);
-    return '<article class="holder-row">' +
-      '<div class="holder-rank">#' + escapeHtml(holder.rank) + '</div>' +
-      '<div><div class="holder-address" title="' + tx + '">' + escapeHtml(shorten(address)) + '</div>' +
-      '<div class="holder-actions">' +
-      '<a class="holder-action" href="' + escapeHtml(addressUrl(address)) + '" target="_blank" rel="noopener noreferrer">VIEW ↗</a>' +
-      '<button class="holder-action" type="button" data-copy-address="' + tx + '">COPY</button>' +
-      '</div></div>' +
-      '<div class="holder-balance"><div class="holder-amount">' + escapeHtml(holder.balanceNEV) + ' NEV</div>' +
-      '<div class="holder-share">' + escapeHtml(percentage(holder.balanceNEV, maxSupply)) + ' of max supply</div></div>' +
-      '</article>';
-  }).join("") : '<div class="empty">No positive holders in the persisted report.</div>';
+  els.list.innerHTML = holderRowsHtml(
+    top,
+    maxSupply,
+    "No positive holders in the persisted report."
+  );
+  bindCopyButtons();
 
   if (els.note) els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
   const scanned = Number(scannedHeight);
@@ -313,8 +490,14 @@ async function load() {
       liveBalances = null;
       liveScanHeight = -1;
       liveReportHeight = -1;
-      renderHistoricalRebuild(report, liveHeight);
+      await renderHistoricalRebuild(report, liveHeight);
       return;
+    }
+
+    if (historicalBalances instanceof Map) {
+      historicalBalances = null;
+      historicalScanHeight = -1;
+      localStorage.removeItem(HISTORICAL_CACHE_KEY);
     }
 
     if (
@@ -362,6 +545,14 @@ async function load() {
         }
 
         liveScanHeight = height;
+
+        render(report, liveHeight);
+        setHolderStatus(
+          "syncing",
+          "Scanning",
+          "Verified #" + formatNumber(height) + " · Live #" + formatNumber(liveHeight)
+        );
+
         if (height < liveHeight) {
           await sleep(REQUEST_DELAY_MS);
         }

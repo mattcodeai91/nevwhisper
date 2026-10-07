@@ -12,6 +12,11 @@
 <body>
 
 <div class="container">
+  <nav class="tabbar" aria-label="NevWhisper sections">
+    <button class="tab active" type="button" data-tab="memo">Memo Reader</button>
+    <button class="tab" type="button" data-tab="holders">Top Holders</button>
+  </nav>
+
 
   <header class="header">
     <div class="brand">
@@ -166,6 +171,18 @@
 
   </div>
 
+
+  <section id="holdersView" class="holders-view" aria-labelledby="holdersTitle">
+    <div class="holder-status" id="holderStatus">Loading live holder report…</div>
+    <div class="section-heading">
+      <div id="holdersTitle" class="section-title">Top 10 Holders</div>
+      <div class="section-count" id="holderUpdated">—</div>
+    </div>
+    <div class="holder-intro">Chain-derived balances from persisted NEV369 scan data. No third-party rich-list feed.</div>
+    <div id="holderSummary" class="holder-summary"></div>
+    <div id="holderList" class="holder-list"></div>
+    <div id="holderNote" class="holder-note"></div>
+  </section>
   <div class="footer">
     NEV369 · NevWhisper · Genesis → Live
   </div>

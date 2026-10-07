@@ -1,0 +1,22 @@
+name: Diagnose NEV369 block 6729
+
+on:
+  push:
+    paths:
+      - ".github/workflows/diagnose-block-6729.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch raw block 6729
+        run: |
+          set -euo pipefail
+          echo "=== proxy block 6729 ==="
+          curl -fsSL --retry 3 --retry-delay 2             "https://nevwhisper-proxy.mattcodeai91.workers.dev/block/6729"             | python -m json.tool
+          echo
+          echo "=== direct node block 6729 ==="
+          curl -fsSL --retry 3 --retry-delay 2             "https://q-lock-ecosystem.com/node/block/6729"             | python -m json.tool

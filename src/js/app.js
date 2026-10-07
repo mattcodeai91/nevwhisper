@@ -2665,9 +2665,6 @@ function renderAll() {
   renderArchitect();
 
   renderWhispers();
-
-  els.countdown.textContent =
-    "Live sync every 15 seconds";
 }
 
 

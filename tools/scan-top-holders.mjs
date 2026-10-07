@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const NODE = process.env.NEV369_NODE || "https://q-lock-ecosystem.com/node";
-const CONCURRENCY = Number(process.env.CONCURRENCY || 2);
+const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
 let nextRequestAt = 0;
 const RETRIES = 7;
 const RETRY_BASE_MS = 750;
@@ -32,7 +32,7 @@ function nev(baseUnits) {
 async function paceRequests() {
   const now = Date.now();
   const wait = Math.max(0, nextRequestAt - now);
-  nextRequestAt = Math.max(now, nextRequestAt) + 750;
+  nextRequestAt = Math.max(now, nextRequestAt) + 350;
   if (wait > 0) await sleep(wait);
 }
 

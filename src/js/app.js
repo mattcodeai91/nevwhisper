@@ -1,3 +1,5 @@
+import { initHoldersView } from "./holders.js";
+
 /* NevWhisper main application.
  * Extracted from the original production page without changing scanner logic.
  * UI, IndexedDB archive, raw-block recovery, and live polling remain here.
@@ -2915,6 +2917,22 @@ window.NevWhisperSelfTest =
    INITIALISE
 ================================================== */
 
+function initTabs() {
+  const tabs = document.querySelectorAll("[data-tab]");
+  const memoSections = Array.from(document.querySelectorAll(".container > :not(.tabbar):not(.holders-view):not(.footer)"));
+  const holders = document.getElementById("holdersView");
+
+  function selectTab(name) {
+    const holderMode = name === "holders";
+    tabs.forEach(tab => tab.classList.toggle("active", tab.dataset.tab === name));
+    memoSections.forEach(section => { section.style.display = holderMode ? "none" : ""; });
+    holders.classList.toggle("active", holderMode);
+  }
+
+  tabs.forEach(tab => tab.addEventListener("click", () => selectTab(tab.dataset.tab)));
+  selectTab("memo");
+}
+
 async function init() {
 
   if (SELF_TEST_MODE) {
@@ -3076,4 +3094,6 @@ async function init() {
 }
 
 
+initTabs();
+initHoldersView();
 init();

@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 
 const NODE = process.env.NEV369_NODE || "https://q-lock-ecosystem.com/node";
-const CONCURRENCY = Number(process.env.CONCURRENCY || 4);
-let nextRequestAt = 0;
-const RETRIES = 7;
-const RETRY_BASE_MS = 750;
+const START_HEIGHT = Number(process.env.START_HEIGHT ?? 0);
+const END_HEIGHT = Number(process.env.END_HEIGHT ?? START_HEIGHT + 199);
+const CONCURRENCY = Number(process.env.CONCURRENCY || 1);
+const REQUEST_DELAY_MS = Number(process.env.REQUEST_DELAY_MS || 900);
+const RETRIES = 10;
+const RETRY_BASE_MS = 2000;
 const SATOSHIS_PER_NEV = 100000000n;
 
 function sleep(ms) {
@@ -13,26 +15,15 @@ function sleep(ms) {
 
 function asBigInt(value) {
   if (value === null || value === undefined || value === "") return 0n;
-  if (typeof value === "bigint") return value;
   const text = String(value).trim();
-  if (!/^-?\d+$/.test(text)) {
-    throw new Error(`Non-integer amount: ${text}`);
-  }
+  if (!/^-?\d+$/.test(text)) throw new Error(`Non-integer amount: ${text}`);
   return BigInt(text);
-}
-
-function nev(baseUnits) {
-  const negative = baseUnits < 0n;
-  const n = negative ? -baseUnits : baseUnits;
-  const whole = n / SATOSHIS_PER_NEV;
-  const frac = (n % SATOSHIS_PER_NEV).toString().padStart(8, "0").replace(/0+$/, "");
-  return (negative ? "-" : "") + whole.toString() + (frac ? "." + frac : "");
 }
 
 async function paceRequests() {
   const now = Date.now();
-  const wait = Math.max(0, nextRequestAt - now);
-  nextRequestAt = Math.max(now, nextRequestAt) + 350;
+  const wait = Math.max(0, (globalThis.nextRequestAt || 0) - now);
+  globalThis.nextRequestAt = Math.max(now, globalThis.nextRequestAt || 0) + REQUEST_DELAY_MS;
   if (wait > 0) await sleep(wait);
 }
 
@@ -41,49 +32,41 @@ async function getJson(url) {
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     try {
       await paceRequests();
-      const response = await fetch(url, {
-        headers: { "accept": "application/json" }
-      });
+      const response = await fetch(url, { headers: { accept: "application/json" } });
       if (response.ok) return await response.json();
-
-      const retryable = [408, 425, 429, 500, 502, 503, 504].includes(response.status);
       const body = await response.text().catch(() => "");
-      if (!retryable) throw new Error(`${response.status} ${body.slice(0, 300)}`);
+      const retryable = [408, 425, 429, 500, 502, 503, 504].includes(response.status);
       lastError = new Error(`${response.status} ${body.slice(0, 300)}`);
+      if (!retryable) throw lastError;
     } catch (error) {
       lastError = error;
     }
-    await sleep(Math.max(1000, RETRY_BASE_MS * Math.min(16, 2 ** attempt)));
+    const backoff = Math.min(60000, RETRY_BASE_MS * Math.min(16, 2 ** attempt));
+    console.log(`retrying after error: ${lastError.message.slice(0, 120)}; wait=${backoff}ms`);
+    await sleep(backoff);
   }
   throw lastError;
 }
 
 function transactionList(block) {
-  if (!block || !Array.isArray(block.transactions)) return [];
-  return block.transactions;
+  return block && Array.isArray(block.transactions) ? block.transactions : [];
 }
 
 function applyTransaction(balances, transaction, blockHeight, stats) {
   const sender = transaction.sender ? String(transaction.sender) : "";
   const recipient = transaction.recipient ? String(transaction.recipient) : "";
   const amount = asBigInt(transaction.amount ?? transaction.value ?? 0);
-
   if (amount < 0n) throw new Error(`Negative amount at block #${blockHeight}`);
 
   const fee = asBigInt(transaction.fee ?? 0);
   const crownTax = asBigInt(transaction.crown_tax ?? transaction.crownTax ?? 0);
 
-  if (!recipient) {
-    stats.noRecipient++;
-  } else {
-    balances.set(recipient, (balances.get(recipient) || 0n) + amount);
-  }
+  if (recipient) balances.set(recipient, (balances.get(recipient) || 0n) + amount);
+  else stats.noRecipient++;
 
   const rewardSender = sender.toUpperCase() === "NETWORK_REWARD";
-
   if (!rewardSender && sender) {
-    const debit = amount + fee + crownTax;
-    balances.set(sender, (balances.get(sender) || 0n) - debit);
+    balances.set(sender, (balances.get(sender) || 0n) - amount - fee - crownTax);
     stats.transfers++;
   } else if (rewardSender) {
     stats.rewards++;
@@ -95,24 +78,31 @@ function applyTransaction(balances, transaction, blockHeight, stats) {
   stats.fees += fee;
   stats.crownTax += crownTax;
   stats.transactions++;
-
-  if (blockHeight === 0) {
-    stats.genesisTransactions++;
-  }
+  if (blockHeight === 0) stats.genesisTransactions++;
 }
 
 async function main() {
-  const info = await getJson(`${NODE}/info`);
-  const tip = Number(info?.chain_height ?? info?.height);
-  if (!Number.isInteger(tip) || tip < 0) {
-    throw new Error("Could not determine chain height");
+  if (!Number.isInteger(START_HEIGHT) || !Number.isInteger(END_HEIGHT) || START_HEIGHT < 0 || END_HEIGHT < START_HEIGHT) {
+    throw new Error("Invalid START_HEIGHT/END_HEIGHT");
   }
 
+  const info = await getJson(`${NODE}/info`);
+  const tip = Number(info?.chain_height ?? info?.height);
+  if (!Number.isInteger(tip) || tip < 0) throw new Error("Could not determine chain height");
+
+  const effectiveStart = Math.min(START_HEIGHT, tip + 1);
+  const effectiveEnd = Math.min(END_HEIGHT, tip);
+
   console.log(JSON.stringify({
-    event: "start",
+    event: "chunk-start",
     node: NODE,
     chainHeight: tip,
-    concurrency: CONCURRENCY
+    requestedStart: START_HEIGHT,
+    requestedEnd: END_HEIGHT,
+    effectiveStart,
+    effectiveEnd,
+    concurrency: CONCURRENCY,
+    requestDelayMs: REQUEST_DELAY_MS
   }));
 
   const balances = new Map();
@@ -128,74 +118,61 @@ async function main() {
     crownTax: 0n
   };
 
-  let nextHeight = 0;
-  let completed = 0;
-
-  async function worker() {
-    while (true) {
-      const height = nextHeight++;
-      if (height > tip) return;
-
-      const block = await getJson(`${NODE}/block/${height}`);
-      for (const transaction of transactionList(block)) {
-        applyTransaction(balances, transaction, height, stats);
-      }
-
-      completed++;
-      if (completed % 250 === 0 || completed === tip + 1) {
-        console.log(`scanned ${completed}/${tip + 1} blocks`);
+  if (effectiveStart <= effectiveEnd) {
+    let nextHeight = effectiveStart;
+    let completed = 0;
+    async function worker() {
+      while (true) {
+        const height = nextHeight++;
+        if (height > effectiveEnd) return;
+        const block = await getJson(`${NODE}/block/${height}`);
+        for (const transaction of transactionList(block)) applyTransaction(balances, transaction, height, stats);
+        completed++;
+        if (completed % 25 === 0 || completed === effectiveEnd - effectiveStart + 1) {
+          console.log(`chunk ${effectiveStart}-${effectiveEnd}: scanned ${completed}/${effectiveEnd - effectiveStart + 1} blocks`);
+        }
       }
     }
+    await Promise.all(Array.from({ length: Math.min(CONCURRENCY, effectiveEnd - effectiveStart + 1) }, worker));
   }
 
-  await Promise.all(
-    Array.from({ length: Math.min(CONCURRENCY, tip + 1) }, worker)
-  );
-
-  const nonNegative = Array.from(balances.entries())
-    .filter(([, balance]) => balance > 0n)
-    .sort((a, b) => b[1] > a[1] ? 1 : b[1] < a[1] ? -1 : 0);
-
-  const top10 = nonNegative.slice(0, 10).map(([address, balance], index) => ({
-    rank: index + 1,
-    address,
-    balanceBaseUnits: balance.toString(),
-    balanceNEV: nev(balance)
-  }));
-
-  const totalPositive = nonNegative.reduce((sum, [, balance]) => sum + balance, 0n);
-  const negativeCount = Array.from(balances.values()).filter(balance => balance < 0n).length;
+  const serialBalances = {};
+  for (const [address, balance] of balances) serialBalances[address] = balance.toString();
 
   const report = {
     generatedAt: new Date().toISOString(),
     chain: "NEV369",
     chainHeight: tip,
-    top10,
-    diagnostics: {
-      addressesSeen: balances.size,
-      positiveAddresses: nonNegative.length,
-      negativeAddresses: negativeCount,
-      totalPositiveBalanceBaseUnits: totalPositive.toString(),
-      totalPositiveBalanceNEV: nev(totalPositive),
-      maxSupplyNEV: "369369369",
+    startHeight: START_HEIGHT,
+    endHeight: END_HEIGHT,
+    effectiveStart,
+    effectiveEnd,
+    balances: serialBalances,
+    stats: {
       transactions: stats.transactions,
       transfers: stats.transfers,
-      miningRewards: stats.rewards,
-      genesisLikeTransactions: stats.genesisLike,
+      rewards: stats.rewards,
+      genesisLike: stats.genesisLike,
+      noRecipient: stats.noRecipient,
       genesisTransactions: stats.genesisTransactions,
-      transactionsWithoutRecipient: stats.noRecipient,
-      grossTransferredNEV: nev(stats.volume),
-      feesNEV: nev(stats.fees),
-      crownTaxNEV: nev(stats.crownTax)
+      volume: stats.volume.toString(),
+      fees: stats.fees.toString(),
+      crownTax: stats.crownTax.toString()
     }
   };
 
-  console.log("TOP10_JSON_START");
-  console.log(JSON.stringify(report, null, 2));
-  console.log("TOP10_JSON_END");
-
   const fs = await import("node:fs/promises");
-  await fs.writeFile("top-holders.json", JSON.stringify(report, null, 2) + "\n");
+  await fs.mkdir("chunk-output", { recursive: true });
+  await fs.writeFile("chunk-output/chunk.json", JSON.stringify(report, null, 2) + "\n");
+  console.log(JSON.stringify({
+    event: "chunk-complete",
+    startHeight: START_HEIGHT,
+    endHeight: END_HEIGHT,
+    effectiveStart,
+    effectiveEnd,
+    addresses: balances.size,
+    transactions: stats.transactions
+  }));
 }
 
 main().catch(error => {

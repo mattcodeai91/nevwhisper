@@ -779,49 +779,14 @@ button {
   margin-bottom: 18px;
 }
 
-.holder-stats {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.holder-stat {
-  min-width: 0;
-  padding: 15px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-small);
-  background: rgba(18, 16, 29, 0.8);
-}
-
-.holder-stat-label {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.holder-stat-value {
-  margin-top: 7px;
-  color: var(--text);
-  font-size: clamp(20px, 2.25vw, 24px);
-  font-weight: 760;
-  line-height: 1.15;
-  letter-spacing: -0.025em;
-  font-variant-numeric: tabular-nums;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.holder-progress-panel {
-  margin-bottom: 22px;
-}
-
 .holder-section-heading {
   margin-top: 0;
 }
+
+.holder-stat-value {
+  font-variant-numeric: tabular-nums;
+}
+
 
 .holder-list {
   display: grid;
@@ -916,10 +881,6 @@ button {
 }
 
 @media (max-width: 720px) {
-  .holder-stats {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
   .holder-row {
     grid-template-columns: 38px 1fr;
   }
@@ -932,19 +893,6 @@ button {
 }
 
 @media (max-width: 430px) {
-  .holder-stats {
-    grid-template-columns: 1fr 1fr;
-    gap: 7px;
-  }
-
-  .holder-stat {
-    padding: 12px;
-  }
-
-  .holder-stat-value {
-    font-size: 17px;
-  }
-
   .tabbar {
     overflow-x: auto;
   }
@@ -992,7 +940,6 @@ html[data-theme="light"] body {
 }
 
 html[data-theme="light"] .stat,
-html[data-theme="light"] .holder-stat,
 html[data-theme="light"] .holder-row {
   background: rgba(255, 255, 255, 0.82);
 }

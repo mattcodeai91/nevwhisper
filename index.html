@@ -2547,9 +2547,8 @@ async function backfillRecentBlocks() {
         );
 
       const found =
-        await processWhisperPayload(
+        await processBlockPayload(
           payload,
-          height,
           height,
           true
         );

@@ -3623,6 +3623,20 @@ async function init() {
         );
       }
 
+      /*
+        Confirmed historical recovery.
+
+        Block #5960 contains a real user memo in
+        transactions[1]. The normal /whispers archive
+        pass did not expose that transaction, while the
+        raw /block endpoint does.
+
+        Recover it immediately on startup without
+        changing the verified checkpoint.
+      */
+
+      await recoverHistoricalBlock(5960);
+
       setCurrentStatus();
 
       renderAll();

@@ -711,151 +711,6 @@ button {
     grid-template-columns: 70px minmax(0, 1fr);
   }
 }
-
-/* --------------------------------------------------
-   TOP-LEVEL TABS
--------------------------------------------------- */
-
-.tabs {
-  display: flex;
-  gap: 7px;
-  margin-bottom: 18px;
-  padding: 4px;
-  border: 1px solid var(--border);
-  border-radius: 13px;
-  background: rgba(18, 16, 29, 0.78);
-}
-
-.tab-button {
-  flex: 1;
-  min-height: 38px;
-  padding: 8px 13px;
-  border: 1px solid transparent;
-  border-radius: 9px;
-  color: var(--muted);
-  background: transparent;
-  font-size: 11px;
-  font-weight: 800;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  transition: color 0.18s ease, background 0.18s ease, border-color 0.18s ease;
-}
-
-.tab-button:hover { color: var(--text-soft); }
-
-.tab-button.active {
-  color: var(--text);
-  border-color: var(--border-strong);
-  background: var(--purple-soft);
-}
-
-.tab-panel[hidden] { display: none; }
-
-.holders-intro {
-  margin-bottom: 16px;
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-.holders-summary {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 18px;
-}
-
-.holder-summary-card {
-  min-width: 0;
-  padding: 14px 15px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-small);
-  background: rgba(18, 16, 29, 0.8);
-}
-
-.holder-summary-label {
-  color: var(--muted);
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 0.11em;
-  text-transform: uppercase;
-}
-
-.holder-summary-value {
-  margin-top: 6px;
-  color: var(--text);
-  font-size: 18px;
-  font-weight: 720;
-  letter-spacing: -0.025em;
-}
-
-.holders-list { display: grid; gap: 9px; }
-
-.holder-row {
-  display: grid;
-  grid-template-columns: 44px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 13px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: 15px;
-  background: var(--panel);
-}
-
-.holder-rank {
-  color: var(--purple-bright);
-  font-size: 15px;
-  font-weight: 800;
-  text-align: center;
-}
-
-.holder-address { min-width: 0; }
-
-.holder-address a {
-  color: var(--text-soft);
-  font-size: 12px;
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  text-decoration: none;
-  overflow-wrap: anywhere;
-}
-
-.holder-address a:hover {
-  color: var(--purple-bright);
-  text-decoration: underline;
-}
-
-.holder-address-meta {
-  margin-top: 4px;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.holder-balance { text-align: right; white-space: nowrap; }
-
-.holder-balance-value {
-  color: var(--text);
-  font-size: 14px;
-  font-weight: 750;
-}
-
-.holder-balance-share {
-  margin-top: 3px;
-  color: var(--muted);
-  font-size: 10px;
-}
-
-.holders-note {
-  margin-top: 14px;
-  color: var(--muted);
-  font-size: 10px;
-  line-height: 1.5;
-}
-
-@media (max-width: 720px) {
-  .holders-summary { grid-template-columns: 1fr; }
-  .holder-row { grid-template-columns: 34px minmax(0, 1fr); }
-  .holder-balance { grid-column: 2; text-align: left; }
-}
 </style>
 </head>
 
@@ -882,11 +737,6 @@ button {
       </div>
     </div>
   </header>
-  <nav class="tabs" aria-label="NevWhisper sections">
-    <button id="whispersTabButton" class="tab-button active" type="button" aria-selected="true">Whispers</button>
-    <button id="holdersTabButton" class="tab-button" type="button" aria-selected="false">Top Holders</button>
-  </nav>
-  <section id="whispersTab" class="tab-panel">
 
   <section class="status-panel">
     <div class="status-main">
@@ -1020,29 +870,6 @@ button {
     </button>
 
   </div>
-
-  </section>
-
-  <section id="holdersTab" class="tab-panel" hidden>
-
-    <div class="section-heading">
-      <div class="section-title">Top Holders</div>
-      <div id="holdersUpdated" class="section-count">Loading…</div>
-    </div>
-
-    <div class="holders-intro">
-      Ranked from the complete NEV369 chain scan, Genesis → current tip, using the persisted raw transaction data.
-    </div>
-
-    <div id="holdersSummary" class="holders-summary"></div>
-
-    <section id="holdersList" class="holders-list">
-      <div class="empty">Loading holder balances…</div>
-    </section>
-
-    <div id="holdersNote" class="holders-note"></div>
-
-  </section>
 
   <div class="footer">
     NEV369 · NevWhisper · Genesis → Live
@@ -1187,15 +1014,7 @@ const els = {
     document.getElementById("sectionCount"),
 
   rebuild:
-    document.getElementById("rebuild"),
-  whispersTabButton: document.getElementById("whispersTabButton"),
-  holdersTabButton: document.getElementById("holdersTabButton"),
-  whispersTab: document.getElementById("whispersTab"),
-  holdersTab: document.getElementById("holdersTab"),
-  holdersUpdated: document.getElementById("holdersUpdated"),
-  holdersSummary: document.getElementById("holdersSummary"),
-  holdersList: document.getElementById("holdersList"),
-  holdersNote: document.getElementById("holdersNote"),
+    document.getElementById("rebuild")
 };
 
 
@@ -3833,108 +3652,6 @@ els.rebuild.addEventListener(
   rebuildFromGenesis
 );
 
-
-/* ==================================================
-   TOP HOLDERS TAB
-================================================== */
-
-const TOP_HOLDERS_URL = "https://raw.githubusercontent.com/mattcodeai91/nevwhisper/holder-scan-data/top-holders.json";
-
-let topHoldersLoaded = false;
-let topHoldersLoading = false;
-
-function holderShare(balanceNEV, maxSupplyNEV) {
-  const balance = Number(balanceNEV);
-  const supply = Number(maxSupplyNEV);
-  if (!Number.isFinite(balance) || !Number.isFinite(supply) || supply <= 0) return '—';
-  return ((balance / supply) * 100).toFixed(2) + '% of max supply';
-}
-
-function addressExplorerUrl(address) {
-  return "https://q-lock-ecosystem.com/explorer/#/address/" + encodeURIComponent(address);
-}
-
-function renderTopHolders(report) {
-  const holders = Array.isArray(report && report.top10) ? report.top10 : [];
-  const diagnostics = (report && report.diagnostics) || {};
-
-  els.holdersUpdated.textContent = report && report.generatedAt
-    ? "Updated " + new Date(report.generatedAt).toLocaleString()
-    : "Report loaded";
-
-  els.holdersSummary.innerHTML =
-    '<div class="holder-summary-card"><div class="holder-summary-label">Chain scanned</div><div class="holder-summary-value">#' +
-      escapeHtml(formatNumber(report && report.chainHeight)) +
-    '</div></div>' +
-    '<div class="holder-summary-card"><div class="holder-summary-label">Circulating Supply</div><div class="holder-summary-value">' +
-      escapeHtml(diagnostics.totalPositiveBalanceNEV || "—") +
-    '</div></div>' +
-    '<div class="holder-summary-card"><div class="holder-summary-label">Positive balance</div><div class="holder-summary-value">' +
-      escapeHtml(diagnostics.totalPositiveBalanceNEV || '—') +
-      ' NEV</div></div>';
-
-  if (!holders.length) {
-    els.holdersList.innerHTML = '<div class="empty">No holder report is available yet.</div>';
-    return;
-  }
-
-  els.holdersList.innerHTML = holders.map(function(holder) {
-    return (
-      '<article class="holder-row">' +
-        '<div class="holder-rank">#' + escapeHtml(holder.rank) + '</div>' +
-        '<div class="holder-address">' +
-          '<a href="' + escapeHtml(addressExplorerUrl(holder.address)) + '" target="_blank" rel="noopener noreferrer" title="' + escapeHtml(holder.address) + '">' +
-            escapeHtml(shorten(holder.address, 16, 12)) +
-            ' ↗</a>' +
-          '<div class="holder-address-meta">Ranked by current balance</div>' +
-        '</div>' +
-        '<div class="holder-balance">' +
-          '<div class="holder-balance-value">' + escapeHtml(holder.balanceNEV) + ' NEV</div>' +
-          '<div class="holder-balance-share">' + escapeHtml(holderShare(holder.balanceNEV, diagnostics.maxSupplyNEV)) + '</div>' +
-        '</div>' +
-      '</article>'\n    );
-  }).join('');
-
-  els.holdersNote.textContent =
-    'Complete scan: ' + formatNumber(report && report.scannedRange && report.scannedRange.start) +
-    ' → ' + formatNumber(report && report.scannedRange && report.scannedRange.end) +
-    ' across ' + formatNumber(report && report.chunksMerged) +
-    ' persisted chunks. ' + formatNumber(diagnostics.transactions) +
-    ' transactions were accounted for. This is a chain-derived balance ranking, not a third-party rich-list feed.';
-}
-
-async function loadTopHolders() {
-  if (topHoldersLoading) return;
-  topHoldersLoading = true;
-
-  try {
-    const response = await fetch(TOP_HOLDERS_URL + '?_=' + Date.now(), { cache: 'no-store' });
-    if (!response.ok) throw new Error('Holder report returned HTTP ' + response.status);
-    const report = await response.json();
-    renderTopHolders(report);
-    topHoldersLoaded = true;
-  } catch (error) {
-    console.error("Top holder report failed:", error);
-    els.holdersUpdated.textContent = "Unable to load report";
-    els.holdersList.innerHTML = '<div class="empty">Holder report unavailable right now. Retry the tab in a moment.</div>';
-  } finally {
-    topHoldersLoading = false;
-  }
-}
-
-function activateTab(name) {
-  const holders = name === 'holders';
-  els.whispersTab.hidden = holders;
-  els.holdersTab.hidden = !holders;
-  els.whispersTabButton.classList.toggle('active', !holders);
-  els.holdersTabButton.classList.toggle('active', holders);
-  els.whispersTabButton.setAttribute('aria-selected', String(!holders));
-  els.holdersTabButton.setAttribute('aria-selected', String(holders));
-  if (holders && !topHoldersLoaded) loadTopHolders();
-}
-
-els.whispersTabButton.addEventListener('click', function() { activateTab('whispers'); });
-els.holdersTabButton.addEventListener('click', function() { activateTab('holders'); });
 
 /* ==================================================
    AUTOMATED SELF-TEST

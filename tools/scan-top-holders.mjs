@@ -29,7 +29,14 @@ function nev(baseUnits) {
   return (negative ? "-" : "") + whole.toString() + (frac ? "." + frac : "");
 }
 
-async function paceRequests() {\n  const now = Date.now();\n  const wait = Math.max(0, nextRequestAt - now);\n  nextRequestAt = Math.max(now, nextRequestAt) + 750;\n  if (wait > 0) await sleep(wait);\n}\n\nasync function getJson(url) {
+async function paceRequests() {
+  const now = Date.now();
+  const wait = Math.max(0, nextRequestAt - now);
+  nextRequestAt = Math.max(now, nextRequestAt) + 750;
+  if (wait > 0) await sleep(wait);
+}
+
+async function getJson(url) {
   let lastError;
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     try {

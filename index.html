@@ -6,7 +6,7 @@
 
 <title>NevWhisper — NEV369 Memo Chat</title>
 
-<link rel="stylesheet" href="src/css/app.css">
+<link rel="stylesheet" href="src/css/app.css?v=20261007-3">
 </head>
 
 <body>
@@ -28,13 +28,6 @@
       </button>
     </div>
 
-    <!-- Kept in the DOM for the live-status controller; hidden visually. -->
-    <div class="live-area" aria-hidden="true">
-      <div class="live-status">
-        <span id="liveDot" class="live-dot"></span>
-        <span id="liveStatus">LIVE</span>
-      </div>
-    </div>
   </header>
 
   <nav class="tabbar" aria-label="NevWhisper sections">
@@ -53,8 +46,9 @@
       </div>
     </div>
 
-    <div id="countdown" class="countdown">
-      Live sync every 15 seconds
+    <div id="memoScanWidget" class="scan-widget syncing" aria-live="polite">
+      <span id="liveDot" class="status-light" aria-hidden="true"></span>
+      <span id="liveStatus">Ready</span>
     </div>
   </section>
 
@@ -182,9 +176,11 @@
         <div id="holderStatusLabel" class="status-label">Syncing</div>
         <div id="holderStatusDetail" class="status-detail">Checking holder scan against the live chain</div>
       </div>
-      <div id="holderCountdown" class="countdown">Live sync every 15 seconds</div>
+      <div id="holderStatus" class="scan-widget syncing" aria-live="polite">
+        <span class="status-light" aria-hidden="true"></span>
+        <span>Syncing</span>
+      </div>
     </section>
-    <div class="holder-status" id="holderStatus" aria-live="polite"><span class="status-light" aria-hidden="true"></span><span>Syncing…</span></div>
     <div class="section-heading">
       <div id="holdersTitle" class="section-title">Top 10 Holders</div>
       <div class="section-count" id="holderUpdated">—</div>
@@ -199,6 +195,6 @@
 
 </div>
 
-<script type="module" src="src/js/app.js?v=20261007-2"></script>
+<script type="module" src="src/js/app.js?v=20261007-3"></script>
 </body>
 </html>

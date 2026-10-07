@@ -85,6 +85,14 @@ const report = {
   scannedRange: { start: minStart, end: maxEnd },
   chunksMerged: files.length,
   top10,
+  // Full positive/negative balance state is published so the standalone
+  // live page can apply newly verified blocks without rescanning Genesis.
+  balances: Object.fromEntries(
+    Array.from(balances.entries()).map(([address, balance]) => [
+      address,
+      balance.toString()
+    ])
+  ),
   diagnostics: {
     addressesSeen: balances.size,
     positiveAddresses: nonNegative.length,

@@ -2287,49 +2287,54 @@ function setErrorStatus(
 
 function renderArchitect() {
 
-  const whisper =
-    state.latestArchitect;
+  const dedication =
+    Array.from(
+      state.whispers.values()
+    ).find(
+      whisper =>
+        Number(whisper.block) === 0 &&
+        whisper.kind ===
+          "block_dedication"
+    );
 
-  if (!whisper) {
+  if (!dedication) {
 
     els.architectMessage.textContent =
-      "Waiting for the Architect…";
+      "Loading Genesis dedication…";
 
     els.architectMeta.innerHTML =
-      "<span>No Architect message indexed yet.</span>";
+      "<span>Block <strong>#0</strong></span>";
 
     return;
   }
 
-  els.architectMessage.textContent =
-    whisper.memo;
+  const message =
+    String(
+      dedication.memo || ""
+    ).replace(
+      /^BLOCK DEDICATION\s*[—–-]\s*/i,
+      ""
+    );
 
-  const block =
-    Number(whisper.block);
+  els.architectMessage.textContent =
+    message;
 
   const timestamp =
     formatTimestamp(
-      whisper.timestamp
+      dedication.timestamp
     );
 
-  const sender =
-    whisper.sender ||
-    "UNKNOWN";
-
-  const tx =
-    whisper.tx;
-
-  let html = `
+  els.architectMeta.innerHTML = `
     <span>
       Block
       <strong>
         <a
           href="${escapeHtml(
-            blockUrl(block)
+            blockUrl(0)
           )}"
           target="_blank"
           rel="noopener noreferrer"
-        >#${formatNumber(block)}</a>
+        >#0</a>
       </strong>
     </span>
 
@@ -2338,34 +2343,22 @@ function renderArchitect() {
     </span>
 
     <span>
-      From
-      <strong>
-        ${escapeHtml(sender)}
-      </strong>
+      Genesis block dedication
+    </span>
+
+    <span>
+      <a
+        href="${escapeHtml(
+          blockUrl(0)
+        )}"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        View block ↗
+      </a>
     </span>
   `;
-
-  if (tx) {
-
-    html += `
-      <span>
-        <a
-          href="${escapeHtml(
-            txUrl(tx)
-          )}"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          View transaction ↗
-        </a>
-      </span>
-    `;
-  }
-
-  els.architectMeta.innerHTML =
-    html;
 }
-
 
 /* ==================================================
    RENDER STATS

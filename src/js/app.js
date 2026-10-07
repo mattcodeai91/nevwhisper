@@ -1,4 +1,4 @@
-import { initHoldersView } from "./holders.js?v=20261007-8";
+import { initHoldersView } from "./holders.js?v=20261008-1";
 
 /* NevWhisper main application.
  * Extracted from the original production page without changing scanner logic.
@@ -2235,15 +2235,18 @@ function setScanningStatus(
   detail
 ) {
 
+  const scanningLabel =
+    "Scanning";
+
   els.statusLabel.textContent =
-    label;
+    scanningLabel;
 
   els.statusDetail.textContent =
     detail;
 
   setMemoScanWidget(
     "syncing",
-    label
+    scanningLabel
   );
 }
 

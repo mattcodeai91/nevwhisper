@@ -2537,13 +2537,46 @@ async function recoverHistoricalBlock(
         `/block/${block}?_=${Date.now()}`
       );
 
-    const found =
+    /*
+      Block #5960 is a known historical recovery target.
+
+      The raw node response stores the block height on
+      the block object and the memo/hash on each nested
+      transaction. Process the transaction list directly
+      as a deterministic fallback so this known memo cannot
+      be missed by the generic recursive parser.
+    */
+
+    let found =
       await processWhisperPayload(
         payload,
         block,
         block,
         true
       );
+
+    if (
+      found.length === 0 &&
+      payload &&
+      Array.isArray(payload.transactions)
+    ) {
+
+      const transactions =
+        payload.transactions.map(
+          transaction => ({
+            ...transaction,
+            block
+          })
+        );
+
+      found =
+        await processWhisperPayload(
+          transactions,
+          block,
+          block,
+          true
+        );
+    }
 
     if (
       found.length > 0

@@ -2921,20 +2921,17 @@ window.NevWhisperSelfTest =
 function initTheme() {
   const toggle = document.getElementById("themeToggle");
 
-  if (!toggle) {
-    return;
-  }
+  if (!toggle) return;
 
   const savedTheme = localStorage.getItem("nevwhisper-theme");
-  const systemLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
-  const initialTheme = savedTheme || (systemLight ? "light" : "dark");
+  const systemLight =
+    window.matchMedia?.("(prefers-color-scheme: light)").matches;
 
   function applyTheme(theme) {
-    document.documentElement.dataset.theme = theme;
+    const normalized = theme === "light" ? "light" : "dark";
+    document.documentElement.dataset.theme = normalized;
 
-    const light = theme === "light";
-
-    toggle.textContent = light ? "🌙" : "☀️";
+    const light = normalized === "light";
     toggle.setAttribute(
       "aria-label",
       light ? "Switch to dark mode" : "Switch to light mode"
@@ -2945,16 +2942,16 @@ function initTheme() {
     );
   }
 
-  applyTheme(initialTheme);
+  applyTheme(savedTheme || (systemLight ? "light" : "dark"));
 
   toggle.addEventListener("click", () => {
-    const nextTheme =
+    const next =
       document.documentElement.dataset.theme === "light"
         ? "dark"
         : "light";
 
-    localStorage.setItem("nevwhisper-theme", nextTheme);
-    applyTheme(nextTheme);
+    localStorage.setItem("nevwhisper-theme", next);
+    applyTheme(next);
   });
 }
 

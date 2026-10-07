@@ -2393,22 +2393,53 @@ async function scanBatch(
     `Verifying ${endHeight - startHeight + 1} blocks`
   );
 
-  const payload =
-    await getJson(
-      `/whispers?from=${endHeight}&to=${startHeight}`
-    );
+  /*
+    The raw /block endpoint is the authoritative source for
+    transactions in a block.
 
-  await processWhisperPayload(
-    payload,
-    startHeight,
-    endHeight,
-    true
-  );
+    The aggregate /whispers endpoint can lag behind the raw
+    block/explorer. If we use /whispers as the only source,
+    a real memo can be missed even though the block itself
+    has already been approved and scanned.
+
+    Process every block directly from its transactions.
+    The checkpoint is advanced only after every block in
+    this batch has been fetched and processed successfully.
+  */
+  for (
+    let height = startHeight;
+    height <= endHeight;
+    height++
+  ) {
+
+    const payload =
+      await getJson(
+        `/block/${height}?_=${Date.now()}`
+      );
+
+    const found =
+      await processWhisperPayload(
+        payload,
+        height,
+        height,
+        true
+      );
+
+    /*
+      Zero whispers is valid. A block may contain only
+      the network reward, which is intentionally filtered.
+    */
+    console.debug(
+      `NevWhisper block #${height} processed:`,
+      found.length,
+      "whisper(s)"
+    );
+  }
 
   /*
-    Only now is this range verified.
+    Only mark the range verified after ALL raw blocks
+    were successfully processed.
   */
-
   state.verifiedThrough =
     endHeight;
 

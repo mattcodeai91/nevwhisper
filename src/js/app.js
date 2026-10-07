@@ -2147,16 +2147,14 @@ function setErrorStatus(
   els.statusDetail.textContent =
     detail;
 
-  els.liveStatus.textContent =
-    "PAUSED";
+  if (els.liveStatus) {
+    els.liveStatus.textContent = "PAUSED";
+  }
 
-  els.liveDot.classList.remove(
-    "scanning"
-  );
-
-  els.liveDot.classList.add(
-    "error"
-  );
+  if (els.liveDot) {
+    els.liveDot.classList.remove("scanning");
+    els.liveDot.classList.add("error");
+  }
 
   els.countdown.textContent =
     "Retrying live sync every 15 seconds";

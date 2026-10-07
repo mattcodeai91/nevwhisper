@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEV369 Top Holders</title>
+<style>
+:root{--bg:#09080f;--panel:#12101d;--panel2:#171423;--border:rgba(154,122,255,.16);--purple:#9b7cff;--text:#f4f1fb;--muted:#858094;--soft:#c9c4d7}
+*{box-sizing:border-box}html{background:var(--bg)}body{margin:0;min-height:100vh;background:radial-gradient(circle at 50% -10%,rgba(112,78,210,.16),transparent 38%),var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif}.wrap{width:min(900px,calc(100% - 28px));margin:0 auto;padding:42px 0 70px}.brand{font-size:32px;font-weight:750;letter-spacing:-.04em}.sub{margin-top:7px;color:var(--muted);font-size:13px;letter-spacing:.11em;text-transform:uppercase}.status{margin-top:24px;padding:14px 17px;border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--soft);font-size:13px}.heading{display:flex;justify-content:space-between;align-items:end;gap:16px;margin:28px 0 8px}.heading h1{margin:0;font-size:26px}.updated{color:var(--muted);font-size:12px}.intro,.note{color:var(--muted);font-size:12px;line-height:1.6}.summary{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:20px 0}.card,.row{border:1px solid var(--border);border-radius:14px;background:rgba(18,16,29,.82)}.card{padding:16px}.label{color:var(--muted);font-size:10px;font-weight:750;letter-spacing:.11em;text-transform:uppercase}.value{margin-top:7px;font-size:22px;font-weight:720}.list{display:grid;gap:9px}.row{display:grid;grid-template-columns:52px 1fr auto;gap:14px;align-items:center;padding:16px}.rank{color:var(--purple);font-size:18px;font-weight:800}.address a{color:var(--text);text-decoration:none;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px;overflow-wrap:anywhere}.address a:hover{text-decoration:underline}.meta{margin-top:4px;color:var(--muted);font-size:11px}.balance{text-align:right}.amount{font-weight:750;font-size:16px}.share{margin-top:3px;color:var(--muted);font-size:11px}.footer{margin-top:28px;color:var(--muted);font-size:11px}@media(max-width:600px){.summary{grid-template-columns:1fr}.row{grid-template-columns:38px 1fr}.balance{grid-column:2;text-align:left}.heading{align-items:start;flex-direction:column}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<div class="brand">NEV369 Top Holders</div>
+<div class="sub">Chain-derived holder ranking</div>
+<div id="status" class="status">Loading live holder report…</div>
+<div class="heading"><h1>Top 10 Holders</h1><div id="updated" class="updated"></div></div>
+<div class="intro">Ranked from persisted raw NEV369 transaction data. No third-party rich-list feed.</div>
+<div id="summary" class="summary"></div>
+<div id="list" class="list"></div>
+<div id="note" class="note"></div>
+<div class="footer">NEV369 · Genesis → Live</div>
+</main>
+<script>
+"use strict";
+const REPORT="https://raw.githubusercontent.com/mattcodeai91/nevwhisper/holder-scan-data/top-holders.json";
+const status=document.getElementById("status"),updated=document.getElementById("updated"),summary=document.getElementById("summary"),list=document.getElementById("list"),note=document.getElementById("note");
+function esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
+function short(v){v=String(v||"");return v.length>30?v.slice(0,16)+"..."+v.slice(-12):v}
+function pct(b,s){const n=Number(b),d=Number(s);return Number.isFinite(n)&&Number.isFinite(d)&&d>0?((n/d)*100).toFixed(2)+"% of max supply":"—"}
+function load(){fetch(REPORT+"?t="+Date.now(),{cache:"no-store"}).then(r=>{if(!r.ok)throw Error("HTTP "+r.status);return r.json()}).then(r=>{const d=r.diagnostics||{};updated.textContent="Updated "+new Date(r.generatedAt).toLocaleString();summary.innerHTML='<div class="card"><div class="label">Chain scanned</div><div class="value">#'+Number(r.chainHeight).toLocaleString()+'</div></div><div class="card"><div class="label">Circulating Supply</div><div class="value">'+esc(d.totalPositiveBalanceNEV||"—")+' NEV</div></div>';list.innerHTML=(r.top10||[]).map(h=>'<article class="row"><div class="rank">#'+esc(h.rank)+'</div><div class="address"><a target="_blank" rel="noopener noreferrer" href="https://q-lock-ecosystem.com/explorer/#/address/'+encodeURIComponent(h.address)+'">'+esc(short(h.address))+' ↗</a><div class="meta">Ranked by current balance</div></div><div class="balance"><div class="amount">'+esc(h.balanceNEV)+' NEV</div><div class="share">'+esc(pct(h.balanceNEV,d.maxSupplyNEV))+'</div></div></article>').join("");note.textContent="Complete scan: "+Number(r.scannedRange.start).toLocaleString()+" → "+Number(r.scannedRange.end).toLocaleString()+" across "+Number(r.chunksMerged).toLocaleString()+" persisted chunks. "+Number(d.transactions).toLocaleString()+" transactions accounted for.";status.textContent="LIVE · Holder report loaded"}).catch(e=>{console.error(e);status.textContent="Unable to load holder report · retrying…"} )}
+load();setInterval(load,30000);
+</script>
+</body>
+</html>

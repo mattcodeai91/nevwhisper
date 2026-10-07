@@ -7,6 +7,8 @@ const NODE = "https://nevwhisper-proxy.mattcodeai91.workers.dev";
 const NODE_INFO = NODE + "/info";
 const EXPLORER = "https://q-lock-ecosystem.com/explorer/";
 const REQUEST_DELAY_MS = 900;
+const REWARD_ACCOUNTING_VERSION = 2;
+const BLOCK_REWARD_BASE_UNITS = 36900000000n;
 
 let liveBalances = null;
 let liveScanHeight = -1;
@@ -143,6 +145,64 @@ function setHolderStatus(kind, label, detail) {
   if (els.countdown) els.countdown.textContent = "Live sync every 15 seconds";
 }
 
+function hasValidRewardAccounting(report) {
+  const diagnostics = report?.diagnostics || {};
+  const version = Number(diagnostics.rewardAccountingVersion || 0);
+  if (version >= REWARD_ACCOUNTING_VERSION) return true;
+
+  const rewardCount = Number(diagnostics.miningRewards || 0);
+  if (!Number.isFinite(rewardCount) || rewardCount <= 0) return false;
+
+  try {
+    const gross = asBigInt(diagnostics.grossTransferredBaseUnits ?? 0);
+    const minimumRewardVolume =
+      BigInt(Math.max(0, Math.trunc(rewardCount))) * BLOCK_REWARD_BASE_UNITS;
+    return gross >= minimumRewardVolume;
+  } catch {
+    return false;
+  }
+}
+
+function renderHistoricalRebuild(report, liveHeight) {
+  const reportHeight = Number(report?.chainHeight);
+  const live = Number(liveHeight);
+
+  if (els.updated) {
+    els.updated.textContent = report?.generatedAt
+      ? "Last legacy snapshot " + new Date(report.generatedAt).toLocaleString()
+      : "Historical rebuild in progress";
+  }
+
+  if (els.summary) {
+    els.summary.innerHTML = [
+      ["Chain scanned", Number.isFinite(reportHeight) ? "#" + formatNumber(reportHeight) : "—"],
+      ["Positive holders", "Rebuilding"],
+      ["Positive balance", "Rebuilding"]
+    ].map(([label, value]) =>
+      '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) +
+      '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>'
+    ).join("");
+  }
+
+  if (els.list) {
+    els.list.innerHTML =
+      '<div class="empty">Rebuilding holder balances from genesis block #0 with the 369 NEV protocol reward. Legacy totals are hidden until the full historical snapshot is valid.</div>';
+  }
+
+  if (els.note) {
+    els.note.textContent =
+      "Historical holder index rebuild: Genesis #0 → live chain. The previous snapshot used incorrect NETWORK_REWARD amounts and is not being shown.";
+  }
+
+  setHolderStatus(
+    "syncing",
+    "Historical rebuild",
+    Number.isFinite(live)
+      ? "Rebuilding Genesis #0 → live #" + formatNumber(live)
+      : "Rebuilding Genesis #0 → live chain"
+  );
+}
+
 function render(report, liveHeight = null) {
   const diagnostics = report.diagnostics || {};
   const maxSupply = diagnostics.maxSupplyNEV || "369369369";
@@ -247,6 +307,14 @@ async function load() {
     const info = await infoResponse.json();
     const liveHeight = Number(info.chain_height ?? info.height);
     const reportHeight = Number(report.chainHeight);
+
+    if (!hasValidRewardAccounting(report)) {
+      liveBalances = null;
+      liveScanHeight = -1;
+      liveReportHeight = -1;
+      renderHistoricalRebuild(report, liveHeight);
+      return;
+    }
 
     if (
       !(liveBalances instanceof Map) ||

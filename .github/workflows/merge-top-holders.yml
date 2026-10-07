@@ -1,0 +1,68 @@
+name: NEV369 Top Holders Merge
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/merge-top-holders.mjs"
+      - ".github/workflows/merge-top-holders.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+concurrency:
+  group: nev369-top-holders-merge
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  merge:
+    name: Merge persisted holder chunks
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Load persistent holder chunks
+        run: |
+          set -euo pipefail
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
+          rm -rf chunk-output
+          mkdir -p chunk-output
+          git archive origin/holder-scan-data chunks | tar -x
+          mv chunks chunk-output
+
+          count=$(find chunk-output -maxdepth 1 -name 'chunk-*.json' | wc -l)
+          echo "Persistent chunks available: $count / 80"
+          test "$count" -eq 80
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Merge holder balances
+        run: node tools/merge-top-holders.mjs chunk-output
+
+      - name: Publish verified report
+        run: |
+          set -euo pipefail
+          test -s top-holders.json
+          cp top-holders.json /tmp/top-holders.json
+
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
+          git checkout -B holder-scan-data origin/holder-scan-data
+          cp /tmp/top-holders.json top-holders.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add top-holders.json
+          git commit -m "Publish complete NEV369 top holders report" || true
+          git push origin holder-scan-data

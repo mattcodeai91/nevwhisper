@@ -7,6 +7,7 @@ const REQUEST_DELAY_MS = Number(process.env.REQUEST_DELAY_MS || 900);
 const RETRIES = 10;
 const RETRY_BASE_MS = 2000;
 const SATOSHIS_PER_NEV = 100000000n;
+const BLOCK_REWARD_BASE_UNITS = asBigInt(process.env.NEV369_BLOCK_REWARD_BASE_UNITS || "36900000000");
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -51,10 +52,89 @@ function transactionList(block) {
   return block && Array.isArray(block.transactions) ? block.transactions : [];
 }
 
-function applyTransaction(balances, transaction, blockHeight, stats) {
+function nestedAddress(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    return String(
+      value.address ??
+      value.recipient ??
+      value.miner ??
+      value.miner_address ??
+      value.minerAddress ??
+      ""
+    );
+  }
+  return "";
+}
+
+function rewardRecipient(block, transaction) {
+  return String(
+    transaction.recipient ??
+    transaction.to ??
+    transaction.miner ??
+    transaction.miner_address ??
+    transaction.minerAddress ??
+    nestedAddress(transaction.reward?.recipient) ??
+    nestedAddress(transaction.reward?.address) ??
+    nestedAddress(block.miner) ??
+    block.miner_address ??
+    block.minerAddress ??
+    block.reward_recipient ??
+    block.rewardRecipient ??
+    ""
+  );
+}
+
+function rewardAmount(block, transaction) {
+  const direct = transaction.amount ?? transaction.value;
+  if (direct !== undefined && direct !== null && direct !== "") {
+    const parsed = asBigInt(direct);
+    if (parsed > 0n) return parsed;
+  }
+
+  const candidates = [
+    transaction.reward,
+    transaction.block_reward,
+    transaction.blockReward,
+    transaction.mining_reward,
+    transaction.miningReward,
+    block.reward,
+    block.block_reward,
+    block.blockReward,
+    block.mining_reward,
+    block.miningReward
+  ];
+
+  for (const candidate of candidates) {
+    if (candidate === undefined || candidate === null || candidate === "") continue;
+    if (typeof candidate === "object") {
+      const nested = candidate.amount ?? candidate.value ?? candidate.reward;
+      if (nested !== undefined && nested !== null && nested !== "") {
+        const parsed = asBigInt(nested);
+        if (parsed > 0n) return parsed;
+      }
+      continue;
+    }
+    const parsed = asBigInt(candidate);
+    if (parsed > 0n) return parsed;
+  }
+
+  return BLOCK_REWARD_BASE_UNITS;
+}
+
+function applyTransaction(balances, transaction, block, blockHeight, stats) {
   const sender = transaction.sender ? String(transaction.sender) : "";
-  const recipient = transaction.recipient ? String(transaction.recipient) : "";
-  const amount = asBigInt(transaction.amount ?? transaction.value ?? 0);
+  const rewardSender = sender.toUpperCase() === "NETWORK_REWARD";
+
+  let amount = asBigInt(transaction.amount ?? transaction.value ?? 0);
+  let recipient = String(transaction.recipient ?? "");
+
+  if (rewardSender) {
+    amount = rewardAmount(block, transaction);
+    recipient = rewardRecipient(block, transaction);
+  }
+
   if (amount < 0n) throw new Error(`Negative amount at block #${blockHeight}`);
 
   const fee = asBigInt(transaction.fee ?? 0);
@@ -66,7 +146,6 @@ function applyTransaction(balances, transaction, blockHeight, stats) {
     stats.noRecipient++;
   }
 
-  const rewardSender = sender.toUpperCase() === "NETWORK_REWARD";
   if (!rewardSender && sender) {
     balances.set(sender, (balances.get(sender) || 0n) - amount - fee - crownTax);
     stats.transfers++;
@@ -96,29 +175,43 @@ async function main() {
     throw new Error("Existing holder report has no valid chain height");
   }
 
-  const balances = new Map(
-    Object.entries(report.balances || {}).map(([address, value]) => [address, BigInt(value)])
-  );
-
   const diagnostics = report.diagnostics || {};
+  const rewardCount = Number(diagnostics.miningRewards || 0);
+  const recordedPositive = asBigInt(diagnostics.totalPositiveBalanceBaseUnits ?? 0);
+  const expectedMinimumRewardBalance = BigInt(Math.max(0, rewardCount)) * BLOCK_REWARD_BASE_UNITS;
+  const invalidRewardAccounting =
+    rewardCount > 0 &&
+    recordedPositive < expectedMinimumRewardBalance;
+
+  const forceRebuild =
+    String(process.env.REBUILD_FROM_GENESIS || "").toLowerCase() === "true" ||
+    invalidRewardAccounting;
+
+  const balances = forceRebuild
+    ? new Map()
+    : new Map(
+        Object.entries(report.balances || {}).map(([address, value]) => [address, BigInt(value)])
+      );
+
+  const effectiveLastScanned = forceRebuild ? -1 : lastScanned;
   const stats = {
-    transactions: Number(diagnostics.transactions || 0),
-    transfers: Number(diagnostics.transfers || 0),
-    rewards: Number(diagnostics.miningRewards || 0),
-    genesisLike: Number(diagnostics.genesisLikeTransactions || 0),
-    noRecipient: Number(diagnostics.transactionsWithoutRecipient || 0),
-    genesisTransactions: Number(diagnostics.genesisTransactions || 0),
-    volume: asBigInt(diagnostics.grossTransferredBaseUnits ?? 0),
-    fees: asBigInt(diagnostics.feesBaseUnits ?? 0),
-    crownTax: asBigInt(diagnostics.crownTaxBaseUnits ?? 0)
+    transactions: forceRebuild ? 0 : Number(diagnostics.transactions || 0),
+    transfers: forceRebuild ? 0 : Number(diagnostics.transfers || 0),
+    rewards: forceRebuild ? 0 : Number(diagnostics.miningRewards || 0),
+    genesisLike: forceRebuild ? 0 : Number(diagnostics.genesisLikeTransactions || 0),
+    noRecipient: forceRebuild ? 0 : Number(diagnostics.transactionsWithoutRecipient || 0),
+    genesisTransactions: forceRebuild ? 0 : Number(diagnostics.genesisTransactions || 0),
+    volume: forceRebuild ? 0n : asBigInt(diagnostics.grossTransferredBaseUnits ?? 0),
+    fees: forceRebuild ? 0n : asBigInt(diagnostics.feesBaseUnits ?? 0),
+    crownTax: forceRebuild ? 0n : asBigInt(diagnostics.crownTaxBaseUnits ?? 0)
   };
 
-  const startHeight = lastScanned + 1;
+  const startHeight = effectiveLastScanned + 1;
 
   console.log(JSON.stringify({
-    event: "incremental-start",
+    event: forceRebuild ? "genesis-rebuild-start" : "incremental-start",
     node: NODE,
-    previousHeight: lastScanned,
+    previousHeight: effectiveLastScanned,
     chainHeight: tip,
     startHeight,
     blocksToScan: Math.max(0, tip - startHeight + 1)
@@ -128,7 +221,7 @@ async function main() {
     for (let height = startHeight; height <= tip; height++) {
       const block = await getJson(`${NODE}/block/${height}`);
       for (const transaction of transactionList(block)) {
-        applyTransaction(balances, transaction, height, stats);
+        applyTransaction(balances, transaction, block, height, stats);
       }
 
       if ((height - startHeight + 1) % 25 === 0 || height === tip) {
@@ -197,7 +290,7 @@ async function main() {
   await fs.writeFile("top-holders.json", JSON.stringify(nextReport, null, 2) + "\n");
   console.log(JSON.stringify({
     event: "incremental-complete",
-    previousHeight: lastScanned,
+    previousHeight: effectiveLastScanned,
     chainHeight: tip,
     scannedBlocks: Math.max(0, tip - startHeight + 1),
     positiveAddresses: positive.length,

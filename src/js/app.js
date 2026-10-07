@@ -2913,6 +2913,51 @@ window.NevWhisperSelfTest =
   runNevWhisperSelfTest;
 
 
+
+/* ==================================================
+   THEME
+================================================== */
+
+function initTheme() {
+  const toggle = document.getElementById("themeToggle");
+
+  if (!toggle) {
+    return;
+  }
+
+  const savedTheme = localStorage.getItem("nevwhisper-theme");
+  const systemLight = window.matchMedia?.("(prefers-color-scheme: light)").matches;
+  const initialTheme = savedTheme || (systemLight ? "light" : "dark");
+
+  function applyTheme(theme) {
+    document.documentElement.dataset.theme = theme;
+
+    const light = theme === "light";
+
+    toggle.textContent = light ? "🌙" : "☀️";
+    toggle.setAttribute(
+      "aria-label",
+      light ? "Switch to dark mode" : "Switch to light mode"
+    );
+    toggle.setAttribute(
+      "title",
+      light ? "Switch to dark mode" : "Switch to light mode"
+    );
+  }
+
+  applyTheme(initialTheme);
+
+  toggle.addEventListener("click", () => {
+    const nextTheme =
+      document.documentElement.dataset.theme === "light"
+        ? "dark"
+        : "light";
+
+    localStorage.setItem("nevwhisper-theme", nextTheme);
+    applyTheme(nextTheme);
+  });
+}
+
 /* ==================================================
    INITIALISE
 ================================================== */
@@ -3094,6 +3139,7 @@ async function init() {
 }
 
 
+initTheme();
 initTabs();
 initHoldersView();
 init();

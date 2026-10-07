@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 const NODE = process.env.NEV369_NODE || "https://q-lock-ecosystem.com/node";
-const CONCURRENCY = Number(process.env.CONCURRENCY || 8);
+const CONCURRENCY = Number(process.env.CONCURRENCY || 2);\nlet nextRequestAt = 0;
 const RETRIES = 7;
 const RETRY_BASE_MS = 750;
 const SATOSHIS_PER_NEV = 100000000n;
@@ -28,7 +28,7 @@ function nev(baseUnits) {
   return (negative ? "-" : "") + whole.toString() + (frac ? "." + frac : "");
 }
 
-async function getJson(url) {
+async function paceRequests() {\n  const now = Date.now();\n  const wait = Math.max(0, nextRequestAt - now);\n  nextRequestAt = Math.max(now, nextRequestAt) + 750;\n  if (wait > 0) await sleep(wait);\n}\n\nasync function getJson(url) {
   let lastError;
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     try {
@@ -44,7 +44,7 @@ async function getJson(url) {
     } catch (error) {
       lastError = error;
     }
-    await sleep(RETRY_BASE_MS * Math.min(8, 2 ** attempt));
+    await sleep(Math.max(1000, RETRY_BASE_MS * Math.min(16, 2 ** attempt)));
   }
   throw lastError;
 }

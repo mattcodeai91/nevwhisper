@@ -3,7 +3,8 @@
  * This module is intentionally read-only: scanning and publishing remain CI responsibilities.
  */
 const REPORT = "https://raw.githubusercontent.com/mattcodeai91/nevwhisper/holder-scan-data/top-holders.json";
-const NODE_INFO = "https://q-lock-ecosystem.com/node/info";
+const NODE = "https://nevwhisper-proxy.mattcodeai91.workers.dev";
+const NODE_INFO = NODE + "/info";
 const EXPLORER = "https://q-lock-ecosystem.com/explorer/";
 const REQUEST_DELAY_MS = 900;
 
@@ -232,7 +233,7 @@ async function load() {
 
       for (let height = liveScanHeight + 1; height <= liveHeight; height++) {
         const response = await fetch(
-          "https://q-lock-ecosystem.com/node/block/" + height + "?t=" + Date.now(),
+          NODE + "/block/" + height + "?t=" + Date.now(),
           { cache: "no-store", headers: { accept: "application/json" } }
         );
 

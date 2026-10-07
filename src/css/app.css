@@ -77,18 +77,19 @@ button {
 -------------------------------------------------- */
 
 .header {
+  display: contents;
+}
+
+.brand {
+  min-width: 0;
+  padding: 12px 0 16px;
+}
+
+.header-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-
-  margin-bottom: 18px;
+  justify-content: flex-end;
   padding: 12px 0 16px;
-
-  /* No banner, panel, border, shadow, or separate background. */
-  background: transparent;
-  border: 0;
-  box-shadow: none;
 }
 
 .brand {
@@ -772,12 +773,6 @@ html[data-theme="light"] .footer {
 /* --------------------------------------------------
    THEME TOGGLE
 -------------------------------------------------- */
-
-.header-actions {
-  display: flex;
-  align-items: center;
-  flex-shrink: 0;
-}
 
 .theme-toggle {
   display: inline-flex;

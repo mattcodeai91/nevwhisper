@@ -948,8 +948,15 @@ function normalizeWhisper(
     return null;
   }
 
+  const kind =
+    item.kind
+      ? String(item.kind)
+      : "transaction";
+
   const tx =
-    String(txHash);
+    kind === "block_dedication"
+      ? ""
+      : String(txHash);
 
   const timestamp =
     firstValue(
@@ -991,11 +998,106 @@ function normalizeWhisper(
     tx,
 
     tx_hash:
-      tx,
+      String(txHash),
 
     timestamp,
 
-    amount
+    amount,
+
+    kind
+  };
+}
+
+
+/*
+  Block dedications are chain-level metadata, not transaction
+  memos. Ordinary NEV369 blocks use the standard dedication
+  "Block N — for Nevaeh". Those standard entries are ignored.
+
+  Only exceptional/custom dedications are promoted into the
+  whisper archive.
+*/
+
+function specialBlockDedicationFromPayload(
+  payload,
+  block
+) {
+
+  if (
+    !payload ||
+    typeof payload !== "object"
+  ) {
+    return null;
+  }
+
+  const height =
+    Number(block);
+
+  if (
+    !Number.isFinite(height)
+  ) {
+    return null;
+  }
+
+  const dedication =
+    firstValue(
+      payload,
+      [
+        "block_dedication",
+        "dedication"
+      ]
+    );
+
+  if (
+    dedication === null ||
+    dedication === undefined ||
+    String(dedication).trim() === ""
+  ) {
+    return null;
+  }
+
+  const text =
+    String(dedication).trim();
+
+  const standardPattern =
+    new RegExp(
+      "^Block\\s+" +
+      String(height) +
+      "\\s*[—–-]\\s*for\\s+Nevaeh\\s*$",
+      "i"
+    );
+
+  if (
+    standardPattern.test(text)
+  ) {
+    return null;
+  }
+
+  const timestamp =
+    firstValue(
+      payload,
+      [
+        "timestamp",
+        "time",
+        "created_at",
+        "block_timestamp"
+      ]
+    );
+
+  return {
+    block: height,
+    memo:
+      "BLOCK DEDICATION — " +
+      text,
+    sender: "",
+    to: "",
+    tx: "",
+    tx_hash:
+      "block-dedication:" +
+      height,
+    timestamp,
+    amount: null,
+    kind: "block_dedication"
   };
 }
 
@@ -1420,13 +1522,10 @@ async function processBlockPayload(
   markNew = true
 ) {
 
-  /*
-    A NEV369 raw block has the authoritative transaction
-    list at payload.transactions. Process that list directly
-    and attach the block height to every transaction.
+  const found = [];
 
-    Keep the generic recursive parser as a fallback for
-    alternate node response shapes.
+  /*
+    Process the authoritative transaction list first.
   */
   if (
     payload &&
@@ -1441,22 +1540,55 @@ async function processBlockPayload(
         })
       );
 
-    return processWhisperPayload(
-      transactions,
-      block,
-      block,
-      markNew
+    found.push(
+      ...await processWhisperPayload(
+        transactions,
+        block,
+        block,
+        markNew
+      )
+    );
+
+  } else {
+
+    found.push(
+      ...await processWhisperPayload(
+        payload,
+        block,
+        block,
+        markNew
+      )
     );
   }
 
-  return processWhisperPayload(
-    payload,
-    block,
-    block,
-    markNew
-  );
-}
+  /*
+    Promote only exceptional/custom block dedications.
+    The standard "Block N — for Nevaeh" dedication is
+    intentionally ignored so it cannot flood Whispers.
+  */
 
+  const dedication =
+    specialBlockDedicationFromPayload(
+      payload,
+      block
+    );
+
+  if (
+    dedication
+  ) {
+
+    found.push(
+      ...await processWhisperPayload(
+        [dedication],
+        block,
+        block,
+        markNew
+      )
+    );
+  }
+
+  return found;
+}
 
 async function processWhisperPayload(
   payload,
@@ -2789,6 +2921,7 @@ async function runNevWhisperSelfTest() {
   }
 
   const heights = new Set([
+    0,
     5960,
     Math.max(0, tip - 19),
     Math.max(0, tip - 9),
@@ -2864,6 +2997,60 @@ async function runNevWhisperSelfTest() {
   if (!known5960) {
     failures.push(
       "Known block #5960 memo was not recovered from the raw block."
+    );
+  }
+
+  const genesisDedication =
+    Array.from(
+      state.whispers.values()
+    ).some(
+      whisper =>
+        Number(whisper.block) === 0 &&
+        whisper.kind ===
+          "block_dedication" &&
+        String(
+          whisper.memo || ""
+        ).startsWith(
+          "BLOCK DEDICATION — "
+        )
+    );
+
+  if (!genesisDedication) {
+    failures.push(
+      "Genesis custom block dedication was not recovered."
+    );
+  }
+
+  if (
+    specialBlockDedicationFromPayload(
+      {
+        block_dedication:
+          "Block 123 — for Nevaeh"
+      },
+      123
+    ) !== null
+  ) {
+    failures.push(
+      "Standard block dedication was incorrectly promoted."
+    );
+  }
+
+  const customDedicationTest =
+    specialBlockDedicationFromPayload(
+      {
+        block_dedication:
+          "A custom dedication"
+      },
+      123
+    );
+
+  if (
+    !customDedicationTest ||
+    customDedicationTest.kind !==
+      "block_dedication"
+  ) {
+    failures.push(
+      "Custom block dedication was not promoted."
     );
   }
 
@@ -3050,6 +3237,7 @@ async function init() {
         changing the verified checkpoint.
       */
 
+      await recoverHistoricalBlock(0);
       await recoverHistoricalBlock(5960);
 
       setCurrentStatus();
@@ -3088,6 +3276,7 @@ async function init() {
         changing the verified checkpoint.
       */
 
+      await recoverHistoricalBlock(0);
       await recoverHistoricalBlock(5960);
 
       setCurrentStatus();

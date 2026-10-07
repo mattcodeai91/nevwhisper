@@ -2955,7 +2955,9 @@ function initTabs() {
   }
 
   tabs.forEach(tab => tab.addEventListener("click", () => selectTab(tab.dataset.tab)));
-  selectTab("memo");
+
+  const requestedTab = new URLSearchParams(window.location.search).get("tab");
+  selectTab(requestedTab === "holders" ? "holders" : "memo");
 }
 
 async function init() {

@@ -42,6 +42,12 @@ jobs:
           echo "Persistent chunks available: $count / 80"
           test "$count" -eq 80
 
+          for file in chunk-output/chunk-*.json; do
+            name=$(basename "$file" .json)
+            mkdir -p "chunk-output/$name"
+            mv "$file" "chunk-output/$name/chunk.json"
+          done
+
       - name: Node 22
         uses: actions/setup-node@v4
         with:

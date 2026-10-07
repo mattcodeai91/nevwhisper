@@ -1,30 +1,35 @@
 :root {
-  --bg: #09080f;
-  --bg-soft: #0e0c17;
-  --panel: #12101d;
-  --panel-2: #171423;
-  --panel-3: #1c182a;
+  --bg: #0b0b09;
+  --bg-soft: #11100d;
+  --panel: #15130f;
+  --panel-2: #1b1812;
+  --panel-3: #211d15;
 
-  --border: rgba(154, 122, 255, 0.16);
-  --border-strong: rgba(154, 122, 255, 0.28);
+  --border: rgba(227, 182, 87, 0.18);
+  --border-strong: rgba(227, 182, 87, 0.34);
 
-  --purple: #9b7cff;
-  --purple-bright: #b59aff;
-  --purple-soft: rgba(155, 124, 255, 0.12);
+  /*
+    Q-Lock palette.
+    Existing variable names are intentionally retained so this
+    remains a theme-only change with no application logic impact.
+  */
+  --purple: #e3b657;
+  --purple-bright: #f0cc7a;
+  --purple-soft: rgba(227, 182, 87, 0.12);
 
-  --blue: #62a8ff;
-  --green: #62e6a5;
-  --yellow: #ffd166;
-  --red: #ff6b81;
+  --blue: #4fd69c;
+  --green: #4fd69c;
+  --yellow: #e3b657;
+  --red: #f0736b;
 
-  --text: #f4f1fb;
-  --text-soft: #c9c4d7;
-  --muted: #858094;
+  --text: #f4efe3;
+  --text-soft: #d6ccba;
+  --muted: #918777;
 
   --radius: 18px;
   --radius-small: 12px;
 
-  --shadow: 0 18px 60px rgba(0, 0, 0, 0.34);
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.38);
 }
 
 * {
@@ -39,8 +44,8 @@ body {
   margin: 0;
   min-height: 100vh;
   background:
-    radial-gradient(circle at 50% -10%, rgba(112, 78, 210, 0.16), transparent 38%),
-    radial-gradient(circle at 100% 20%, rgba(53, 93, 190, 0.07), transparent 32%),
+    radial-gradient(circle at 50% -10%, rgba(227, 182, 87, 0.10), transparent 38%),
+    radial-gradient(circle at 100% 20%, rgba(79, 214, 156, 0.05), transparent 32%),
     var(--bg);
   color: var(--text);
   font-family:
@@ -112,8 +117,8 @@ button {
   border-radius: 50%;
   background: var(--purple);
   box-shadow:
-    0 0 12px rgba(155, 124, 255, 0.75),
-    0 0 28px rgba(155, 124, 255, 0.3);
+    0 0 12px rgba(227, 182, 87, 0.72),
+    0 0 28px rgba(227, 182, 87, 0.28);
 }
 
 
@@ -143,7 +148,7 @@ button {
 
 .live-dot.scanning {
   background: var(--purple);
-  box-shadow: 0 0 12px rgba(155, 124, 255, 0.7);
+  box-shadow: 0 0 12px rgba(227, 182, 87, 0.66);
   animation: pulse 1.4s ease-in-out infinite;
 }
 
@@ -183,8 +188,8 @@ button {
   background:
     linear-gradient(
       135deg,
-      rgba(155, 124, 255, 0.075),
-      rgba(98, 168, 255, 0.025)
+      rgba(227, 182, 87, 0.07),
+      rgba(79, 214, 156, 0.025)
     ),
     var(--panel);
 }
@@ -261,24 +266,24 @@ button {
   margin-bottom: 22px;
   padding: 23px 24px;
 
-  border: 1px solid rgba(155, 124, 255, 0.3);
+  border: 1px solid rgba(227, 182, 87, 0.28);
   border-radius: var(--radius);
 
   background:
     radial-gradient(
       circle at 0% 0%,
-      rgba(155, 124, 255, 0.16),
+      rgba(227, 182, 87, 0.14),
       transparent 42%
     ),
     radial-gradient(
       circle at 100% 100%,
-      rgba(98, 168, 255, 0.055),
+      rgba(79, 214, 156, 0.05),
       transparent 35%
     ),
     var(--panel);
 
   box-shadow:
-    0 18px 55px rgba(58, 31, 115, 0.12),
+    0 18px 55px rgba(91, 67, 20, 0.16),
     inset 0 1px 0 rgba(255,255,255,0.025);
 }
 
@@ -292,7 +297,7 @@ button {
   background: linear-gradient(
     180deg,
     var(--purple-bright),
-    rgba(98, 168, 255, 0.55)
+    rgba(79, 214, 156, 0.55)
   );
 }
 
@@ -377,7 +382,7 @@ button {
 
   border: 1px solid var(--border);
   border-radius: var(--radius-small);
-  background: rgba(18, 16, 29, 0.8);
+  background: rgba(21, 19, 15, 0.88);
 }
 
 .stat-label {
@@ -465,7 +470,7 @@ button {
   outline: none;
 
   color: var(--text);
-  background: rgba(18, 16, 29, 0.9);
+  background: rgba(21, 19, 15, 0.94);
 
   transition:
     border-color 0.18s ease,
@@ -473,12 +478,12 @@ button {
 }
 
 .search::placeholder {
-  color: #6f6a7d;
+  color: #827766;
 }
 
 .search:focus {
   border-color: var(--border-strong);
-  box-shadow: 0 0 0 3px rgba(155, 124, 255, 0.07);
+  box-shadow: 0 0 0 3px rgba(227, 182, 87, 0.08);
 }
 
 .search-icon {
@@ -537,7 +542,7 @@ button {
     linear-gradient(
       135deg,
       rgba(255,255,255,0.012),
-      rgba(155, 124, 255, 0.018)
+      rgba(227, 182, 87, 0.025)
     ),
     var(--panel);
 
@@ -553,21 +558,21 @@ button {
 }
 
 .whisper.dedication {
-  border-color: rgba(255, 209, 102, 0.42);
+  border-color: rgba(227, 182, 87, 0.46);
   background:
     linear-gradient(
       135deg,
-      rgba(255, 209, 102, 0.075),
+      rgba(227, 182, 87, 0.085),
       rgba(155, 124, 255, 0.035)
     ),
     var(--panel);
   box-shadow:
-    inset 3px 0 0 rgba(255, 209, 102, 0.72),
-    0 0 22px rgba(255, 209, 102, 0.045);
+    inset 3px 0 0 rgba(227, 182, 87, 0.76),
+    0 0 22px rgba(227, 182, 87, 0.055);
 }
 
 .whisper.dedication:hover {
-  border-color: rgba(255, 209, 102, 0.62);
+  border-color: rgba(227, 182, 87, 0.66);
 }
 
 .whisper.dedication .block-link {
@@ -580,9 +585,9 @@ button {
   width: fit-content;
   margin: 0 0 9px;
   padding: 4px 8px;
-  border: 1px solid rgba(255, 209, 102, 0.34);
+  border: 1px solid rgba(227, 182, 87, 0.38);
   border-radius: 999px;
-  background: rgba(255, 209, 102, 0.08);
+  background: rgba(227, 182, 87, 0.10);
   color: var(--yellow);
   font-size: 9px;
   font-weight: 850;
@@ -600,8 +605,8 @@ button {
 
 @keyframes newWhisper {
   0% {
-    border-color: rgba(155, 124, 255, 0.8);
-    box-shadow: 0 0 28px rgba(155, 124, 255, 0.14);
+    border-color: rgba(227, 182, 87, 0.78);
+    box-shadow: 0 0 28px rgba(227, 182, 87, 0.13);
   }
 
   100% {
@@ -706,12 +711,12 @@ button {
 .rebuild:hover {
   color: var(--text-soft);
   border-color: var(--border-strong);
-  background: rgba(155, 124, 255, 0.04);
+  background: rgba(227, 182, 87, 0.045);
 }
 
 .footer {
   margin-top: 38px;
-  color: #555162;
+  color: #756b5c;
   font-size: 10px;
   text-align: center;
   letter-spacing: 0.04em;
@@ -849,7 +854,7 @@ button {
     linear-gradient(
       135deg,
       rgba(255,255,255,0.012),
-      rgba(155, 124, 255, 0.018)
+      rgba(227, 182, 87, 0.025)
     ),
     var(--panel);
   transition:
@@ -951,55 +956,55 @@ button {
 -------------------------------------------------- */
 
 :root[data-theme="light"] {
-  --bg: #f5f4f9;
-  --bg-soft: #eeedf4;
-  --panel: #ffffff;
-  --panel-2: #f3f1f9;
-  --panel-3: #ebe8f3;
+  --bg: #f3efe5;
+  --bg-soft: #ece5d7;
+  --panel: #fffcf5;
+  --panel-2: #f7f0e3;
+  --panel-3: #efe5d3;
 
-  --border: rgba(92, 72, 170, 0.16);
-  --border-strong: rgba(92, 72, 170, 0.3);
+  --border: rgba(139, 101, 29, 0.18);
+  --border-strong: rgba(139, 101, 29, 0.32);
 
-  --purple: #6547d9;
-  --purple-bright: #5638c7;
-  --purple-soft: rgba(101, 71, 217, 0.09);
+  --purple: #9a6b17;
+  --purple-bright: #7e5610;
+  --purple-soft: rgba(227, 182, 87, 0.16);
 
-  --blue: #3478d4;
-  --green: #168a58;
-  --yellow: #b77b00;
-  --red: #c83f59;
+  --blue: #237a58;
+  --green: #237a58;
+  --yellow: #9a6b17;
+  --red: #b64f46;
 
-  --text: #171421;
-  --text-soft: #4d4859;
-  --muted: #777181;
+  --text: #1c1a16;
+  --text-soft: #544c40;
+  --muted: #7d7365;
 
-  --shadow: 0 18px 60px rgba(35, 28, 55, 0.12);
+  --shadow: 0 18px 60px rgba(73, 55, 23, 0.12);
 }
 
 html[data-theme="light"] body {
   background:
-    radial-gradient(circle at 50% -10%, rgba(112, 78, 210, 0.1), transparent 38%),
-    radial-gradient(circle at 100% 20%, rgba(53, 93, 190, 0.05), transparent 32%),
+    radial-gradient(circle at 50% -10%, rgba(227, 182, 87, 0.13), transparent 38%),
+    radial-gradient(circle at 100% 20%, rgba(79, 214, 156, 0.07), transparent 32%),
     var(--bg);
 }
 
 html[data-theme="light"] .stat,
 html[data-theme="light"] .holder-row {
-  background: rgba(255, 255, 255, 0.82);
+  background: rgba(255, 252, 245, 0.90);
 }
 
 html[data-theme="light"] .search {
-  background: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 252, 245, 0.96);
 }
 
 html[data-theme="light"] .whisper.dedication {
   background:
     linear-gradient(
       135deg,
-      rgba(255, 209, 102, 0.16),
-      rgba(155, 124, 255, 0.04)
+      rgba(227, 182, 87, 0.18),
+      rgba(227, 182, 87, 0.045)
     ),
-    rgba(255, 255, 255, 0.9);
+    rgba(255, 252, 245, 0.94);
 }
 
 html[data-theme="light"] .progress-track {
@@ -1007,7 +1012,7 @@ html[data-theme="light"] .progress-track {
 }
 
 html[data-theme="light"] .footer {
-  color: #918c9d;
+  color: #8a806f;
 }
 
 
@@ -1057,7 +1062,7 @@ html[data-theme="light"] .footer {
   height: 14px;
   border-radius: 50%;
   background: var(--purple);
-  box-shadow: 0 0 9px rgba(155,124,255,.45);
+  box-shadow: 0 0 9px rgba(227,182,87,.45);
   transition: transform .2s ease;
 }
 

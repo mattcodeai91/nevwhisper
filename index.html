@@ -2547,16 +2547,18 @@ async function recoverHistoricalBlock(
       be missed by the generic recursive parser.
     */
 
-    let found =
-      await processWhisperPayload(
-        payload,
-        block,
-        block,
-        true
-      );
+    /*
+      For this known recovery block, process the raw
+      transaction array explicitly. Do this regardless of
+      what the generic recursive parser found, because the
+      block contains both a network reward and a user memo.
+      The reward is filtered by processWhisperPayload and
+      the user transaction is persisted by tx_hash.
+    */
+
+    let found = [];
 
     if (
-      found.length === 0 &&
       payload &&
       Array.isArray(payload.transactions)
     ) {
@@ -2572,6 +2574,16 @@ async function recoverHistoricalBlock(
       found =
         await processWhisperPayload(
           transactions,
+          block,
+          block,
+          true
+        );
+
+    } else {
+
+      found =
+        await processWhisperPayload(
+          payload,
           block,
           block,
           true

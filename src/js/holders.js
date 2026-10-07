@@ -177,8 +177,8 @@ function renderHistoricalRebuild(report, liveHeight) {
   if (els.summary) {
     els.summary.innerHTML = [
       ["Chain scanned", Number.isFinite(reportHeight) ? "#" + formatNumber(reportHeight) : "—"],
-      ["Positive holders", "Rebuilding"],
-      ["Positive balance", "Rebuilding"]
+      ["Holders", "Rebuilding"],
+      ["Circulating Supply", "Rebuilding"]
     ].map(([label, value]) =>
       '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) +
       '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>'
@@ -242,8 +242,8 @@ function render(report, liveHeight = null) {
 
   els.summary.innerHTML = [
     ["Chain scanned", "#" + formatNumber(scannedHeight)],
-    ["Positive holders", formatNumber(diagnostics.positiveAddresses)],
-    ["Positive balance", (diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
+    ["Holders", formatNumber(diagnostics.positiveAddresses)],
+    ["Circulating Supply", (diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
   ].map(([label, value]) => '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) + '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>').join("");
 
   els.list.innerHTML = top.length ? top.map(holder => {

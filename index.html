@@ -3866,8 +3866,8 @@ function renderTopHolders(report) {
     '<div class="holder-summary-card"><div class="holder-summary-label">Chain scanned</div><div class="holder-summary-value">#' +
       escapeHtml(formatNumber(report && report.chainHeight)) +
     '</div></div>' +
-    '<div class="holder-summary-card"><div class="holder-summary-label">Positive holders</div><div class="holder-summary-value">' +
-      escapeHtml(formatNumber(diagnostics.positiveAddresses)) +
+    '<div class="holder-summary-card"><div class="holder-summary-label">Circulating Supply</div><div class="holder-summary-value">' +
+      escapeHtml(diagnostics.totalPositiveBalanceNEV || "—") +
     '</div></div>' +
     '<div class="holder-summary-card"><div class="holder-summary-label">Positive balance</div><div class="holder-summary-value">' +
       escapeHtml(diagnostics.totalPositiveBalanceNEV || '—') +

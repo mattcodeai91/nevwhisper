@@ -65,7 +65,7 @@ function render(report) {
   }).join("") : '<div class="empty">No positive holders in the persisted report.</div>';
 
   if (els.note) els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
-  if (els.status) els.status.textContent = "LIVE · Scanned through #" + formatNumber(report.chainHeight) + " · Verifying 1 block · Live sync every 15 seconds";
+  if (els.status) { els.status.className = "holder-status live"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Live · Scanned through #' + formatNumber(report.chainHeight) + "</span>"; }
 
   els.list.querySelectorAll("[data-copy-address]").forEach(button => {
     button.addEventListener("click", async () => {
@@ -91,11 +91,12 @@ async function load() {
     render(report);
   } catch (error) {
     console.error("Holder report load failed:", error);
-    if (els.status) els.status.textContent = "Unable to load holder report · retrying…";
+    if (els.status) { els.status.className = "holder-status failed"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Failed · Retrying…</span>'; }
   }
 }
 
 export function initHoldersView() {
+  if (els.status) { els.status.className = "holder-status syncing"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Syncing…</span>'; }
   load();
-  setInterval(load, 15000);
+  setInterval(() => { if (els.status) { els.status.className = "holder-status syncing"; els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>Syncing…</span>'; } load(); }, 15000);
 }

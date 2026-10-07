@@ -1,0 +1,21 @@
+{
+  "generatedAt": "2026-10-07T09:06:27.148Z",
+  "chain": "NEV369",
+  "chainHeight": 6487,
+  "startHeight": 7700,
+  "endHeight": 7799,
+  "effectiveStart": 6488,
+  "effectiveEnd": 6487,
+  "balances": {},
+  "stats": {
+    "transactions": 0,
+    "transfers": 0,
+    "rewards": 0,
+    "genesisLike": 0,
+    "noRecipient": 0,
+    "genesisTransactions": 0,
+    "volume": "0",
+    "fees": "0",
+    "crownTax": "0"
+  }
+}

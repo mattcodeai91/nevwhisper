@@ -309,10 +309,35 @@ function renderHistoricalProgress(liveHeight) {
     balanceNEV: formatNev(balance)
   }));
 
+  const isCurrent =
+    Number.isFinite(live) &&
+    historicalScanHeight >= live;
+
+  /*
+    Once the Genesis rebuild is effectively at the live tip,
+    any remaining/new blocks are a live catch-up, not another
+    historical rebuild. Keep "Historical rebuild" for the
+    substantial Genesis -> live pass only.
+  */
+  const isLiveSync =
+    !isCurrent &&
+    Number.isFinite(live) &&
+    historicalScanHeight >= 0 &&
+    live - historicalScanHeight <= 25;
+
   if (els.updated) {
-    els.updated.textContent =
-      "Live rebuild #" + formatNumber(Math.max(0, historicalScanHeight)) +
-      (Number.isFinite(live) ? " / #" + formatNumber(live) : "");
+    if (isCurrent) {
+      els.updated.textContent =
+        "Live index #" + formatNumber(historicalScanHeight);
+    } else if (isLiveSync) {
+      els.updated.textContent =
+        "Live sync #" + formatNumber(Math.max(0, historicalScanHeight)) +
+        " / #" + formatNumber(live);
+    } else {
+      els.updated.textContent =
+        "Historical rebuild #" + formatNumber(Math.max(0, historicalScanHeight)) +
+        (Number.isFinite(live) ? " / #" + formatNumber(live) : "");
+    }
   }
 
   if (els.summary) {
@@ -340,17 +365,28 @@ function renderHistoricalProgress(liveHeight) {
   }
 
   if (els.note) {
-    els.note.textContent =
-      "Live holder rebuild from Genesis #0. Balances above are recalculated from verified blocks and update continuously while the scan runs.";
+    if (isCurrent) {
+      els.note.textContent =
+        "Holder index verified from Genesis #0 through the live chain. New blocks are applied automatically.";
+    } else if (isLiveSync) {
+      els.note.textContent =
+        "Live holder index is catching up with newly mined blocks.";
+    } else {
+      els.note.textContent =
+        "Historical holder rebuild from Genesis #0. Balances above are recalculated from verified blocks and update continuously while the scan runs.";
+    }
   }
 
   const nextBlock = Math.max(0, historicalScanHeight + 1);
+
   setHolderStatus(
-    historicalScanHeight >= live && Number.isFinite(live) ? "live" : "syncing",
-    historicalScanHeight >= live && Number.isFinite(live)
+    isCurrent ? "live" : "syncing",
+    isCurrent
       ? "Chain current"
-      : "Historical rebuild",
-    historicalScanHeight >= live && Number.isFinite(live)
+      : isLiveSync
+        ? "Live holder sync"
+        : "Historical rebuild",
+    isCurrent
       ? "Verified through #" + formatNumber(historicalScanHeight)
       : "Scanning block #" + formatNumber(nextBlock) +
         (Number.isFinite(live) ? " of #" + formatNumber(live) : "")

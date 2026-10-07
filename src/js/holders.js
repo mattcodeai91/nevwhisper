@@ -19,7 +19,6 @@ const els = {
   status: document.getElementById("holderStatus"),
   statusLabel: document.getElementById("holderStatusLabel"),
   statusDetail: document.getElementById("holderStatusDetail"),
-  countdown: document.getElementById("holderCountdown"),
   updated: document.getElementById("holderUpdated"),
   summary: document.getElementById("holderSummary"),
   list: document.getElementById("holderList"),
@@ -139,10 +138,12 @@ function setHolderStatus(kind, label, detail) {
   if (els.statusLabel) els.statusLabel.textContent = label;
   if (els.statusDetail) els.statusDetail.textContent = detail;
   if (els.status) {
-    els.status.className = "holder-status " + kind;
-    els.status.innerHTML = '<span class="status-light" aria-hidden="true"></span><span>' + escapeHtml(label) + '</span>';
+    els.status.className = "scan-widget " + kind;
+    els.status.innerHTML =
+      '<span class="status-light" aria-hidden="true"></span><span>' +
+      escapeHtml(label) +
+      '</span>';
   }
-  if (els.countdown) els.countdown.textContent = "Live sync every 15 seconds";
 }
 
 function hasValidRewardAccounting(report) {

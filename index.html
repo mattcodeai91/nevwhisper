@@ -3879,7 +3879,7 @@ function renderTopHolders(report) {
   }
 
   els.holdersList.innerHTML = holders.map(function(holder) {
-    return
+    return (
       '<article class="holder-row">' +
         '<div class="holder-rank">#' + escapeHtml(holder.rank) + '</div>' +
         '<div class="holder-address">' +

@@ -97,8 +97,8 @@ const els = {
   statusDetail:
     document.getElementById("statusDetail"),
 
-  countdown:
-    document.getElementById("countdown"),
+  scanWidget:
+    document.getElementById("memoScanWidget"),
 
   liveDot:
     document.getElementById("liveDot"),
@@ -2088,6 +2088,16 @@ function stopLivePolling() {
    STATUS
 ================================================== */
 
+function setMemoScanWidget(kind, label) {
+  if (els.scanWidget) {
+    els.scanWidget.className = "scan-widget " + kind;
+  }
+
+  if (els.liveStatus) {
+    els.liveStatus.textContent = label;
+  }
+}
+
 function setScanningStatus(
   label,
   detail
@@ -2099,19 +2109,10 @@ function setScanningStatus(
   els.statusDetail.textContent =
     detail;
 
-  els.liveStatus.textContent =
-    "SCANNING";
-
-  els.liveDot.classList.add(
-    "scanning"
+  setMemoScanWidget(
+    "syncing",
+    label
   );
-
-  els.liveDot.classList.remove(
-    "error"
-  );
-
-  els.countdown.textContent =
-    "Live sync every 15 seconds";
 }
 
 
@@ -2123,16 +2124,10 @@ function setCurrentStatus() {
   els.statusDetail.textContent =
     `Verified through #${state.verifiedThrough}`;
 
-  els.liveStatus.textContent =
-    "LIVE";
-
-  els.liveDot.classList.remove(
-    "scanning",
-    "error"
+  setMemoScanWidget(
+    "live",
+    "Chain current"
   );
-
-  els.countdown.textContent =
-    "Live sync every 15 seconds";
 }
 
 
@@ -2147,17 +2142,10 @@ function setErrorStatus(
   els.statusDetail.textContent =
     detail;
 
-  if (els.liveStatus) {
-    els.liveStatus.textContent = "PAUSED";
-  }
-
-  if (els.liveDot) {
-    els.liveDot.classList.remove("scanning");
-    els.liveDot.classList.add("error");
-  }
-
-  els.countdown.textContent =
-    "Retrying live sync every 15 seconds";
+  setMemoScanWidget(
+    "failed",
+    label || "Paused"
+  );
 }
 
 

@@ -177,7 +177,14 @@
 
 
   <section id="holdersView" class="holders-view" aria-labelledby="holdersTitle">
-    <div class="holder-status" id="holderStatus">Loading live holder report…</div>
+    <section class="status-panel holder-status-panel">
+      <div class="status-main">
+        <div id="holderStatusLabel" class="status-label">Syncing</div>
+        <div id="holderStatusDetail" class="status-detail">Checking holder scan against the live chain</div>
+      </div>
+      <div id="holderCountdown" class="countdown">Live sync every 15 seconds</div>
+    </section>
+    <div class="holder-status" id="holderStatus" aria-live="polite"><span class="status-light" aria-hidden="true"></span><span>Syncing…</span></div>
     <div class="section-heading">
       <div id="holdersTitle" class="section-title">Top 10 Holders</div>
       <div class="section-count" id="holderUpdated">—</div>

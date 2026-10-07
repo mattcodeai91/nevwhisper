@@ -31,7 +31,7 @@ jobs:
 
       - name: Scan Genesis to live tip
         env:
-          CONCURRENCY: "8"
+          CONCURRENCY: "2"
         run: node tools/scan-top-holders.mjs
 
       - name: Publish report artifact

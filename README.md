@@ -2,29 +2,28 @@
 
 Live NEV369 memo reader and chain-derived holder analytics.
 
-NevWhisper is a lightweight public web application for reading **NEV369 on-chain memo messages ("whispers")** and inspecting the persisted **Top Holders** report produced from raw block data. The project is intentionally simple: static frontend files, a small set of Node.js scanning tools, and GitHub Actions for resumable data collection.
+NevWhisper is a lightweight public web application for reading **NEV369 on-chain memo messages ("whispers")** and inspecting a live **Top Holders** ranking derived from raw block data.
 
-## What is NEV369?
+## Live application
 
-NEV369 is the NEV369 blockchain (NEV369), a post-quantum Layer-1 network. NevWhisper does not attempt to replace the network explorer; it provides a focused, public-facing view of memo activity and holder analytics derived from chain data.
+- **NevWhisper:** https://mattcodeai91.github.io/nevwhisper/
+- **Top Holders tab:** https://mattcodeai91.github.io/nevwhisper/?tab=holders
+- **NEV369 Explorer:** https://q-lock-ecosystem.com/explorer/
+- **Persisted holder state:** `holder-scan-data` branch
+
+The former standalone Top Holders site now redirects to the unified Top Holders tab.
 
 ## Features
 
-- **Live Memo Reader** — reads persisted whispers and keeps the archive current.
-- **Genesis-aware scanning** — the scanner can start at block 0 and resume from its persisted checkpoint.
-- **Raw-block recovery** — recent blocks can be rechecked so memos missed by aggregate endpoints can still be recovered.
-- **Top Holders** — displays the latest persisted chain-derived balance ranking.
-- **Address tools** — long addresses are shortened for readability and can be copied with one click.
-- **Explorer links** — blocks, transactions, and addresses link back to the NEV369 explorer.
-- **Resumable CI** — holder chunks are persisted on the `holder-scan-data` branch so interrupted scans do not have to start over.
-- **Automated live self-test** — CI exercises the production site against real NEV369 data.
-
-## Live links
-
-- **NevWhisper:** https://mattcodeai91.github.io/nevwhisper/
-- **Top Holders:** https://mattcodeai91.github.io/nevwhisper-holders/
-- **NEV369 Explorer:** https://q-lock-ecosystem.com/explorer/
-- **Holder data branch:** https://github.com/mattcodeai91/nevwhisper/tree/holder-scan-data
+- **Memo Reader** — reads NEV369 memo transactions and maintains a browser-side archive.
+- **Genesis → Live verification** — verifies chain history and catches up to the current chain tip.
+- **Raw-block recovery** — rechecks recent raw blocks so memos missed by aggregate endpoints can still be recovered.
+- **Top Holders** — ranks addresses by balances derived from raw NEV369 transactions.
+- **Live holder rebuild** — when the persisted holder snapshot is invalid or incomplete, the browser can rebuild balances from Genesis and show balances as the scan advances.
+- **Incremental holder publication** — GitHub Actions maintain a resumable authoritative holder snapshot on the `holder-scan-data` branch.
+- **Address tools** — holder addresses can be opened in the explorer or copied directly.
+- **Dark / Light themes** — shared visual system across Memo Reader and Top Holders.
+- **Production self-test** — GitHub Actions exercise the deployed application against live chain data.
 
 ## Project structure
 
@@ -33,42 +32,51 @@ nevwhisper/
 ├── .github/
 │   └── workflows/
 │       ├── live-self-test.yml
-│       ├── merge-top-holders.yml
 │       └── top-holders.yml
 ├── holders/
-│   └── index.html              # legacy standalone holder view
+│   └── index.html              # compatibility redirect to ?tab=holders
 ├── src/
 │   ├── css/
 │   │   └── app.css             # shared application styles
 │   └── js/
-│       ├── app.js              # memo reader, scanner UI, persistence
-│       └── holders.js          # Top Holders tab
+│       ├── app.js              # Memo Reader, persistence, live polling, tabs
+│       └── holders.js          # Top Holders live verification/rebuild UI
 ├── tools/
-│   ├── merge-top-holders.mjs   # merge persisted scan chunks
-│   └── scan-top-holders.mjs    # scan a block range
-├── index.html                  # unified Memo Reader / Top Holders SPA
+│   └── update-top-holders.mjs  # authoritative incremental holder scanner
+├── index.html                  # unified Memo Reader / Top Holders application
+├── LICENSE
 └── README.md
 ```
 
 ## Architecture
 
-The frontend is a static GitHub Pages application.
+### Frontend
 
-1. The browser loads `index.html`.
-2. `src/css/app.css` provides the shared dark UI.
-3. `src/js/app.js` runs the memo archive, IndexedDB persistence, raw block recovery, and live polling.
-4. `src/js/holders.js` reads the published `top-holders.json` report from the `holder-scan-data` branch.
-5. The holder scanner in `tools/scan-top-holders.mjs` fetches raw blocks and emits resumable chunk reports.
-6. `tools/merge-top-holders.mjs` combines completed chunks into the published holder report.
-7. GitHub Actions persist chunks and publish the merged report.
+The application is a static GitHub Pages site.
 
-The live frontend does **not** modify holder-scan data. CI owns scanning and publication; the browser is a read-only consumer of the report.
+1. `index.html` provides the unified application shell.
+2. `src/css/app.css` provides the shared UI used by both tabs.
+3. `src/js/app.js` manages the Memo Reader, IndexedDB persistence, raw-block recovery, live polling, themes, and tab selection.
+4. `src/js/holders.js` reads the published holder snapshot and independently verifies newer blocks in the browser.
+5. If the published snapshot fails reward-accounting validation, the Top Holders tab performs a browser-side Genesis rebuild and displays live balances while scanning.
+
+The browser never publishes holder state back to GitHub.
+
+### Holder scanner
+
+The authoritative persisted holder state is maintained by:
+
+- `.github/workflows/top-holders.yml`
+- `tools/update-top-holders.mjs`
+- the `holder-scan-data` branch
+
+The workflow runs incrementally, resumes from the persisted snapshot, catches up to the live chain, and pushes the updated `top-holders.json` back to `holder-scan-data`.
+
+NEV amounts are processed in integer base units with JavaScript `BigInt`. Protocol mining rewards are accounted for as **369 NEV per successful block** rather than trusting an arbitrary `NETWORK_REWARD.amount` field.
 
 ## Running locally
 
 No build system is required.
-
-### Option 1 — simple static server
 
 From the repository root:
 
@@ -82,72 +90,53 @@ Then open:
 http://localhost:8080/
 ```
 
-### Option 2 — Node.js
+Top Holders can be opened directly with:
 
-Any static HTTP server can be used. The frontend uses ES modules, so opening `index.html` directly with a `file://` URL is not recommended.
+```text
+http://localhost:8080/?tab=holders
+```
+
+Because the frontend uses ES modules, opening `index.html` directly with a `file://` URL is not recommended.
 
 ## Holder scanner
 
-The scanner is a plain Node.js ES module and requires Node.js 20+ (CI uses Node 22).
+The incremental scanner requires Node.js 20+.
 
-Example:
+Normal production scanning is handled by GitHub Actions. The workflow currently invokes:
 
 ```bash
-START_HEIGHT=0 END_HEIGHT=199 node tools/scan-top-holders.mjs
+node tools/update-top-holders.mjs
 ```
 
-It writes:
+Important production scanner settings are defined in `.github/workflows/top-holders.yml`, including the NEV369 node endpoint and request pacing.
 
-```text
-chunk-output/chunk.json
-```
+## Data safety
 
-The merger expects persisted chunk directories and writes:
-
-```text
-top-holders.json
-```
-
-The GitHub Actions workflow handles the normal persistent storage and publication path.
-
-## Tools and data safety
-
-The scanner uses conservative request pacing and retries for transient HTTP failures. Completed chunks are stored on the dedicated `holder-scan-data` branch. This provides resumability and keeps generated holder data separate from application source.
-
-Amounts are processed as integer base units using JavaScript `BigInt`; the tools do not convert chain amounts through floating-point arithmetic.
-
-The holder report is a **chain-derived ranking**, not a claim that it is an official rich list.
-
-## Environment variables
-
-### `tools/scan-top-holders.mjs`
-
-| Variable | Default | Purpose |
-|---|---|---|
-| `NEV369_NODE` | `https://q-lock-ecosystem.com/node` | Node API base URL |
-| `START_HEIGHT` | `0` | First block in the requested scan range |
-| `END_HEIGHT` | `START_HEIGHT + 199` | Last block in the requested scan range |
-| `CONCURRENCY` | `1` | Number of scan workers |
-| `REQUEST_DELAY_MS` | `900` | Minimum spacing between requests |
-
-No API keys or secrets are required by the application.
+- The active holder scanner is isolated from frontend source changes through workflow path filters.
+- Persisted holder data lives on the dedicated `holder-scan-data` branch.
+- The scheduled scan uses a non-cancelling concurrency group so a newer schedule does not terminate an in-progress scan.
+- Browser-side rebuild checkpoints are local to the browser and do not overwrite the authoritative GitHub snapshot.
+- Chain amounts are handled with integer arithmetic.
 
 ## GitHub Actions
 
-- **Top Holders Scan** — scans missing block chunks, persists completed chunks, and publishes a merged report when the complete range is available.
-- **Top Holders Merge** — independently rebuilds the published report from persisted chunks.
-- **Live Self-Test** — opens the production site with Playwright and validates the raw-block memo recovery path.
+### NEV369 Top Holders Scan
 
-The workflows use a non-cancelling concurrency group so an in-progress scan is not interrupted by another scheduled invocation.
+Runs the authoritative incremental holder scanner and publishes the updated snapshot to `holder-scan-data`.
 
-## Development principles
+### NevWhisper live self-test
 
-- Prefer small, readable modules over a monolithic page.
-- Keep chain-derived data separate from frontend source.
-- Preserve resumability before optimizing throughput.
-- Use integer arithmetic for blockchain amounts.
-- Treat upstream data as untrusted input and validate it.
-- Avoid destructive Git operations during maintenance.
+Loads the deployed site with Playwright and validates the production Memo Reader against live NEV369 data.
+
+## Maintenance rule
+
+The active holder pipeline is intentionally small:
+
+```text
+top-holders.yml → update-top-holders.mjs → holder-scan-data/top-holders.json
+```
+
+Legacy chunk scanners and the old merge workflow have been removed so there is only one authoritative holder-scanning path.
 
 ## License
 

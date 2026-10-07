@@ -25,11 +25,19 @@ jobs:
     timeout-minutes: 30
 
     steps:
+      - name: Checkout scanner code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          path: source
+
       - name: Checkout holder state
         uses: actions/checkout@v4
         with:
           ref: holder-scan-data
           fetch-depth: 1
+          path: data
 
       - name: Node 22
         uses: actions/setup-node@v4
@@ -40,9 +48,11 @@ jobs:
         env:
           NEV369_NODE: https://q-lock-ecosystem.com/node
           REQUEST_DELAY_MS: "900"
-        run: node tools/update-top-holders.mjs
+        working-directory: data
+        run: node ../source/tools/update-top-holders.mjs
 
       - name: Publish updated holder state
+        working-directory: data
         run: |
           set -euo pipefail
           test -s top-holders.json

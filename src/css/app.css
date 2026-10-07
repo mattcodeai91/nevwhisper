@@ -706,3 +706,6 @@ button {
 
 /* Persistent NevWhisper LIVE masthead */
 .header{position:sticky;top:0;z-index:20;}
+
+/* The masthead is brand-only; live state remains in the status panel. */
+.live-area{display:none;}

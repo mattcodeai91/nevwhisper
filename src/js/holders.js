@@ -65,7 +65,7 @@ function render(report) {
   }).join("") : '<div class="empty">No positive holders in the persisted report.</div>';
 
   if (els.note) els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
-  if (els.status) els.status.textContent = "LIVE · Holder report loaded";
+  if (els.status) els.status.textContent = "LIVE · Scanned through #" + formatNumber(report.chainHeight) + " · Verifying 1 block · Live sync every 15 seconds";
 
   els.list.querySelectorAll("[data-copy-address]").forEach(button => {
     button.addEventListener("click", async () => {
@@ -97,5 +97,5 @@ async function load() {
 
 export function initHoldersView() {
   load();
-  setInterval(load, 30000);
+  setInterval(load, 15000);
 }

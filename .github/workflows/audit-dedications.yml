@@ -12,71 +12,44 @@ jobs:
   audit:
     runs-on: ubuntu-latest
     steps:
-      - name: Inspect chain dedication data
+      - name: Inspect historical dedication coverage
         run: |
           node <<'NODE'
-          const BASES = [
-            "https://nevwhisper-proxy.mattcodeai91.workers.dev",
-            "https://q-lock-ecosystem.com/node"
-          ];
+          const BASE = "https://q-lock-ecosystem.com/node";
 
-          async function get(url) {
-            const r = await fetch(url, { headers: { accept: "application/json" } });
-            if (!r.ok) throw new Error(url + " HTTP " + r.status);
+          async function get(path) {
+            const r = await fetch(BASE + path, { headers: { accept: "application/json" } });
+            if (!r.ok) throw new Error(path + " HTTP " + r.status);
             return r.json();
           }
 
-          function collectBlocks(value, out = []) {
-            if (Array.isArray(value)) {
-              for (const item of value) collectBlocks(item, out);
-              return out;
+          for (const path of ["/chain?limit=10000", "/chain?limit=7000", "/chain?offset=0&limit=7000"]) {
+            try {
+              const data = await get(path);
+              const blocks = Array.isArray(data) ? data : (Array.isArray(data.blocks) ? data.blocks : []);
+              const dedicated = blocks.filter(b => String(b.block_dedication ?? b.dedication ?? "").trim());
+              const heights = blocks.map(b => Number(b.index ?? b.height ?? b.block_height ?? b.block)).filter(Number.isFinite);
+              console.log(path, "blocks", blocks.length, "dedicated", dedicated.length,
+                "min", heights.length ? Math.min(...heights) : null,
+                "max", heights.length ? Math.max(...heights) : null);
+            } catch (e) {
+              console.log(path, "FAILED", e.message);
             }
-            if (!value || typeof value !== "object") return out;
-            const h = Number(value.index ?? value.height ?? value.block_height ?? value.block);
-            if (Number.isFinite(h) && (
-              "block_dedication" in value ||
-              "hash" in value ||
-              "previous_hash" in value
-            )) out.push(value);
-            for (const v of Object.values(value)) {
-              if (v && typeof v === "object") collectBlocks(v, out);
-            }
-            return out;
           }
 
-          for (const base of BASES) {
+          const info = await get("/info");
+          const tip = Number(info.chain_height ?? info.height);
+          console.log("tip", tip);
+
+          const samples = [0,1,2,10,100,1000,2000,3000,4000,4700,5000,5960,6000,6500,6689,6729,tip]
+            .filter((v,i,a) => Number.isInteger(v) && v >= 0 && v <= tip && a.indexOf(v) === i);
+
+          for (const h of samples) {
             try {
-              const chain = await get(base + "/chain");
-              const blocks = collectBlocks(chain);
-              const byHeight = new Map();
-              for (const b of blocks) {
-                const h = Number(b.index ?? b.height ?? b.block_height ?? b.block);
-                if (Number.isFinite(h)) byHeight.set(h, b);
-              }
-              const unique = [...byHeight.values()].sort((a,b) =>
-                Number(a.index ?? a.height ?? a.block_height ?? a.block) -
-                Number(b.index ?? b.height ?? b.block_height ?? b.block)
-              );
-              const dedicated = unique.filter(b => {
-                const d = b.block_dedication ?? b.dedication;
-                return d !== undefined && d !== null && String(d).trim() !== "";
-              });
-              console.log("\nBASE", base);
-              console.log("top-level shape", Array.isArray(chain) ? "array(" + chain.length + ")" : Object.keys(chain || {}));
-              console.log("blocks discovered", unique.length);
-              console.log("blocks with dedication", dedicated.length);
-              console.log("first 20 dedications");
-              for (const b of dedicated.slice(0,20)) {
-                const h = Number(b.index ?? b.height ?? b.block_height ?? b.block);
-                console.log(h, JSON.stringify(b.block_dedication ?? b.dedication));
-              }
-              console.log("last 20 dedications");
-              for (const b of dedicated.slice(-20)) {
-                const h = Number(b.index ?? b.height ?? b.block_height ?? b.block);
-                console.log(h, JSON.stringify(b.block_dedication ?? b.dedication));
-              }
+              const b = await get("/block/" + h);
+              console.log("sample", h, JSON.stringify(b.block_dedication ?? b.dedication ?? null));
             } catch (e) {
-              console.log("\nBASE", base, "FAILED", e.message);
+              console.log("sample", h, "FAILED", e.message);
             }
           }
           NODE

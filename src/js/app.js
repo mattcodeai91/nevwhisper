@@ -2629,9 +2629,12 @@ function renderWhispers() {
       "—";
 
     const tx =
-      whisper.tx ||
-      whisper.tx_hash ||
-      "";
+      whisper.kind ===
+        "block_dedication"
+        ? ""
+        : whisper.tx ||
+          whisper.tx_hash ||
+          "";
 
     card.innerHTML = `
       <div class="whisper-top">

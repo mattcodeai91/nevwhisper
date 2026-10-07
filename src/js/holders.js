@@ -322,8 +322,8 @@ function renderHistoricalProgress(liveHeight) {
       ["Holders", formatNumber(positive.length)],
       ["Circulating Supply", formatReadableNev(formatNev(totalPositive)) + " NEV"]
     ].map(([label, value]) =>
-      '<div class="holder-stat"><div class="holder-stat-label">' +
-      escapeHtml(label) + '</div><div class="holder-stat-value">' +
+      '<div class="stat holder-stat"><div class="stat-label holder-stat-label">' +
+      escapeHtml(label) + '</div><div class="stat-value holder-stat-value">' +
       escapeHtml(value) + '</div></div>'
     ).join("");
   }
@@ -487,8 +487,8 @@ function render(report, liveHeight = null) {
     ["Holders", formatNumber(diagnostics.positiveAddresses)],
     ["Circulating Supply", formatReadableNev(diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
   ].map(([label, value]) =>
-    '<div class="holder-stat"><div class="holder-stat-label">' +
-    escapeHtml(label) + '</div><div class="holder-stat-value">' +
+    '<div class="stat holder-stat"><div class="stat-label holder-stat-label">' +
+    escapeHtml(label) + '</div><div class="stat-value holder-stat-value">' +
     escapeHtml(value) + '</div></div>'
   ).join("");
 

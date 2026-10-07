@@ -2276,6 +2276,50 @@ function updateArchitect(
    SAVE / MERGE WHISPERS
 ================================================== */
 
+async function processBlockPayload(
+  payload,
+  block,
+  markNew = true
+) {
+
+  /*
+    A NEV369 raw block has the authoritative transaction
+    list at payload.transactions. Process that list directly
+    and attach the block height to every transaction.
+
+    Keep the generic recursive parser as a fallback for
+    alternate node response shapes.
+  */
+  if (
+    payload &&
+    Array.isArray(payload.transactions)
+  ) {
+
+    const transactions =
+      payload.transactions.map(
+        transaction => ({
+          ...transaction,
+          block
+        })
+      );
+
+    return processWhisperPayload(
+      transactions,
+      block,
+      block,
+      markNew
+    );
+  }
+
+  return processWhisperPayload(
+    payload,
+    block,
+    block,
+    markNew
+  );
+}
+
+
 async function processWhisperPayload(
   payload,
   startHeight,
@@ -2418,9 +2462,8 @@ async function scanBatch(
       );
 
     const found =
-      await processWhisperPayload(
+      await processBlockPayload(
         payload,
-        height,
         height,
         true
       );
@@ -2587,39 +2630,12 @@ async function recoverHistoricalBlock(
       the user transaction is persisted by tx_hash.
     */
 
-    let found = [];
-
-    if (
-      payload &&
-      Array.isArray(payload.transactions)
-    ) {
-
-      const transactions =
-        payload.transactions.map(
-          transaction => ({
-            ...transaction,
-            block
-          })
-        );
-
-      found =
-        await processWhisperPayload(
-          transactions,
-          block,
-          block,
-          true
-        );
-
-    } else {
-
-      found =
-        await processWhisperPayload(
-          payload,
-          block,
-          block,
-          true
-        );
-    }
+    const found =
+      await processBlockPayload(
+        payload,
+        block,
+        true
+      );
 
     if (
       found.length > 0

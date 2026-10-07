@@ -2576,6 +2576,16 @@ function renderWhispers() {
     card.className =
       "whisper";
 
+    const isDedication =
+      whisper.kind ===
+        "block_dedication";
+
+    if (isDedication) {
+      card.classList.add(
+        "dedication"
+      );
+    }
+
     if (
       whisper.tx_hash &&
       state.newWhisperTxs.has(
@@ -2603,9 +2613,19 @@ function renderWhispers() {
     const block =
       Number(whisper.block);
 
+    const memoText =
+      isDedication
+        ? String(
+            whisper.memo || ""
+          ).replace(
+            /^BLOCK DEDICATION\s*[—–-]\s*/i,
+            ""
+          )
+        : whisper.memo;
+
     const memo =
       escapeHtml(
-        whisper.memo
+        memoText
       );
 
     const timestamp =
@@ -2656,6 +2676,12 @@ function renderWhispers() {
         </div>
 
       </div>
+
+      ${
+        isDedication
+          ? '<div class="dedication-badge">BLOCK DEDICATION</div>'
+          : ""
+      }
 
       <div class="memo">
         ${memo}

@@ -2732,14 +2732,6 @@ async function pollLiveTip() {
         const found =
           await backfillRecentBlocks();
 
-      /*
-        Confirmed historical recovery target.
-        Block #5960 was observed on the raw node but was
-        missed by the original memo-index pass.
-      */
-
-      await recoverHistoricalBlock(5960);
-
         if (
           found > 0
         ) {
@@ -3592,6 +3584,20 @@ async function init() {
           error
         );
       }
+
+      /*
+        Confirmed historical recovery.
+
+        Block #5960 contains a real user memo in
+        transactions[1]. The normal /whispers archive
+        pass did not expose that transaction, while the
+        raw /block endpoint does.
+
+        Recover it immediately on startup without
+        changing the verified checkpoint.
+      */
+
+      await recoverHistoricalBlock(5960);
 
       setCurrentStatus();
       renderAll();

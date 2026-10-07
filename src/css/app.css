@@ -805,9 +805,11 @@ button {
 .holder-stat-value {
   margin-top: 7px;
   color: var(--text);
-  font-size: 20px;
-  font-weight: 720;
+  font-size: clamp(20px, 2.25vw, 24px);
+  font-weight: 760;
+  line-height: 1.15;
   letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -892,14 +894,18 @@ button {
 
 .holder-amount {
   color: var(--text);
-  font-weight: 750;
-  font-size: 15px;
+  font-weight: 780;
+  font-size: 17px;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  font-variant-numeric: tabular-nums;
 }
 
 .holder-share {
-  margin-top: 3px;
+  margin-top: 5px;
   color: var(--muted);
   font-size: 11px;
+  font-variant-numeric: tabular-nums;
 }
 
 .holder-note {

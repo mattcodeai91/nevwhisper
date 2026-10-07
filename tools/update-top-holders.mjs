@@ -8,6 +8,7 @@ const RETRIES = 10;
 const RETRY_BASE_MS = 2000;
 const SATOSHIS_PER_NEV = 100000000n;
 const BLOCK_REWARD_BASE_UNITS = asBigInt(process.env.NEV369_BLOCK_REWARD_BASE_UNITS || "36900000000");
+const REWARD_ACCOUNTING_VERSION = 2;
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
@@ -147,11 +148,12 @@ async function main() {
 
   const diagnostics = report.diagnostics || {};
   const rewardCount = Number(diagnostics.miningRewards || 0);
-  const recordedPositive = asBigInt(diagnostics.totalPositiveBalanceBaseUnits ?? 0);
-  const expectedMinimumRewardBalance = BigInt(Math.max(0, rewardCount)) * BLOCK_REWARD_BASE_UNITS;
+  const recordedGrossVolume = asBigInt(diagnostics.grossTransferredBaseUnits ?? 0);
+  const expectedMinimumRewardVolume =
+    BigInt(Math.max(0, rewardCount)) * BLOCK_REWARD_BASE_UNITS;
   const invalidRewardAccounting =
     rewardCount > 0 &&
-    recordedPositive < expectedMinimumRewardBalance;
+    recordedGrossVolume < expectedMinimumRewardVolume;
 
   const forceRebuild =
     String(process.env.REBUILD_FROM_GENESIS || "").toLowerCase() === "true" ||
@@ -242,6 +244,8 @@ async function main() {
       totalPositiveBalanceBaseUnits: totalPositive.toString(),
       totalPositiveBalanceNEV: nev(totalPositive),
       maxSupplyNEV: "369369369",
+      rewardAccountingVersion: REWARD_ACCOUNTING_VERSION,
+      blockRewardBaseUnits: BLOCK_REWARD_BASE_UNITS.toString(),
       transactions: stats.transactions,
       transfers: stats.transfers,
       miningRewards: stats.rewards,

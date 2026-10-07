@@ -1,0 +1,89 @@
+name: NevWhisper live self-test
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+  schedule:
+    - cron: "*/30 * * * *"
+
+jobs:
+  live-chain-self-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install Playwright
+        run: |
+          npm init -y
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
+      - name: Verify production site against live NEV369 data
+        env:
+          SITE_URL: https://mattcodeai91.github.io/nevwhisper/
+        run: |
+          node <<'NODE'
+          const { chromium } = require("playwright");
+
+          (async () => {
+            const browser = await chromium.launch({
+              headless: true
+            });
+
+            const page = await browser.newPage();
+
+            page.on("console", message => {
+              if (message.type() === "error") {
+                console.error("[browser]", message.text());
+              }
+            });
+
+            const url =
+              process.env.SITE_URL +
+              "?selftest=1&cachebust=" +
+              Date.now();
+
+            console.log("Opening:", url);
+
+            await page.goto(url, {
+              waitUntil: "domcontentloaded",
+              timeout: 120000
+            });
+
+            await page.waitForFunction(
+              () =>
+                document.documentElement.dataset.nevwhisperSelfTest ===
+                "passed",
+              null,
+              { timeout: 120000 }
+            );
+
+            const result =
+              await page.evaluate(
+                () => window.NevWhisperSelfTestResult
+              );
+
+            console.log(
+              JSON.stringify(result, null, 2)
+            );
+
+            if (!result || result.ok !== true) {
+              throw new Error(
+                "NevWhisper self-test did not pass."
+              );
+            }
+
+            await browser.close();
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE

@@ -1,12 +1,13 @@
 name: NEV369 Top Holders Scan
-# Full-chain holder scan; deliberately rate-limited for the public node.
-
+# Chunked full-chain scan so a rate-limit failure only affects one small chunk.
+# Each chunk is persisted as an artifact; GitHub can re-run only the failed chunk.
 on:
   push:
     branches:
       - main
     paths:
       - "tools/scan-top-holders.mjs"
+      - "tools/merge-top-holders.mjs"
       - ".github/workflows/top-holders.yml"
   workflow_dispatch:
   schedule:
@@ -22,8 +23,12 @@ permissions:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    timeout-minutes: 180
-
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,12 +38,45 @@ jobs:
         with:
           node-version: 22
 
-      - name: Scan Genesis to live tip
+      - name: Scan chunk
         env:
-          CONCURRENCY: "4"
+          START_HEIGHT: ${{ matrix.chunk }}00
+          END_HEIGHT: ${{ matrix.chunk }}99
+          CONCURRENCY: "1"
+          REQUEST_DELAY_MS: "900"
         run: node tools/scan-top-holders.mjs
 
-      - name: Publish report artifact
+      - name: Publish chunk artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nev369-holder-chunk-${{ matrix.chunk }}
+          path: chunk-output/chunk.json
+          retention-days: 30
+
+  aggregate:
+    needs: scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Download all chunk artifacts
+        uses: actions/download-artifact@v5
+        with:
+          pattern: nev369-holder-chunk-*
+          path: chunk-output
+          merge-multiple: false
+
+      - name: Merge holder balances
+        run: node tools/merge-top-holders.mjs chunk-output
+
+      - name: Publish final report artifact
         uses: actions/upload-artifact@v4
         with:
           name: nev369-top-holders

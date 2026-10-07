@@ -2750,6 +2750,30 @@ async function pollLiveTip() {
         );
 
         await startScan();
+
+        /*
+          A newly mined block can contain a memo that is
+          visible through the raw /block endpoint before it
+          is exposed by the aggregate /whispers endpoint.
+
+          The scanner above advances the verified checkpoint
+          using /whispers. Immediately recheck the rolling
+          live window through /block so a brand-new whisper
+          cannot be missed just because the aggregate index
+          has not caught up yet.
+        */
+        try {
+          await backfillRecentBlocks();
+          setCurrentStatus();
+          renderAll();
+        } catch (backfillError) {
+          console.warn(
+            "New-block whisper backfill failed:",
+            backfillError
+          );
+          setCurrentStatus();
+          renderAll();
+        }
       }
 
     } else if (

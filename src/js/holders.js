@@ -42,7 +42,7 @@ function render(report) {
   const maxSupply = diagnostics.maxSupplyNEV || "369369369";
   const top = Array.isArray(report.top10) ? report.top10 : [];
 
-  els.updated.textContent = report.generatedAt ? "Updated " + new Date(report.generatedAt).toLocaleString() : "—";
+  if (els.updated) els.updated.textContent = report.generatedAt ? "Updated " + new Date(report.generatedAt).toLocaleString() : "—";
   els.summary.innerHTML = [
     ["Chain scanned", "#" + formatNumber(report.chainHeight)],
     ["Positive holders", formatNumber(diagnostics.positiveAddresses)],
@@ -64,8 +64,8 @@ function render(report) {
       '</article>';
   }).join("") : '<div class="empty">No positive holders in the persisted report.</div>';
 
-  els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
-  els.status.textContent = "LIVE · Holder report loaded";
+  if (els.note) els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
+  if (els.status) els.status.textContent = "LIVE · Holder report loaded";
 
   els.list.querySelectorAll("[data-copy-address]").forEach(button => {
     button.addEventListener("click", async () => {
@@ -91,7 +91,7 @@ async function load() {
     render(report);
   } catch (error) {
     console.error("Holder report load failed:", error);
-    els.status.textContent = "Unable to load holder report · retrying…";
+    if (els.status) els.status.textContent = "Unable to load holder report · retrying…";
   }
 }
 

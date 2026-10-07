@@ -28,6 +28,8 @@ const els = {
   statusDetail: document.getElementById("holderStatusDetail"),
   updated: document.getElementById("holderUpdated"),
   summary: document.getElementById("holderSummary"),
+  progressPercent: document.getElementById("holderProgressPercent"),
+  progressFill: document.getElementById("holderProgressFill"),
   list: document.getElementById("holderList"),
   note: document.getElementById("holderNote")
 };
@@ -141,6 +143,26 @@ function formatNev(baseUnits) {
   return (negative ? "-" : "") + whole.toString() + (fraction ? "." + fraction : "");
 }
 
+function renderHolderProgress(scannedHeight, liveHeight) {
+  const scanned = Number(scannedHeight);
+  const live = Number(liveHeight);
+
+  let pct = 0;
+  if (Number.isFinite(scanned) && Number.isFinite(live) && live >= 0) {
+    pct = live === 0
+      ? 100
+      : Math.max(0, Math.min(100, ((scanned + 1) / (live + 1)) * 100));
+  }
+
+  if (els.progressPercent) {
+    els.progressPercent.textContent = pct.toFixed(pct >= 99.95 ? 0 : 1) + "%";
+  }
+
+  if (els.progressFill) {
+    els.progressFill.style.width = pct + "%";
+  }
+}
+
 function setHolderStatus(kind, label, detail) {
   if (els.statusLabel) els.statusLabel.textContent = label;
   if (els.statusDetail) els.statusDetail.textContent = detail;
@@ -182,7 +204,7 @@ function holderRowsHtml(top, maxSupply, emptyMessage) {
     const address = String(holder.address || "");
     const tx = escapeHtml(address);
 
-    return '<article class="holder-row">' +
+    return '<article class="holder-row holder-row-card">' +
       '<div class="holder-rank">#' + escapeHtml(holder.rank) + '</div>' +
       '<div><div class="holder-address" title="' + tx + '">' +
       escapeHtml(shorten(address)) + '</div>' +
@@ -279,15 +301,18 @@ function renderHistoricalProgress(liveHeight) {
 
   if (els.summary) {
     els.summary.innerHTML = [
-      ["Chain scanned", historicalScanHeight >= 0 ? "#" + formatNumber(historicalScanHeight) : "#0"],
+      ["Chain Height", Number.isFinite(live) ? "#" + formatNumber(live) : "—"],
+      ["Verified", historicalScanHeight >= 0 ? "#" + formatNumber(historicalScanHeight) : "#0"],
       ["Holders", formatNumber(positive.length)],
       ["Circulating Supply", formatNev(totalPositive) + " NEV"]
     ].map(([label, value]) =>
-      '<div class="holder-card"><div class="holder-label">' +
-      escapeHtml(label) + '</div><div class="holder-value">' +
+      '<div class="holder-stat"><div class="holder-stat-label">' +
+      escapeHtml(label) + '</div><div class="holder-stat-value">' +
       escapeHtml(value) + '</div></div>'
     ).join("");
   }
+
+  renderHolderProgress(historicalScanHeight, live);
 
   if (els.list) {
     els.list.innerHTML = holderRowsHtml(
@@ -441,10 +466,17 @@ function render(report, liveHeight = null) {
   }
 
   els.summary.innerHTML = [
-    ["Chain scanned", "#" + formatNumber(scannedHeight)],
+    ["Chain Height", Number.isFinite(Number(liveHeight)) ? "#" + formatNumber(liveHeight) : "—"],
+    ["Verified", "#" + formatNumber(scannedHeight)],
     ["Holders", formatNumber(diagnostics.positiveAddresses)],
     ["Circulating Supply", (diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
-  ].map(([label, value]) => '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) + '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>').join("");
+  ].map(([label, value]) =>
+    '<div class="holder-stat"><div class="holder-stat-label">' +
+    escapeHtml(label) + '</div><div class="holder-stat-value">' +
+    escapeHtml(value) + '</div></div>'
+  ).join("");
+
+  renderHolderProgress(scannedHeight, liveHeight);
 
   els.list.innerHTML = holderRowsHtml(
     top,

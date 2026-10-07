@@ -205,12 +205,49 @@ button {
   font-size: 12px;
 }
 
-.countdown {
+.scan-widget {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   flex-shrink: 0;
-  color: var(--purple-bright);
   font-size: 13px;
   font-weight: 700;
   letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+.scan-widget .status-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 8px;
+  box-shadow: 0 0 8px currentColor;
+}
+
+.scan-widget.live {
+  color: var(--green);
+}
+
+.scan-widget.live .status-light {
+  background: var(--green);
+}
+
+.scan-widget.syncing {
+  color: var(--yellow);
+}
+
+.scan-widget.syncing .status-light {
+  background: var(--yellow);
+  animation: pulse 1.4s ease-in-out infinite;
+}
+
+.scan-widget.failed {
+  color: var(--red);
+}
+
+.scan-widget.failed .status-light {
+  background: var(--red);
 }
 
 /* --------------------------------------------------
@@ -666,7 +703,7 @@ button {
     gap: 8px;
   }
 
-  .countdown {
+  .scan-widget {
     font-size: 12px;
   }
 
@@ -752,8 +789,7 @@ html[data-theme="light"] body {
 
 html[data-theme="light"] .stat,
 html[data-theme="light"] .holder-card,
-html[data-theme="light"] .holder-row,
-html[data-theme="light"] .holder-status {
+html[data-theme="light"] .holder-row {
   background: rgba(255, 255, 255, 0.82);
 }
 
@@ -844,28 +880,6 @@ html:not([data-theme="light"]) .theme-label:first-child {
 }
 
 
-/* Top Holders live status indicator */
-.holder-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-.status-light {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  flex: 0 0 8px;
-  box-shadow: 0 0 8px currentColor;
-}
-.holder-status.live { color: #34d399; }
-.holder-status.live .status-light { background: #34d399; }
-.holder-status.syncing { color: #f59e0b; }
-.holder-status.syncing .status-light { background: #f59e0b; }
-.holder-status.failed { color: #fb7185; }
-.holder-status.failed .status-light { background: #fb7185; }
 
-
-/* Match the Memo Reader chain-status presentation inside Top Holders. */
+/* Top Holders uses the same status panel and live widget as Memo Reader. */
 .holder-status-panel { margin-bottom: 16px; }
-.holder-status { border: 0; background: transparent; padding: 0 2px; margin-bottom: 14px; }

@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 
 const NODE = process.env.NEV369_NODE || "https://q-lock-ecosystem.com/node";
-const CONCURRENCY = Number(process.env.CONCURRENCY || 2);\nlet nextRequestAt = 0;
+const CONCURRENCY = Number(process.env.CONCURRENCY || 2);
+let nextRequestAt = 0;
 const RETRIES = 7;
 const RETRY_BASE_MS = 750;
 const SATOSHIS_PER_NEV = 100000000n;

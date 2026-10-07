@@ -211,6 +211,42 @@ function bindCopyButtons() {
   });
 }
 
+function knownHolderIdentity(address) {
+  const value =
+    String(address || "");
+
+  if (
+    value.startsWith(
+      "799949b52687bb63"
+    ) &&
+    value.endsWith(
+      "2f9d6e4e8ca7"
+    )
+  ) {
+    return {
+      name: "Nevaeh",
+      locked: true
+    };
+  }
+
+  if (
+    value.startsWith(
+      "05cd7be07a8b6410"
+    ) &&
+    value.endsWith(
+      "db5f99923dca"
+    )
+  ) {
+    return {
+      name: "Architect",
+      locked: false
+    };
+  }
+
+  return null;
+}
+
+
 function holderRowsHtml(top, maxSupply, emptyMessage) {
   if (!top.length) {
     return '<div class="empty">' + escapeHtml(emptyMessage) + '</div>';
@@ -219,11 +255,23 @@ function holderRowsHtml(top, maxSupply, emptyMessage) {
   return top.map(holder => {
     const address = String(holder.address || "");
     const tx = escapeHtml(address);
+    const identity = knownHolderIdentity(address);
+
+    const holderLabel = identity
+      ? '<span class="holder-known-name">' +
+        escapeHtml(identity.name) +
+        '</span>' +
+        (identity.locked
+          ? '<span class="holder-lock-badge">locked</span>'
+          : '')
+      : escapeHtml(shorten(address));
 
     return '<article class="holder-row holder-row-card">' +
       '<div class="holder-rank">#' + escapeHtml(holder.rank) + '</div>' +
-      '<div><div class="holder-address" title="' + tx + '">' +
-      escapeHtml(shorten(address)) + '</div>' +
+      '<div><div class="holder-address' +
+      (identity ? ' holder-known-address' : '') +
+      '" title="' + tx + '">' +
+      holderLabel + '</div>' +
       '<div class="holder-actions">' +
       '<a class="holder-action" href="' + escapeHtml(addressUrl(address)) +
       '" target="_blank" rel="noopener noreferrer">VIEW ↗</a>' +

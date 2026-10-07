@@ -1,4 +1,4 @@
-import { initHoldersView } from "./holders.js?v=20261008-1";
+import { initHoldersView } from "./holders.js?v=20261008-2";
 
 /* NevWhisper main application.
  * Extracted from the original production page without changing scanner logic.

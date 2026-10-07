@@ -881,6 +881,36 @@ button {
   overflow-wrap: anywhere;
 }
 
+.holder-known-address {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 7px;
+  font-family: inherit;
+}
+
+.holder-known-name {
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 780;
+  letter-spacing: -0.01em;
+}
+
+.holder-lock-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 7px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  background: var(--purple-soft);
+  color: var(--purple-bright);
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: lowercase;
+  white-space: nowrap;
+}
+
 .holder-actions {
   display: flex;
   gap: 6px;

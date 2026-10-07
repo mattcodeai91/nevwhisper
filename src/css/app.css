@@ -849,7 +849,7 @@ button {
     linear-gradient(
       135deg,
       rgba(255,255,255,0.012),
-      rgba(227, 182, 87, 0.025)
+      rgba(79, 94, 133, 0.035)
     ),
     var(--panel);
   transition:

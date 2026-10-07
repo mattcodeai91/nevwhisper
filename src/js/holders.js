@@ -143,6 +143,22 @@ function formatNev(baseUnits) {
   return (negative ? "-" : "") + whole.toString() + (fraction ? "." + fraction : "");
 }
 
+function formatReadableNev(value) {
+  const text = String(value ?? "").trim();
+  if (!text || text === "—") return text || "—";
+
+  const negative = text.startsWith("-");
+  const unsigned = negative ? text.slice(1) : text;
+  const [wholePart, fractionPart = ""] = unsigned.split(".");
+  const groupedWhole = /^\d+$/.test(wholePart)
+    ? BigInt(wholePart).toLocaleString("en-US")
+    : wholePart;
+
+  return (negative ? "-" : "") +
+    groupedWhole +
+    (fractionPart ? "." + fractionPart : "");
+}
+
 function renderHolderProgress(scannedHeight, liveHeight) {
   const scanned = Number(scannedHeight);
   const live = Number(liveHeight);
@@ -215,7 +231,7 @@ function holderRowsHtml(top, maxSupply, emptyMessage) {
       tx + '">COPY</button>' +
       '</div></div>' +
       '<div class="holder-balance"><div class="holder-amount">' +
-      escapeHtml(holder.balanceNEV) + ' NEV</div>' +
+      escapeHtml(formatReadableNev(holder.balanceNEV)) + ' NEV</div>' +
       '<div class="holder-share">' +
       escapeHtml(percentage(holder.balanceNEV, maxSupply)) +
       ' of max supply</div></div>' +
@@ -304,7 +320,7 @@ function renderHistoricalProgress(liveHeight) {
       ["Chain Height", Number.isFinite(live) ? "#" + formatNumber(live) : "—"],
       ["Verified", historicalScanHeight >= 0 ? "#" + formatNumber(historicalScanHeight) : "#0"],
       ["Holders", formatNumber(positive.length)],
-      ["Circulating Supply", formatNev(totalPositive) + " NEV"]
+      ["Circulating Supply", formatReadableNev(formatNev(totalPositive)) + " NEV"]
     ].map(([label, value]) =>
       '<div class="holder-stat"><div class="holder-stat-label">' +
       escapeHtml(label) + '</div><div class="holder-stat-value">' +
@@ -469,7 +485,7 @@ function render(report, liveHeight = null) {
     ["Chain Height", Number.isFinite(Number(liveHeight)) ? "#" + formatNumber(liveHeight) : "—"],
     ["Verified", "#" + formatNumber(scannedHeight)],
     ["Holders", formatNumber(diagnostics.positiveAddresses)],
-    ["Circulating Supply", (diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
+    ["Circulating Supply", formatReadableNev(diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
   ].map(([label, value]) =>
     '<div class="holder-stat"><div class="holder-stat-label">' +
     escapeHtml(label) + '</div><div class="holder-stat-value">' +

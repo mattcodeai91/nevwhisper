@@ -864,3 +864,8 @@ html:not([data-theme="light"]) .theme-label:first-child {
 .holder-status.syncing .status-light { background: #f59e0b; }
 .holder-status.failed { color: #fb7185; }
 .holder-status.failed .status-light { background: #fb7185; }
+
+
+/* Match the Memo Reader chain-status presentation inside Top Holders. */
+.holder-status-panel { margin-bottom: 16px; }
+.holder-status { border: 0; background: transparent; padding: 0 2px; margin-bottom: 14px; }

@@ -1,5 +1,6 @@
 name: NEV369 Top Holders Scan
 # Persistent, resumable full-chain scan.
+# Manual trigger touch: reruns the persistent merge after all chunks are saved.
 # Completed chunks are committed to a dedicated data branch so a cancelled,
 # timed-out, or failed workflow can resume automatically on the next run.
 on:

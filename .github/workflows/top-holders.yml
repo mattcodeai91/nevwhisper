@@ -1,0 +1,41 @@
+name: NEV369 Top Holders Scan
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/scan-top-holders.mjs"
+      - ".github/workflows/top-holders.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "17 * * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scan Genesis to live tip
+        env:
+          CONCURRENCY: "8"
+        run: node tools/scan-top-holders.mjs
+
+      - name: Publish report artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nev369-top-holders
+          path: top-holders.json
+          retention-days: 30

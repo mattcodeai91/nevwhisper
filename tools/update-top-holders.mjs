@@ -87,39 +87,9 @@ function rewardRecipient(block, transaction) {
 }
 
 function rewardAmount(block, transaction) {
-  const direct = transaction.amount ?? transaction.value;
-  if (direct !== undefined && direct !== null && direct !== "") {
-    const parsed = asBigInt(direct);
-    if (parsed > 0n) return parsed;
-  }
-
-  const candidates = [
-    transaction.reward,
-    transaction.block_reward,
-    transaction.blockReward,
-    transaction.mining_reward,
-    transaction.miningReward,
-    block.reward,
-    block.block_reward,
-    block.blockReward,
-    block.mining_reward,
-    block.miningReward
-  ];
-
-  for (const candidate of candidates) {
-    if (candidate === undefined || candidate === null || candidate === "") continue;
-    if (typeof candidate === "object") {
-      const nested = candidate.amount ?? candidate.value ?? candidate.reward;
-      if (nested !== undefined && nested !== null && nested !== "") {
-        const parsed = asBigInt(nested);
-        if (parsed > 0n) return parsed;
-      }
-      continue;
-    }
-    const parsed = asBigInt(candidate);
-    if (parsed > 0n) return parsed;
-  }
-
+  // The NETWORK_REWARD transaction payload is not authoritative for the
+  // issued amount. NEV369 protocol issuance is 369 NEV per successful block.
+  // This includes block 0 (genesis), which is scanned like every other block.
   return BLOCK_REWARD_BASE_UNITS;
 }
 

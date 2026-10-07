@@ -1866,51 +1866,20 @@ function extractWhispers(
 ) {
 
   /*
-    Standard /whispers responses.
+    Always walk the complete response tree.
+
+    /whispers may return a flat array, while /scan
+    can return blocks containing transactions several
+    levels down. Returning early from payload.data or
+    payload.items can hide memo-bearing transactions.
   */
 
   if (
-    Array.isArray(payload)
-  ) {
-    return payload;
-  }
-
-  if (
-    !payload ||
-    typeof payload !== "object"
+    payload === null ||
+    payload === undefined
   ) {
     return [];
   }
-
-  const candidates = [
-    payload.whispers,
-    payload.results,
-    payload.data,
-    payload.messages,
-    payload.items
-  ];
-
-  for (
-    const candidate of
-    candidates
-  ) {
-
-    if (
-      Array.isArray(candidate)
-    ) {
-      return candidate;
-    }
-  }
-
-  /*
-    A block/scan response may contain transactions
-    several levels down. Walk the response and collect
-    transaction-like objects carrying a memo.
-
-    The inherited block height lets normalizeWhisper()
-    work even when the transaction itself does not
-    repeat the block number.
-  */
 
   const found = [];
 
@@ -2035,20 +2004,25 @@ function extractWhispers(
 
   walk(payload);
 
-  if (
-    found.length > 0
-  ) {
-    return found;
-  }
+  /*
+    If the node returned a single block object with
+    no transaction-level memo, preserve it so the normal
+    normalizer can inspect the block shape.
+  */
 
   if (
-    payload.block !== undefined ||
-    payload.height !== undefined
+    found.length === 0 &&
+    payload &&
+    typeof payload === "object" &&
+    (
+      payload.block !== undefined ||
+      payload.height !== undefined
+    )
   ) {
     return [payload];
   }
 
-  return [];
+  return found;
 }
 
 
@@ -2481,7 +2455,10 @@ async function backfillRecentBlocks() {
     Math.max(
       0,
       endHeight -
-        BACKFILL_BLOCKS +
+        Math.max(
+          BACKFILL_BLOCKS,
+          50
+        ) +
         1
     );
 

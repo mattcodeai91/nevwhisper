@@ -895,6 +895,18 @@ const BATCH_SIZE = 10;
 const LIVE_POLL_MS = 15000;
 
 /*
+  Automated verification mode.
+
+  This does not alter the normal UI or scanner behavior.
+  It is used by the repository's CI test to exercise the
+  real production parser, raw-block path, persistence,
+  and proxy against existing chain data without requiring
+  a user to send a paid transaction.
+*/
+const SELF_TEST_MODE =
+  new URLSearchParams(window.location.search).get("selftest") === "1";
+
+/*
   Rolling backfill.
 
   The normal scanner advances verifiedThrough and
@@ -3642,10 +3654,164 @@ els.rebuild.addEventListener(
 
 
 /* ==================================================
+   AUTOMATED SELF-TEST
+================================================== */
+
+/*
+  Runs the same production raw-block pipeline used by the
+  live scanner, but against a small deterministic set of
+  already-existing blocks.
+
+  This lets CI verify a fix against real NEV369 chain data
+  without asking a human to create another transaction.
+*/
+async function runNevWhisperSelfTest() {
+  const info = await getInfo();
+
+  const tip = Number(
+    info?.height ??
+    info?.chain_height
+  );
+
+  if (!Number.isFinite(tip) || tip < 5960) {
+    throw new Error(
+      `Unexpected chain height for self-test: ${tip}`
+    );
+  }
+
+  const heights = new Set([
+    5960,
+    Math.max(0, tip - 19),
+    Math.max(0, tip - 9),
+    tip,
+    6346
+  ]);
+
+  const checked = [];
+  const failures = [];
+  const discovered = [];
+
+  for (const height of Array.from(heights).sort((a, b) => a - b)) {
+    const payload = await getJson(
+      `/block/${height}?_=${Date.now()}`
+    );
+
+    const transactions =
+      payload &&
+      Array.isArray(payload.transactions)
+        ? payload.transactions
+        : [];
+
+    const rawUserMemos = transactions
+      .map(transaction => ({
+        ...transaction,
+        block: height
+      }))
+      .map(normalizeWhisper)
+      .filter(Boolean)
+      .filter(whisper => !isNetworkReward(whisper))
+      .filter(whisper => whisper.memo);
+
+    await processBlockPayload(
+      payload,
+      height,
+      false
+    );
+
+    for (const whisper of rawUserMemos) {
+      discovered.push({
+        block: height,
+        tx_hash: whisper.tx_hash,
+        memo: whisper.memo
+      });
+
+      if (
+        !state.whispers.has(
+          whisper.tx_hash
+        )
+      ) {
+        failures.push(
+          `Block #${height} transaction ${whisper.tx_hash || "(no hash)"} was parsed but not persisted.`
+        );
+      }
+    }
+
+    checked.push({
+      block: height,
+      rawTransactions: transactions.length,
+      userWhispers: rawUserMemos.length
+    });
+  }
+
+  const known5960 = Array.from(
+    state.whispers.values()
+  ).some(
+    whisper =>
+      Number(whisper.block) === 5960 &&
+      whisper.memo ===
+        "https://mattcodeai91.github.io/nevwhisper/"
+  );
+
+  if (!known5960) {
+    failures.push(
+      "Known block #5960 memo was not recovered from the raw block."
+    );
+  }
+
+  const result = {
+    ok: failures.length === 0,
+    chainHeight: tip,
+    checked,
+    discovered,
+    whisperCount: state.whispers.size,
+    failures
+  };
+
+  window.NevWhisperSelfTestResult = result;
+
+  if (!result.ok) {
+    throw new Error(
+      JSON.stringify(result)
+    );
+  }
+
+  console.info(
+    "NevWhisper self-test passed:",
+    result
+  );
+
+  return result;
+}
+
+window.NevWhisperSelfTest =
+  runNevWhisperSelfTest;
+
+
+/* ==================================================
    INITIALISE
 ================================================== */
 
 async function init() {
+
+  if (SELF_TEST_MODE) {
+    try {
+      await loadDatabase();
+      await runNevWhisperSelfTest();
+      document.documentElement.dataset.nevwhisperSelfTest = "passed";
+      return;
+    } catch (error) {
+      console.error(
+        "NevWhisper self-test failed:",
+        error
+      );
+      document.documentElement.dataset.nevwhisperSelfTest = "failed";
+      window.NevWhisperSelfTestResult = {
+        ok: false,
+        error: error?.message || String(error)
+      };
+      return;
+    }
+  }
 
   try {
 

@@ -5,6 +5,12 @@
 const REPORT = "https://raw.githubusercontent.com/mattcodeai91/nevwhisper/holder-scan-data/top-holders.json";
 const NODE_INFO = "https://q-lock-ecosystem.com/node/info";
 const EXPLORER = "https://q-lock-ecosystem.com/explorer/";
+const REQUEST_DELAY_MS = 900;
+
+let liveBalances = null;
+let liveScanHeight = -1;
+let liveReportHeight = -1;
+let liveScanRunning = false;
 
 const els = {
   status: document.getElementById("holderStatus"),
@@ -41,6 +47,49 @@ function addressUrl(address) {
   return EXPLORER + "#/address/" + encodeURIComponent(address);
 }
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+function asBigInt(value) {
+  if (value === null || value === undefined || value === "") return 0n;
+  const text = String(value).trim();
+  if (!/^-?\d+$/.test(text)) throw new Error("Non-integer amount: " + text);
+  return BigInt(text);
+}
+
+function applyTransaction(balances, transaction) {
+  const sender = transaction.sender ? String(transaction.sender) : "";
+  const recipient = transaction.recipient ? String(transaction.recipient) : "";
+  const amount = asBigInt(transaction.amount ?? transaction.value ?? 0);
+  const fee = asBigInt(transaction.fee ?? 0);
+  const crownTax = asBigInt(transaction.crown_tax ?? transaction.crownTax ?? 0);
+
+  if (amount < 0n) throw new Error("Negative transaction amount");
+
+  if (recipient) {
+    balances.set(recipient, (balances.get(recipient) || 0n) + amount);
+  }
+
+  const rewardSender = sender.toUpperCase() === "NETWORK_REWARD";
+
+  if (!rewardSender && sender) {
+    balances.set(sender, (balances.get(sender) || 0n) - amount - fee - crownTax);
+  }
+}
+
+function formatNev(baseUnits) {
+  const negative = baseUnits < 0n;
+  const value = negative ? -baseUnits : baseUnits;
+  const whole = value / 100000000n;
+  const fraction = (value % 100000000n)
+    .toString()
+    .padStart(8, "0")
+    .replace(/0+$/, "");
+
+  return (negative ? "-" : "") + whole.toString() + (fraction ? "." + fraction : "");
+}
+
 function setHolderStatus(kind, label, detail) {
   if (els.statusLabel) els.statusLabel.textContent = label;
   if (els.statusDetail) els.statusDetail.textContent = detail;
@@ -54,11 +103,41 @@ function setHolderStatus(kind, label, detail) {
 function render(report, liveHeight = null) {
   const diagnostics = report.diagnostics || {};
   const maxSupply = diagnostics.maxSupplyNEV || "369369369";
-  const top = Array.isArray(report.top10) ? report.top10 : [];
 
-  if (els.updated) els.updated.textContent = report.generatedAt ? "Updated " + new Date(report.generatedAt).toLocaleString() : "—";
+  let top = Array.isArray(report.top10) ? report.top10 : [];
+  let scannedHeight = Number(report.chainHeight);
+
+  if (liveBalances instanceof Map && liveScanHeight >= scannedHeight) {
+    const positive = Array.from(liveBalances.entries())
+      .filter(([, balance]) => balance > 0n)
+      .sort((a, b) => b[1] > a[1] ? 1 : b[1] < a[1] ? -1 : 0);
+
+    top = positive.slice(0, 10).map(([address, balance], index) => ({
+      rank: index + 1,
+      address,
+      balanceBaseUnits: balance.toString(),
+      balanceNEV: formatNev(balance)
+    }));
+
+    const totalPositive = positive.reduce((sum, [, balance]) => sum + balance, 0n);
+    scannedHeight = liveScanHeight;
+
+    if (els.updated) {
+      els.updated.textContent = report.generatedAt
+        ? "Published " + new Date(report.generatedAt).toLocaleString()
+        : "—";
+    }
+
+    diagnostics.positiveAddresses = positive.length;
+    diagnostics.totalPositiveBalanceNEV = formatNev(totalPositive);
+  } else if (els.updated) {
+    els.updated.textContent = report.generatedAt
+      ? "Published " + new Date(report.generatedAt).toLocaleString()
+      : "—";
+  }
+
   els.summary.innerHTML = [
-    ["Chain scanned", "#" + formatNumber(report.chainHeight)],
+    ["Chain scanned", "#" + formatNumber(scannedHeight)],
     ["Positive holders", formatNumber(diagnostics.positiveAddresses)],
     ["Positive balance", (diagnostics.totalPositiveBalanceNEV || "—") + " NEV"]
   ].map(([label, value]) => '<div class="holder-card"><div class="holder-label">' + escapeHtml(label) + '</div><div class="holder-value">' + escapeHtml(value) + '</div></div>').join("");
@@ -79,8 +158,9 @@ function render(report, liveHeight = null) {
   }).join("") : '<div class="empty">No positive holders in the persisted report.</div>';
 
   if (els.note) els.note.textContent = "Complete scan: " + formatNumber(report.scannedRange?.start) + " → " + formatNumber(report.scannedRange?.end) + " across " + formatNumber(report.chunksMerged) + " persisted chunks. " + formatNumber(diagnostics.transactions) + " transactions accounted for.";
-  const scanned = Number(report.chainHeight);
+  const scanned = Number(scannedHeight);
   const live = Number(liveHeight);
+
   if (Number.isFinite(live) && Number.isFinite(scanned)) {
     if (scanned >= live) {
       setHolderStatus("live", "Chain current", "Verified through #" + formatNumber(scanned));
@@ -108,6 +188,10 @@ function render(report, liveHeight = null) {
 }
 
 async function load() {
+  if (liveScanRunning) return;
+
+  liveScanRunning = true;
+
   try {
     setHolderStatus("syncing", "Syncing", "Checking latest holder scan…");
     const [reportResponse, infoResponse] = await Promise.all([
@@ -119,10 +203,65 @@ async function load() {
     const report = await reportResponse.json();
     const info = await infoResponse.json();
     const liveHeight = Number(info.chain_height ?? info.height);
+    const reportHeight = Number(report.chainHeight);
+
+    if (
+      !(liveBalances instanceof Map) ||
+      reportHeight > liveReportHeight ||
+      reportHeight > liveScanHeight
+    ) {
+      liveBalances = new Map(
+        Object.entries(report.balances || {}).map(([address, value]) => [
+          address,
+          BigInt(value)
+        ])
+      );
+      liveReportHeight = reportHeight;
+      liveScanHeight = reportHeight;
+    }
+
+    if (
+      Number.isInteger(liveHeight) &&
+      liveHeight > liveScanHeight
+    ) {
+      setHolderStatus(
+        "syncing",
+        "Scanning",
+        "Verifying new blocks #" + formatNumber(liveScanHeight + 1) + " → #" + formatNumber(liveHeight)
+      );
+
+      for (let height = liveScanHeight + 1; height <= liveHeight; height++) {
+        const response = await fetch(
+          "https://q-lock-ecosystem.com/node/block/" + height + "?t=" + Date.now(),
+          { cache: "no-store", headers: { accept: "application/json" } }
+        );
+
+        if (!response.ok) {
+          throw new Error("Block #" + height + " HTTP " + response.status);
+        }
+
+        const block = await response.json();
+        const transactions = Array.isArray(block?.transactions)
+          ? block.transactions
+          : [];
+
+        for (const transaction of transactions) {
+          applyTransaction(liveBalances, transaction);
+        }
+
+        liveScanHeight = height;
+        if (height < liveHeight) {
+          await sleep(REQUEST_DELAY_MS);
+        }
+      }
+    }
+
     render(report, liveHeight);
   } catch (error) {
-    console.error("Holder report load failed:", error);
-    setHolderStatus("failed", "Failed", "Unable to verify holder scan against the live chain");
+    console.error("Holder live scan failed:", error);
+    setHolderStatus("failed", "Live scan paused", "Retrying on the next 15-second sync");
+  } finally {
+    liveScanRunning = false;
   }
 }
 
@@ -130,7 +269,6 @@ export function initHoldersView() {
   setHolderStatus("syncing", "Syncing", "Checking latest holder scan…");
   load();
   setInterval(() => {
-    setHolderStatus("syncing", "Syncing", "Checking latest holder scan…");
     load();
   }, 15000);
 }

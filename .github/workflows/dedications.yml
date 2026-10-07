@@ -1,3 +1,4 @@
+# Dedicated historical scan; does not rebuild the Memo Reader archive.
 name: NEV369 Dedication Scan
 
 on:

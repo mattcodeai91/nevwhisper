@@ -36,8 +36,7 @@ jobs:
           git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
           rm -rf chunk-output
           mkdir -p chunk-output
-          git archive origin/holder-scan-data chunks | tar -x
-          mv chunks chunk-output
+          git archive origin/holder-scan-data chunks | tar -x -C chunk-output --strip-components=1
 
           count=$(find chunk-output -maxdepth 1 -name 'chunk-*.json' | wc -l)
           echo "Persistent chunks available: $count / 80"

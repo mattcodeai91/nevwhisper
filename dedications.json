@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "generatedAt": "2026-10-07T15:28:07.113Z",
+  "chainHeight": 6763,
+  "scannedThrough": 499,
+  "complete": false,
+  "customDedications": [
+    {
+      "block": 0,
+      "dedication": "Nevaeh, my daughter. To secure your freedom against a broken system, I taught myself Rust—the hardest computer language in the world—to build this unyielding sovereign node for you. I faced the worst of life's struggles so you would never have to. I love you infinitely, forever by your side.",
+      "timestamp": 1790539964,
+      "hash": "54ae121f0ca756e47fc9881a015ce7d8c2a33011b524bcb9063f7d7e6998ad738225c7621d132ee17ab49fe4f018d6b0f25de5a9c24bdaecf1163f0f8d25f795"
+    }
+  ],
+  "diagnostics": {
+    "scannedBlocks": 500,
+    "standardDedications": 499,
+    "customCount": 1
+  }
+}

@@ -466,21 +466,6 @@ function render(report, liveHeight = null) {
   } else {
     setHolderStatus("syncing", "Syncing", "Live chain height unavailable");
   }
-
-  els.list.querySelectorAll("[data-copy-address]").forEach(button => {
-    button.addEventListener("click", async () => {
-      const address = button.dataset.copyAddress;
-      try {
-        await navigator.clipboard.writeText(address);
-        const original = button.textContent;
-        button.textContent = "COPIED";
-        setTimeout(() => { button.textContent = original; }, 1200);
-      } catch {
-        button.textContent = "COPY FAILED";
-        setTimeout(() => { button.textContent = "COPY"; }, 1200);
-      }
-    });
-  });
 }
 
 async function load() {

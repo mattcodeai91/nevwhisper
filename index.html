@@ -3892,7 +3892,7 @@ function renderTopHolders(report) {
           '<div class="holder-balance-value">' + escapeHtml(holder.balanceNEV) + ' NEV</div>' +
           '<div class="holder-balance-share">' + escapeHtml(holderShare(holder.balanceNEV, diagnostics.maxSupplyNEV)) + '</div>' +
         '</div>' +
-      '</article>';
+      '</article>'\n    );
   }).join('');
 
   els.holdersNote.textContent =

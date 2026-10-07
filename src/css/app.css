@@ -77,9 +77,6 @@ button {
 -------------------------------------------------- */
 
 .header {
-  position: sticky;
-  top: 0;
-  z-index: 100;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -88,9 +85,9 @@ button {
   margin-bottom: 18px;
   padding: 12px 0 16px;
 
-  /* Keep the masthead visually continuous with the page background. */
-  background: var(--bg);
-  border-bottom: 0;
+  /* No banner, panel, border, shadow, or separate background. */
+  background: transparent;
+  border: 0;
   box-shadow: none;
 }
 

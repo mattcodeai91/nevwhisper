@@ -1,0 +1,82 @@
+name: Audit NEV369 block dedications
+
+on:
+  push:
+    paths:
+      - ".github/workflows/audit-dedications.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Inspect chain dedication data
+        run: |
+          node <<'NODE'
+          const BASES = [
+            "https://nevwhisper-proxy.mattcodeai91.workers.dev",
+            "https://q-lock-ecosystem.com/node"
+          ];
+
+          async function get(url) {
+            const r = await fetch(url, { headers: { accept: "application/json" } });
+            if (!r.ok) throw new Error(url + " HTTP " + r.status);
+            return r.json();
+          }
+
+          function collectBlocks(value, out = []) {
+            if (Array.isArray(value)) {
+              for (const item of value) collectBlocks(item, out);
+              return out;
+            }
+            if (!value || typeof value !== "object") return out;
+            const h = Number(value.index ?? value.height ?? value.block_height ?? value.block);
+            if (Number.isFinite(h) && (
+              "block_dedication" in value ||
+              "hash" in value ||
+              "previous_hash" in value
+            )) out.push(value);
+            for (const v of Object.values(value)) {
+              if (v && typeof v === "object") collectBlocks(v, out);
+            }
+            return out;
+          }
+
+          for (const base of BASES) {
+            try {
+              const chain = await get(base + "/chain");
+              const blocks = collectBlocks(chain);
+              const byHeight = new Map();
+              for (const b of blocks) {
+                const h = Number(b.index ?? b.height ?? b.block_height ?? b.block);
+                if (Number.isFinite(h)) byHeight.set(h, b);
+              }
+              const unique = [...byHeight.values()].sort((a,b) =>
+                Number(a.index ?? a.height ?? a.block_height ?? a.block) -
+                Number(b.index ?? b.height ?? b.block_height ?? b.block)
+              );
+              const dedicated = unique.filter(b => {
+                const d = b.block_dedication ?? b.dedication;
+                return d !== undefined && d !== null && String(d).trim() !== "";
+              });
+              console.log("\nBASE", base);
+              console.log("top-level shape", Array.isArray(chain) ? "array(" + chain.length + ")" : Object.keys(chain || {}));
+              console.log("blocks discovered", unique.length);
+              console.log("blocks with dedication", dedicated.length);
+              console.log("first 20 dedications");
+              for (const b of dedicated.slice(0,20)) {
+                const h = Number(b.index ?? b.height ?? b.block_height ?? b.block);
+                console.log(h, JSON.stringify(b.block_dedication ?? b.dedication));
+              }
+              console.log("last 20 dedications");
+              for (const b of dedicated.slice(-20)) {
+                const h = Number(b.index ?? b.height ?? b.block_height ?? b.block);
+                console.log(h, JSON.stringify(b.block_dedication ?? b.dedication));
+              }
+            } catch (e) {
+              console.log("\nBASE", base, "FAILED", e.message);
+            }
+          }
+          NODE

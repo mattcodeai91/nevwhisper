@@ -552,6 +552,48 @@ button {
   background: var(--panel-2);
 }
 
+.whisper.dedication {
+  border-color: rgba(255, 209, 102, 0.42);
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 209, 102, 0.075),
+      rgba(155, 124, 255, 0.035)
+    ),
+    var(--panel);
+  box-shadow:
+    inset 3px 0 0 rgba(255, 209, 102, 0.72),
+    0 0 22px rgba(255, 209, 102, 0.045);
+}
+
+.whisper.dedication:hover {
+  border-color: rgba(255, 209, 102, 0.62);
+}
+
+.whisper.dedication .block-link {
+  color: var(--yellow);
+}
+
+.dedication-badge {
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  margin: 0 0 9px;
+  padding: 4px 8px;
+  border: 1px solid rgba(255, 209, 102, 0.34);
+  border-radius: 999px;
+  background: rgba(255, 209, 102, 0.08);
+  color: var(--yellow);
+  font-size: 9px;
+  font-weight: 850;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.whisper.dedication .memo {
+  font-weight: 620;
+}
+
 .whisper.new {
   animation: newWhisper 1.8s ease-out;
 }
@@ -946,6 +988,16 @@ html[data-theme="light"] .holder-row {
 
 html[data-theme="light"] .search {
   background: rgba(255, 255, 255, 0.92);
+}
+
+html[data-theme="light"] .whisper.dedication {
+  background:
+    linear-gradient(
+      135deg,
+      rgba(255, 209, 102, 0.16),
+      rgba(155, 124, 255, 0.04)
+    ),
+    rgba(255, 255, 255, 0.9);
 }
 
 html[data-theme="light"] .progress-track {

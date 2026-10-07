@@ -1919,7 +1919,8 @@ function extractWhispers(
           "block",
           "height",
           "block_height",
-          "blockHeight"
+          "blockHeight",
+          "index"
         ]
       );
 
@@ -2017,7 +2018,8 @@ function extractWhispers(
     typeof payload === "object" &&
     (
       payload.block !== undefined ||
-      payload.height !== undefined
+      payload.height !== undefined ||
+      payload.index !== undefined
     )
   ) {
     return [payload];

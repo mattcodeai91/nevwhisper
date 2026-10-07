@@ -842,3 +842,25 @@ html:not([data-theme="light"]) .theme-label:first-child {
     padding: 5px 7px;
   }
 }
+
+
+/* Top Holders live status indicator */
+.holder-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.status-light {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex: 0 0 8px;
+  box-shadow: 0 0 8px currentColor;
+}
+.holder-status.live { color: #34d399; }
+.holder-status.live .status-light { background: #34d399; }
+.holder-status.syncing { color: #f59e0b; }
+.holder-status.syncing .status-light { background: #f59e0b; }
+.holder-status.failed { color: #fb7185; }
+.holder-status.failed .status-light { background: #fb7185; }

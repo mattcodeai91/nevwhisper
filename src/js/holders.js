@@ -383,9 +383,7 @@ function renderHistoricalProgress(liveHeight) {
     isCurrent ? "live" : "syncing",
     isCurrent
       ? "Chain current"
-      : isLiveSync
-        ? "Live holder sync"
-        : "Historical rebuild",
+      : "Scanning",
     isCurrent
       ? "Verified through #" + formatNumber(historicalScanHeight)
       : "Scanning block #" + formatNumber(nextBlock) +

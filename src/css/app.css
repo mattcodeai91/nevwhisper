@@ -88,14 +88,10 @@ button {
   margin-bottom: 18px;
   padding: 12px 0 16px;
 
-  /* Fully opaque so scrolling content can never show through it. */
+  /* Keep the masthead visually continuous with the page background. */
   background: var(--bg);
-  border-bottom: 1px solid var(--border);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
-}
-
-html[data-theme="light"] .header {
-  box-shadow: 0 10px 24px rgba(35, 28, 55, 0.08);
+  border-bottom: 0;
+  box-shadow: none;
 }
 
 .brand {

@@ -74,6 +74,12 @@ jobs:
           path: chunk-output
           merge-multiple: false
 
+      - name: Verify all 80 chunks are present
+        run: |
+          count=$(find chunk-output -mindepth 2 -maxdepth 2 -name chunk.json | wc -l)
+          echo "Found $count of 80 expected chunk files."
+          test "$count" -eq 80
+
       - name: Merge holder balances
         run: node tools/merge-top-holders.mjs chunk-output
 

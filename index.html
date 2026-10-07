@@ -6,7 +6,7 @@
 
 <title>NevWhisper — NEV369 Memo Chat</title>
 
-<link rel="stylesheet" href="src/css/app.css?v=20261007-3">
+<link rel="stylesheet" href="src/css/app.css?v=20261007-6">
 </head>
 
 <body>
@@ -181,11 +181,24 @@
         <span>Syncing</span>
       </div>
     </section>
-    <div class="section-heading">
+
+    <section id="holderSummary" class="holder-stats" aria-label="Top Holders chain statistics"></section>
+
+    <section class="holder-progress-panel">
+      <div class="progress-top">
+        <div class="progress-label">Genesis → Live holder index</div>
+        <div id="holderProgressPercent" class="progress-percent">0%</div>
+      </div>
+      <div class="progress-track">
+        <div id="holderProgressFill" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <div class="section-heading holder-section-heading">
       <div id="holdersTitle" class="section-title">Top 10 Holders</div>
       <div class="section-count" id="holderUpdated">—</div>
     </div>
-    <div id="holderSummary" class="holder-summary"></div>
+
     <div id="holderList" class="holder-list"></div>
     <div id="holderNote" class="holder-note"></div>
   </section>
@@ -195,6 +208,6 @@
 
 </div>
 
-<script type="module" src="src/js/app.js?v=20261007-5"></script>
+<script type="module" src="src/js/app.js?v=20261007-6"></script>
 </body>
 </html>

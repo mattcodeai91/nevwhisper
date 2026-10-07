@@ -13,7 +13,7 @@ on:
 
 concurrency:
   group: nev369-top-holders-scan
-  cancel-in-progress: false
+  cancel-in-progress: true
 
 permissions:
   contents: write
@@ -47,7 +47,7 @@ jobs:
       - name: Incremental NEV369 scan
         env:
           NEV369_NODE: https://q-lock-ecosystem.com/node
-          REQUEST_DELAY_MS: "900"
+          REQUEST_DELAY_MS: "100"
         working-directory: data
         run: node ../source/tools/update-top-holders.mjs
 

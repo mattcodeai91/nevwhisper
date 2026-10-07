@@ -156,6 +156,21 @@ function setHolderStatus(kind, label, detail) {
 function bindCopyButtons() {
   if (!els.list) return;
 
+  els.list.querySelectorAll("[data-copy-address]").forEach(button => {
+    button.addEventListener("click", async () => {
+      const address = button.dataset.copyAddress;
+
+      try {
+        await navigator.clipboard.writeText(address);
+        const original = button.textContent;
+        button.textContent = "COPIED";
+        setTimeout(() => { button.textContent = original; }, 1200);
+      } catch {
+        button.textContent = "COPY FAILED";
+        setTimeout(() => { button.textContent = "COPY"; }, 1200);
+      }
+    });
+  });
 }
 
 function holderRowsHtml(top, maxSupply, emptyMessage) {

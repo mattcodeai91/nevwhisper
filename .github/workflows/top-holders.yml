@@ -1,6 +1,7 @@
 name: NEV369 Top Holders Scan
-# Chunked full-chain scan so a rate-limit failure only affects one small chunk.
-# Each chunk is persisted as an artifact; GitHub can re-run only the failed chunk.
+# Persistent, resumable full-chain scan.
+# Completed chunks are committed to a dedicated data branch so a cancelled,
+# timed-out, or failed workflow can resume automatically on the next run.
 on:
   push:
     branches:
@@ -11,34 +12,114 @@ on:
       - ".github/workflows/top-holders.yml"
   workflow_dispatch:
   schedule:
-    - cron: "17 * * * *"
+    - cron: "*/5 * * * *"
 
 concurrency:
   group: nev369-top-holders-scan
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
+  prepare:
+    name: Prepare persistent holder-scan state
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Restore or create holder-scan-data branch
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data || true
+
+          if git show-ref --verify --quiet refs/remotes/origin/holder-scan-data; then
+            git checkout -B holder-scan-data origin/holder-scan-data
+          else
+            git checkout -B holder-scan-data main
+          fi
+
+          mkdir -p chunks
+
+          if [ -f .holder-scan-migrated-v1 ]; then
+            echo "Persistent migration already completed."
+            exit 0
+          fi
+
+          echo "Importing completed chunks from previous run 16 artifacts..."
+          rm -rf legacy-artifacts
+          mkdir -p legacy-artifacts
+
+          gh run download 37582222231 \
+            --repo "${{ github.repository }}" \
+            --dir legacy-artifacts
+
+          found=0
+          for n in $(seq 0 79); do
+            if [ -f "legacy-artifacts/nev369-holder-chunk-${n}/chunk.json" ]; then
+              cp "legacy-artifacts/nev369-holder-chunk-${n}/chunk.json" "chunks/chunk-${n}.json"
+              found=$((found + 1))
+            fi
+          done
+
+          echo "Imported $found legacy chunk files."
+          test "$found" -ge 1
+
+          printf '%s\n' "Persistent holder scan state. Imported from previous completed workflow artifacts." > .holder-scan-migrated-v1
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add chunks .holder-scan-migrated-v1
+          git commit -m "Persist holder scan progress" || true
+          git push origin holder-scan-data
+
   scan:
+    name: Scan chunk ${{ matrix.chunk }}
+    needs: prepare
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    continue-on-error: true
     strategy:
       fail-fast: false
       max-parallel: 1
       matrix:
         chunk: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65,66,67,68,69,70,71,72,73,74,75,76,77,78,79]
+
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check persistent chunk
+        id: state
+        run: |
+          set -euo pipefail
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
+
+          if git cat-file -e "origin/holder-scan-data:chunks/chunk-${{ matrix.chunk }}.json" 2>/dev/null; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "Chunk ${{ matrix.chunk }} already completed. Skipping."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Chunk ${{ matrix.chunk }} still needs scanning."
+          fi
 
       - name: Node 22
+        if: steps.state.outputs.exists != 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
       - name: Scan chunk
+        if: steps.state.outputs.exists != 'true'
         env:
           START_HEIGHT: ${{ matrix.chunk }}00
           END_HEIGHT: ${{ matrix.chunk }}99
@@ -46,46 +127,70 @@ jobs:
           REQUEST_DELAY_MS: "900"
         run: node tools/scan-top-holders.mjs
 
-      - name: Publish chunk artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nev369-holder-chunk-${{ matrix.chunk }}
-          path: chunk-output/chunk.json
-          retention-days: 30
+      - name: Persist completed chunk
+        if: steps.state.outputs.exists != 'true'
+        run: |
+          set -euo pipefail
+          test -f chunk-output/chunk.json
+
+          cp chunk-output/chunk.json /tmp/chunk-${{ matrix.chunk }}.json
+
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
+          git checkout -B holder-scan-data origin/holder-scan-data
+          mkdir -p chunks
+          cp /tmp/chunk-${{ matrix.chunk }}.json "chunks/chunk-${{ matrix.chunk }}.json"
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add "chunks/chunk-${{ matrix.chunk }}.json"
+          git commit -m "Persist holder scan chunk ${{ matrix.chunk }}" || true
+          git push origin holder-scan-data
 
   aggregate:
+    name: Merge completed holder scan
     if: ${{ always() }}
-    needs: scan
+    needs: [prepare, scan]
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Checkout
+      - name: Checkout main
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Load persistent chunks
+        run: |
+          set -euo pipefail
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
+          rm -rf chunk-output
+          mkdir -p chunk-output
+          git archive origin/holder-scan-data chunks | tar -x
+          mv chunks chunk-output
+
+          count=$(find chunk-output -maxdepth 1 -name 'chunk-*.json' | wc -l)
+          echo "Persistent chunks available: $count / 80"
+          test "$count" -eq 80
 
       - name: Node 22
         uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Download all chunk artifacts
-        uses: actions/download-artifact@v5
-        with:
-          pattern: nev369-holder-chunk-*
-          path: chunk-output
-          merge-multiple: false
-
-      - name: Verify all 80 chunks are present
-        run: |
-          count=$(find chunk-output -mindepth 2 -maxdepth 2 -name chunk.json | wc -l)
-          echo "Found $count of 80 expected chunk files."
-          test "$count" -eq 80
-
       - name: Merge holder balances
         run: node tools/merge-top-holders.mjs chunk-output
 
-      - name: Publish final report artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: nev369-top-holders
-          path: top-holders.json
-          retention-days: 30
+      - name: Publish final report to persistent state
+        run: |
+          set -euo pipefail
+          test -f top-holders.json
+
+          cp top-holders.json /tmp/top-holders.json
+          git fetch origin holder-scan-data:refs/remotes/origin/holder-scan-data
+          git checkout -B holder-scan-data origin/holder-scan-data
+          cp /tmp/top-holders.json top-holders.json
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add top-holders.json
+          git commit -m "Publish complete NEV369 top holders report" || true
+          git push origin holder-scan-data

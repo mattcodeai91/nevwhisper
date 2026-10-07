@@ -3183,6 +3183,16 @@ async function init() {
     renderAll();
 
     /*
+      Recover the Genesis custom block dedication immediately.
+      This runs before live catch-up so the dedication is
+      available to search as soon as the page starts.
+    */
+
+    await recoverHistoricalBlock(0);
+
+    renderAll();
+
+    /*
       2. Get the actual current chain tip.
     */
 
@@ -3240,7 +3250,6 @@ async function init() {
         changing the verified checkpoint.
       */
 
-      await recoverHistoricalBlock(0);
       await recoverHistoricalBlock(5960);
 
       setCurrentStatus();
@@ -3279,7 +3288,6 @@ async function init() {
         changing the verified checkpoint.
       */
 
-      await recoverHistoricalBlock(0);
       await recoverHistoricalBlock(5960);
 
       setCurrentStatus();

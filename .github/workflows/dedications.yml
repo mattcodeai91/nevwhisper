@@ -1,0 +1,64 @@
+name: NEV369 Dedication Scan
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "tools/update-dedications.mjs"
+      - ".github/workflows/dedications.yml"
+  workflow_dispatch:
+  schedule:
+    - cron: "*/5 * * * *"
+
+concurrency:
+  group: nev369-dedication-scan
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    name: Scan custom block dedications
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout scanner code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+          path: source
+
+      - name: Checkout dedication state
+        uses: actions/checkout@v4
+        with:
+          ref: dedication-scan-data
+          fetch-depth: 1
+          path: data
+
+      - name: Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Scan block dedications
+        env:
+          NEV369_NODE: https://q-lock-ecosystem.com/node
+          REQUEST_DELAY_MS: "150"
+          MAX_BLOCKS_PER_RUN: "500"
+        working-directory: data
+        run: node ../source/tools/update-dedications.mjs
+
+      - name: Publish dedication state
+        working-directory: data
+        run: |
+          set -euo pipefail
+          test -s dedications.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dedications.json
+          git commit -m "Update NEV369 block dedication scan" || true
+          git push origin dedication-scan-data

@@ -787,11 +787,13 @@ button {
    TOP HOLDERS TAB
    Mirrors Memo Reader UI without changing Memo Reader.
 -------------------------------------------------- */
-.holders-view {
+.holders-view,
+.miners-view {
   display: none;
 }
 
-.holders-view.active {
+.holders-view.active,
+.miners-view.active {
   display: block;
 }
 
@@ -1084,5 +1086,11 @@ html:not([data-theme="light"]) .theme-label:first-child {
 
 
 
-/* Top Holders uses the same status panel and live widget as Memo Reader. */
-.holder-status-panel { margin-bottom: 16px; }
+/* Secondary tabs use the same status panel and live widget as Memo Reader. */
+.holder-status-panel,
+.miner-status-panel { margin-bottom: 16px; }
+
+.miner-list .holder-amount,
+.miner-list .holder-share {
+  font-variant-numeric: tabular-nums;
+}

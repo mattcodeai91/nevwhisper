@@ -6,7 +6,7 @@
 
 <title>NevWhisper — NEV369 Memo Chat</title>
 
-<link rel="stylesheet" href="src/css/app.css?v=20261008-1">
+<link rel="stylesheet" href="src/css/app.css?v=20261008-2">
 </head>
 
 <body>
@@ -33,6 +33,7 @@
   <nav class="tabbar" aria-label="NevWhisper sections">
     <button class="tab active" type="button" data-tab="memo">Memo Reader</button>
     <button class="tab" type="button" data-tab="holders">Top Holders</button>
+    <button class="tab" type="button" data-tab="miners">Miners</button>
   </nav>
 
   <section class="status-panel">
@@ -202,12 +203,56 @@
     <div id="holderList" class="holder-list"></div>
     <div id="holderNote" class="holder-note"></div>
   </section>
+
+  <section id="minersView" class="miners-view" aria-labelledby="minersTitle">
+    <section class="status-panel miner-status-panel">
+      <div class="status-main">
+        <div id="minerStatusLabel" class="status-label">Ready</div>
+        <div id="minerStatusDetail" class="status-detail">Recent block miner activity</div>
+      </div>
+      <div id="minerStatus" class="scan-widget live" aria-live="polite">
+        <span class="status-light" aria-hidden="true"></span>
+        <span>Ready</span>
+      </div>
+    </section>
+
+    <section id="minerSummary" class="stats miner-stats" aria-label="Active miner statistics">
+      <div class="stat"><div class="stat-label">Chain Height</div><div class="stat-value">—</div></div>
+      <div class="stat"><div class="stat-label">Window</div><div class="stat-value">100 blocks</div></div>
+      <div class="stat"><div class="stat-label">Active Miners</div><div class="stat-value">—</div></div>
+      <div class="stat"><div class="stat-label">Top Share</div><div class="stat-value">—</div></div>
+    </section>
+
+    <section class="progress-panel miner-progress-panel">
+      <div class="progress-top">
+        <div class="progress-label">Recent 100-block miner window</div>
+        <div id="minerProgressPercent" class="progress-percent">0%</div>
+      </div>
+      <div class="progress-track">
+        <div id="minerProgressFill" class="progress-fill"></div>
+      </div>
+    </section>
+
+    <div class="section-heading miner-section-heading">
+      <div id="minersTitle" class="section-title">Active Miners</div>
+      <div class="section-count" id="minerUpdated">—</div>
+    </div>
+
+    <div id="minerList" class="holder-list miner-list">
+      <div class="empty">Open the Miners tab to scan recent block activity.</div>
+    </div>
+
+    <div id="minerNote" class="holder-note miner-note">
+      Active miners are inferred from miners that produced blocks in the latest 100-block window.
+    </div>
+  </section>
+
   <div class="footer">
     NEV369 · NevWhisper · Genesis → Live
   </div>
 
 </div>
 
-<script type="module" src="src/js/app.js?v=20261008-5"></script>
+<script type="module" src="src/js/app.js?v=20261008-6"></script>
 </body>
 </html>

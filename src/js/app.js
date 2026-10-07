@@ -50,6 +50,14 @@ const BACKFILL_BLOCKS = 20;
 const MAX_RETRIES = 4;
 const RETRY_DELAY = 1500;
 
+const MINER_WINDOW_BLOCKS = 100;
+const MINER_CACHE_KEY = "nevwhisper-miners-v1";
+const MINER_REFRESH_MS = 30000;
+
+const DEDICATION_REPORT =
+  "https://raw.githubusercontent.com/mattcodeai91/nevwhisper/dedication-scan-data/dedications.json";
+const DEDICATION_REPORT_POLL_MS = 60000;
+
 
 /* ==================================================
    STATE
@@ -84,6 +92,18 @@ const state = {
   livePollTimer: null,
   livePollRunning: false
 };
+
+
+const minerState = {
+  running: false,
+  chainHeight: -1,
+  blocks: new Map(),
+  timer: null,
+  loadedCache: false
+};
+
+let dedicationReportRunning = false;
+let dedicationReportTimer = null;
 
 
 /* ==================================================
@@ -141,6 +161,39 @@ const els = {
 
   rebuild:
     document.getElementById("rebuild")
+};
+
+
+const minerEls = {
+  view:
+    document.getElementById("minersView"),
+
+  status:
+    document.getElementById("minerStatus"),
+
+  statusLabel:
+    document.getElementById("minerStatusLabel"),
+
+  statusDetail:
+    document.getElementById("minerStatusDetail"),
+
+  summary:
+    document.getElementById("minerSummary"),
+
+  progressPercent:
+    document.getElementById("minerProgressPercent"),
+
+  progressFill:
+    document.getElementById("minerProgressFill"),
+
+  updated:
+    document.getElementById("minerUpdated"),
+
+  list:
+    document.getElementById("minerList"),
+
+  note:
+    document.getElementById("minerNote")
 };
 
 
@@ -2920,6 +2973,890 @@ els.rebuild.addEventListener(
 
 
 /* ==================================================
+   HISTORICAL BLOCK DEDICATION REPORT
+================================================== */
+
+async function loadDedicationReport() {
+
+  if (dedicationReportRunning) {
+    return;
+  }
+
+  dedicationReportRunning = true;
+
+  try {
+
+    const response =
+      await fetch(
+        DEDICATION_REPORT +
+        "?t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (response.status === 404) {
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(
+        "Dedication report HTTP " +
+        response.status
+      );
+    }
+
+    const report =
+      await response.json();
+
+    const entries =
+      Array.isArray(
+        report?.customDedications
+      )
+        ? report.customDedications
+        : [];
+
+    let changed = false;
+
+    for (
+      const entry of entries
+    ) {
+
+      const block =
+        Number(entry?.block);
+
+      if (
+        !Number.isInteger(block) ||
+        block < 0
+      ) {
+        continue;
+      }
+
+      const dedication =
+        specialBlockDedicationFromPayload(
+          {
+            block_dedication:
+              entry?.dedication,
+            timestamp:
+              entry?.timestamp
+          },
+          block
+        );
+
+      if (!dedication) {
+        continue;
+      }
+
+      const existing =
+        state.whispers.get(
+          dedication.tx_hash
+        );
+
+      if (
+        !existing ||
+        existing.memo !==
+          dedication.memo
+      ) {
+
+        await processWhisperPayload(
+          [dedication],
+          block,
+          block,
+          false
+        );
+
+        changed = true;
+      }
+    }
+
+    if (changed) {
+      renderAll();
+    }
+
+  } catch (error) {
+
+    console.warn(
+      "Historical dedication report unavailable:",
+      error
+    );
+
+  } finally {
+
+    dedicationReportRunning = false;
+  }
+}
+
+
+function startDedicationReportPolling() {
+
+  if (dedicationReportTimer) {
+    clearInterval(
+      dedicationReportTimer
+    );
+  }
+
+  loadDedicationReport();
+
+  dedicationReportTimer =
+    setInterval(
+      () => {
+        loadDedicationReport();
+      },
+      DEDICATION_REPORT_POLL_MS
+    );
+}
+
+
+/* ==================================================
+   ACTIVE MINERS
+================================================== */
+
+function setMinerStatus(
+  kind,
+  label,
+  detail
+) {
+
+  if (minerEls.statusLabel) {
+    minerEls.statusLabel.textContent =
+      label;
+  }
+
+  if (minerEls.statusDetail) {
+    minerEls.statusDetail.textContent =
+      detail;
+  }
+
+  if (minerEls.status) {
+    minerEls.status.className =
+      "scan-widget " +
+      kind;
+
+    minerEls.status.innerHTML =
+      '<span class="status-light" aria-hidden="true"></span><span>' +
+      escapeHtml(label) +
+      "</span>";
+  }
+}
+
+
+function loadMinerCache() {
+
+  if (minerState.loadedCache) {
+    return;
+  }
+
+  minerState.loadedCache = true;
+
+  try {
+
+    const raw =
+      localStorage.getItem(
+        MINER_CACHE_KEY
+      );
+
+    if (!raw) {
+      return;
+    }
+
+    const saved =
+      JSON.parse(raw);
+
+    const blocks =
+      Array.isArray(
+        saved?.blocks
+      )
+        ? saved.blocks
+        : [];
+
+    for (
+      const block of blocks
+    ) {
+
+      const height =
+        Number(block?.height);
+
+      if (
+        !Number.isInteger(height) ||
+        height < 0
+      ) {
+        continue;
+      }
+
+      minerState.blocks.set(
+        height,
+        {
+          height,
+          miner:
+            String(
+              block?.miner || ""
+            ),
+          timestamp:
+            block?.timestamp ?? null
+        }
+      );
+    }
+
+    minerState.chainHeight =
+      Number.isFinite(
+        Number(
+          saved?.chainHeight
+        )
+      )
+        ? Number(
+            saved.chainHeight
+          )
+        : -1;
+
+  } catch (error) {
+
+    console.warn(
+      "Could not restore miner cache:",
+      error
+    );
+
+    localStorage.removeItem(
+      MINER_CACHE_KEY
+    );
+  }
+}
+
+
+function saveMinerCache() {
+
+  try {
+
+    const blocks =
+      Array.from(
+        minerState.blocks.values()
+      )
+        .sort(
+          (a, b) =>
+            a.height -
+            b.height
+        );
+
+    localStorage.setItem(
+      MINER_CACHE_KEY,
+      JSON.stringify(
+        {
+          version: 1,
+          chainHeight:
+            minerState.chainHeight,
+          blocks
+        }
+      )
+    );
+
+  } catch (error) {
+
+    console.warn(
+      "Could not persist miner cache:",
+      error
+    );
+  }
+}
+
+
+function renderMinerProgress(
+  complete,
+  total
+) {
+
+  const pct =
+    total > 0
+      ? Math.max(
+          0,
+          Math.min(
+            100,
+            (
+              complete /
+              total
+            ) *
+            100
+          )
+        )
+      : 0;
+
+  if (
+    minerEls.progressPercent
+  ) {
+    minerEls.progressPercent
+      .textContent =
+        pct.toFixed(
+          pct >= 99.95
+            ? 0
+            : 1
+        ) +
+        "%";
+  }
+
+  if (
+    minerEls.progressFill
+  ) {
+    minerEls.progressFill.style.width =
+      pct +
+      "%";
+  }
+}
+
+
+function bindMinerCopyButtons() {
+
+  if (!minerEls.list) {
+    return;
+  }
+
+  minerEls.list
+    .querySelectorAll(
+      "[data-copy-miner]"
+    )
+    .forEach(button => {
+
+      button.addEventListener(
+        "click",
+        async () => {
+
+          const miner =
+            button.dataset
+              .copyMiner;
+
+          try {
+
+            await navigator
+              .clipboard
+              .writeText(
+                miner
+              );
+
+            const original =
+              button.textContent;
+
+            button.textContent =
+              "COPIED";
+
+            setTimeout(
+              () => {
+                button.textContent =
+                  original;
+              },
+              1200
+            );
+
+          } catch {
+
+            button.textContent =
+              "COPY FAILED";
+
+            setTimeout(
+              () => {
+                button.textContent =
+                  "COPY";
+              },
+              1200
+            );
+          }
+        }
+      );
+    });
+}
+
+
+function renderMiners() {
+
+  if (
+    !minerEls.summary ||
+    !minerEls.list
+  ) {
+    return;
+  }
+
+  const blocks =
+    Array.from(
+      minerState.blocks.values()
+    )
+      .filter(block =>
+        block.miner
+      )
+      .sort(
+        (a, b) =>
+          a.height -
+          b.height
+      );
+
+  const stats =
+    new Map();
+
+  for (
+    const block of blocks
+  ) {
+
+    const current =
+      stats.get(
+        block.miner
+      ) || {
+        miner:
+          block.miner,
+        blocks: 0,
+        lastHeight: -1,
+        lastTimestamp: null
+      };
+
+    current.blocks += 1;
+
+    if (
+      block.height >
+      current.lastHeight
+    ) {
+      current.lastHeight =
+        block.height;
+
+      current.lastTimestamp =
+        block.timestamp;
+    }
+
+    stats.set(
+      block.miner,
+      current
+    );
+  }
+
+  const miners =
+    Array.from(
+      stats.values()
+    )
+      .sort(
+        (a, b) =>
+          b.blocks -
+            a.blocks ||
+          b.lastHeight -
+            a.lastHeight ||
+          a.miner.localeCompare(
+            b.miner
+          )
+      );
+
+  const totalBlocks =
+    blocks.length;
+
+  const topShare =
+    miners.length &&
+    totalBlocks
+      ? (
+          (
+            miners[0].blocks /
+            totalBlocks
+          ) *
+          100
+        ).toFixed(1) +
+        "%"
+      : "—";
+
+  minerEls.summary.innerHTML = [
+    [
+      "Chain Height",
+      minerState.chainHeight >= 0
+        ? "#" +
+          formatNumber(
+            minerState.chainHeight
+          )
+        : "—"
+    ],
+    [
+      "Window",
+      MINER_WINDOW_BLOCKS +
+        " blocks"
+    ],
+    [
+      "Active Miners",
+      formatNumber(
+        miners.length
+      )
+    ],
+    [
+      "Top Share",
+      topShare
+    ]
+  ].map(
+    ([label, value]) =>
+      '<div class="stat"><div class="stat-label">' +
+      escapeHtml(label) +
+      '</div><div class="stat-value miner-stat-value">' +
+      escapeHtml(value) +
+      "</div></div>"
+  ).join("");
+
+  if (minerEls.updated) {
+    minerEls.updated.textContent =
+      minerState.chainHeight >= 0
+        ? "Through #" +
+          formatNumber(
+            minerState.chainHeight
+          )
+        : "—";
+  }
+
+  if (!miners.length) {
+
+    minerEls.list.innerHTML =
+      '<div class="empty">No recent miner activity indexed yet.</div>';
+
+  } else {
+
+    minerEls.list.innerHTML =
+      miners.map(
+        (miner, index) => {
+
+          const share =
+            totalBlocks > 0
+              ? (
+                  (
+                    miner.blocks /
+                    totalBlocks
+                  ) *
+                  100
+                ).toFixed(1) +
+                "%"
+              : "—";
+
+          return (
+            '<article class="holder-row miner-row">' +
+              '<div class="holder-rank">#' +
+                escapeHtml(
+                  index + 1
+                ) +
+              "</div>" +
+              "<div>" +
+                '<div class="holder-address" title="' +
+                  escapeHtml(
+                    miner.miner
+                  ) +
+                '">' +
+                  escapeHtml(
+                    shorten(
+                      miner.miner
+                    )
+                  ) +
+                "</div>" +
+                '<div class="holder-actions">' +
+                  '<a class="holder-action" href="' +
+                    escapeHtml(
+                      addressUrl(
+                        miner.miner
+                      )
+                    ) +
+                  '" target="_blank" rel="noopener noreferrer">VIEW ↗</a>' +
+                  '<button class="holder-action" type="button" data-copy-miner="' +
+                    escapeHtml(
+                      miner.miner
+                    ) +
+                  '">COPY</button>' +
+                "</div>" +
+              "</div>" +
+              '<div class="holder-balance">' +
+                '<div class="holder-amount">' +
+                  escapeHtml(
+                    miner.blocks
+                  ) +
+                  (
+                    miner.blocks === 1
+                      ? " block"
+                      : " blocks"
+                  ) +
+                "</div>" +
+                '<div class="holder-share">' +
+                  escapeHtml(
+                    share
+                  ) +
+                  " · last #" +
+                  escapeHtml(
+                    formatNumber(
+                      miner.lastHeight
+                    )
+                  ) +
+                "</div>" +
+              "</div>" +
+            "</article>"
+          );
+        }
+      ).join("");
+
+    bindMinerCopyButtons();
+  }
+
+  if (minerEls.note) {
+    minerEls.note.textContent =
+      "Active miners are inferred from block producers in the latest " +
+      MINER_WINDOW_BLOCKS +
+      " blocks. This shows recent mining activity, not a literal online/offline connection state.";
+  }
+}
+
+
+async function scanMiners() {
+
+  if (
+    minerState.running
+  ) {
+    return;
+  }
+
+  minerState.running = true;
+
+  loadMinerCache();
+
+  setMinerStatus(
+    "syncing",
+    "Scanning",
+    "Reading recent block producers"
+  );
+
+  try {
+
+    const info =
+      await getJson(
+        "/info"
+      );
+
+    const tip =
+      Number(
+        info?.height ??
+        info?.chain_height
+      );
+
+    if (
+      !Number.isInteger(tip) ||
+      tip < 0
+    ) {
+      throw new Error(
+        "Node returned no valid chain height."
+      );
+    }
+
+    minerState.chainHeight =
+      tip;
+
+    const start =
+      Math.max(
+        0,
+        tip -
+          MINER_WINDOW_BLOCKS +
+          1
+      );
+
+    for (
+      const height of
+      Array.from(
+        minerState.blocks.keys()
+      )
+    ) {
+      if (
+        height < start ||
+        height > tip
+      ) {
+        minerState.blocks.delete(
+          height
+        );
+      }
+    }
+
+    const heights = [];
+
+    for (
+      let height = start;
+      height <= tip;
+      height++
+    ) {
+      heights.push(
+        height
+      );
+    }
+
+    const missing =
+      heights.filter(
+        height =>
+          !minerState.blocks.has(
+            height
+          )
+      );
+
+    let complete =
+      heights.length -
+      missing.length;
+
+    renderMinerProgress(
+      complete,
+      heights.length
+    );
+
+    renderMiners();
+
+    const concurrency = 4;
+
+    for (
+      let offset = 0;
+      offset < missing.length;
+      offset += concurrency
+    ) {
+
+      const batch =
+        missing.slice(
+          offset,
+          offset +
+            concurrency
+        );
+
+      const rows =
+        await Promise.all(
+          batch.map(
+            async height => {
+
+              const block =
+                await getJson(
+                  "/block/" +
+                  height +
+                  "?miner_scan=" +
+                  Date.now()
+                );
+
+              return {
+                height,
+                miner:
+                  String(
+                    block?.miner ||
+                    ""
+                  ),
+                timestamp:
+                  block?.timestamp ??
+                  null
+              };
+            }
+          )
+        );
+
+      for (
+        const row of rows
+      ) {
+        minerState.blocks.set(
+          row.height,
+          row
+        );
+      }
+
+      complete +=
+        rows.length;
+
+      renderMinerProgress(
+        complete,
+        heights.length
+      );
+
+      renderMiners();
+
+      if (
+        offset +
+        concurrency <
+        missing.length
+      ) {
+        await sleep(
+          120
+        );
+      }
+    }
+
+    saveMinerCache();
+
+    renderMinerProgress(
+      heights.length,
+      heights.length
+    );
+
+    renderMiners();
+
+    setMinerStatus(
+      "live",
+      "Chain current",
+      "Latest " +
+        heights.length +
+        " blocks through #" +
+        formatNumber(
+          tip
+        )
+    );
+
+  } catch (error) {
+
+    console.error(
+      "Miner scan failed:",
+      error
+    );
+
+    setMinerStatus(
+      "failed",
+      "Scan paused",
+      error?.message ||
+        "Unable to read recent miner activity."
+    );
+
+  } finally {
+
+    minerState.running = false;
+  }
+}
+
+
+function initMinersView() {
+
+  loadMinerCache();
+
+  renderMiners();
+
+  const tab =
+    document.querySelector(
+      '[data-tab="miners"]'
+    );
+
+  if (tab) {
+    tab.addEventListener(
+      "click",
+      () => {
+        scanMiners();
+      }
+    );
+  }
+
+  if (
+    minerEls.view &&
+    minerEls.view.classList
+      .contains("active")
+  ) {
+    scanMiners();
+  }
+
+  if (minerState.timer) {
+    clearInterval(
+      minerState.timer
+    );
+  }
+
+  minerState.timer =
+    setInterval(
+      () => {
+        if (
+          minerEls.view &&
+          minerEls.view.classList
+            .contains("active")
+        ) {
+          scanMiners();
+        }
+      },
+      MINER_REFRESH_MS
+    );
+}
+
+
+/* ==================================================
    AUTOMATED SELF-TEST
 ================================================== */
 
@@ -3155,21 +4092,103 @@ function initTheme() {
 ================================================== */
 
 function initTabs() {
-  const tabs = document.querySelectorAll("[data-tab]");
-  const memoSections = Array.from(document.querySelectorAll(".container > :not(.header):not(.tabbar):not(.holders-view):not(.footer)"));
-  const holders = document.getElementById("holdersView");
+  const tabs =
+    document.querySelectorAll(
+      "[data-tab]"
+    );
+
+  const memoSections =
+    Array.from(
+      document.querySelectorAll(
+        ".container > :not(.header):not(.tabbar):not(.holders-view):not(.miners-view):not(.footer)"
+      )
+    );
+
+  const holders =
+    document.getElementById(
+      "holdersView"
+    );
+
+  const miners =
+    document.getElementById(
+      "minersView"
+    );
 
   function selectTab(name) {
-    const holderMode = name === "holders";
-    tabs.forEach(tab => tab.classList.toggle("active", tab.dataset.tab === name));
-    memoSections.forEach(section => { section.style.display = holderMode ? "none" : ""; });
-    holders.classList.toggle("active", holderMode);
+
+    const selected =
+      name === "holders" ||
+      name === "miners"
+        ? name
+        : "memo";
+
+    const holderMode =
+      selected ===
+      "holders";
+
+    const minerMode =
+      selected ===
+      "miners";
+
+    const memoMode =
+      selected ===
+      "memo";
+
+    tabs.forEach(
+      tab =>
+        tab.classList.toggle(
+          "active",
+          tab.dataset.tab ===
+            selected
+        )
+    );
+
+    memoSections.forEach(
+      section => {
+        section.style.display =
+          memoMode
+            ? ""
+            : "none";
+      }
+    );
+
+    if (holders) {
+      holders.classList.toggle(
+        "active",
+        holderMode
+      );
+    }
+
+    if (miners) {
+      miners.classList.toggle(
+        "active",
+        minerMode
+      );
+    }
   }
 
-  tabs.forEach(tab => tab.addEventListener("click", () => selectTab(tab.dataset.tab)));
+  tabs.forEach(
+    tab =>
+      tab.addEventListener(
+        "click",
+        () =>
+          selectTab(
+            tab.dataset.tab
+          )
+      )
+  );
 
-  const requestedTab = new URLSearchParams(window.location.search).get("tab");
-  selectTab(requestedTab === "holders" ? "holders" : "memo");
+  const requestedTab =
+    new URLSearchParams(
+      window.location.search
+    ).get("tab");
+
+  selectTab(
+    requestedTab === "holders" ||
+    requestedTab === "miners"
+      ? requestedTab
+      : "memo"
+  );
 }
 
 async function init() {
@@ -3213,6 +4232,14 @@ async function init() {
     await recoverHistoricalBlock(0);
 
     renderAll();
+
+    loadDedicationReport()
+      .catch(error => {
+        console.warn(
+          "Initial dedication report load failed:",
+          error
+        );
+      });
 
     /*
       2. Get the actual current chain tip.
@@ -3323,6 +4350,8 @@ async function init() {
 
     startLivePolling();
 
+    startDedicationReportPolling();
+
   } catch (error) {
 
     console.error(
@@ -3346,4 +4375,5 @@ async function init() {
 initTheme();
 initTabs();
 initHoldersView();
+initMinersView();
 init();

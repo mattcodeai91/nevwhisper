@@ -12,6 +12,10 @@ on:
   schedule:
     - cron: "17 * * * *"
 
+concurrency:
+  group: nev369-top-holders-scan
+  cancel-in-progress: true
+
 permissions:
   contents: read
 

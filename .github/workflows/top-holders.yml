@@ -1,4 +1,5 @@
 name: NEV369 Top Holders Scan
+# Full-chain holder scan; deliberately rate-limited for the public node.
 
 on:
   push:

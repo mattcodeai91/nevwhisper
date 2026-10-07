@@ -59,10 +59,54 @@ function asBigInt(value) {
   return BigInt(text);
 }
 
-function applyTransaction(balances, transaction) {
+function nestedAddress(value) {
+  if (!value) return "";
+  if (typeof value === "string") return value;
+  if (typeof value === "object") {
+    return String(
+      value.address ??
+      value.recipient ??
+      value.miner ??
+      value.miner_address ??
+      value.minerAddress ??
+      ""
+    );
+  }
+  return "";
+}
+
+function rewardRecipient(block, transaction) {
+  return String(
+    transaction.recipient ??
+    transaction.to ??
+    transaction.miner ??
+    transaction.miner_address ??
+    transaction.minerAddress ??
+    nestedAddress(transaction.reward?.recipient) ??
+    nestedAddress(transaction.reward?.address) ??
+    nestedAddress(block.miner) ??
+    block.miner_address ??
+    block.minerAddress ??
+    block.reward_recipient ??
+    block.rewardRecipient ??
+    ""
+  );
+}
+
+function applyTransaction(balances, transaction, block) {
   const sender = transaction.sender ? String(transaction.sender) : "";
-  const recipient = transaction.recipient ? String(transaction.recipient) : "";
-  const amount = asBigInt(transaction.amount ?? transaction.value ?? 0);
+  const rewardSender = sender.toUpperCase() === "NETWORK_REWARD";
+
+  let amount = asBigInt(transaction.amount ?? transaction.value ?? 0);
+  let recipient = String(transaction.recipient ?? "");
+
+  // Match the server scanner: protocol issuance is 369 NEV per successful
+  // block, including genesis block 0. Do not trust NETWORK_REWARD.amount.
+  if (rewardSender) {
+    amount = 36900000000n;
+    recipient = rewardRecipient(block, transaction);
+  }
+
   const fee = asBigInt(transaction.fee ?? 0);
   const crownTax = asBigInt(transaction.crown_tax ?? transaction.crownTax ?? 0);
 
@@ -71,8 +115,6 @@ function applyTransaction(balances, transaction) {
   if (recipient) {
     balances.set(recipient, (balances.get(recipient) || 0n) + amount);
   }
-
-  const rewardSender = sender.toUpperCase() === "NETWORK_REWARD";
 
   if (!rewardSender && sender) {
     balances.set(sender, (balances.get(sender) || 0n) - amount - fee - crownTax);
@@ -247,7 +289,7 @@ async function load() {
           : [];
 
         for (const transaction of transactions) {
-          applyTransaction(liveBalances, transaction);
+          applyTransaction(liveBalances, transaction, block);
         }
 
         liveScanHeight = height;

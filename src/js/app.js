@@ -2919,7 +2919,7 @@ window.NevWhisperSelfTest =
 
 function initTabs() {
   const tabs = document.querySelectorAll("[data-tab]");
-  const memoSections = Array.from(document.querySelectorAll(".container > :not(.tabbar):not(.holders-view):not(.footer)"));
+  const memoSections = Array.from(document.querySelectorAll(".container > :not(.header):not(.tabbar):not(.holders-view):not(.footer)"));
   const holders = document.getElementById("holdersView");
 
   function selectTab(name) {

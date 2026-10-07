@@ -40,6 +40,7 @@ async function getJson(url) {
   let lastError;
   for (let attempt = 0; attempt <= RETRIES; attempt++) {
     try {
+      await paceRequests();
       const response = await fetch(url, {
         headers: { "accept": "application/json" }
       });

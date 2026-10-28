@@ -1,8 +1,8 @@
 {
   "version": 1,
-  "generatedAt": "2026-10-28T20:24:14.354Z",
-  "chainHeight": 23786,
-  "scannedThrough": 23786,
+  "generatedAt": "2026-10-28T21:09:52.579Z",
+  "chainHeight": 23850,
+  "scannedThrough": 23850,
   "complete": true,
   "customDedications": [
     {
@@ -13,8 +13,8 @@
     }
   ],
   "diagnostics": {
-    "scannedBlocks": 23787,
-    "standardDedications": 23786,
+    "scannedBlocks": 23851,
+    "standardDedications": 23850,
     "customCount": 1
   }
 }
